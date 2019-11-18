@@ -53,6 +53,8 @@ class Characteristic extends Plugin
     // Public Properties
     // =========================================================================
 
+    public $hasCpSection = true;
+
     /**
      * @var string
      */
@@ -71,13 +73,6 @@ class Characteristic extends Plugin
         $this->setComponents([
             'characteristicGroups' => CharacteristicGroups::class
         ]);
-//        Event::on(
-//            UrlManager::class,
-//            UrlManager::EVENT_REGISTER_SITE_URL_RULES,
-//            function (RegisterUrlRulesEvent $event) {
-//                $event->rules['siteActionTrigger1'] = 'characteristic/characteristics';
-//            }
-//        );
 
         Event::on(
             UrlManager::class,
@@ -86,6 +81,8 @@ class Characteristic extends Plugin
                 $event->rules['settings/characteristics'] = 'characteristic/settings/index';
                 $event->rules['settings/characteristics/new'] = 'characteristic/settings/edit-group';
                 $event->rules['settings/characteristics/<groupId:\d+>'] = 'characteristic/settings/edit-group';
+
+                $event->rules['characteristics'] = 'characteristic/characteristics/index';
             }
         );
 
@@ -95,13 +92,13 @@ class Characteristic extends Plugin
             ->onUpdate('characteristicGroups.{uid}', [$this->characteristicGroups, 'handleChangedGroup'])
             ->onRemove('characteristicGroups.{uid}', [$this->characteristicGroups, 'handleDeletedGroup']);
 
-//        Event::on(
-//            Elements::class,
-//            Elements::EVENT_REGISTER_ELEMENT_TYPES,
-//            function (RegisterComponentTypesEvent $event) {
-//                $event->types[] = CharacteristicElement::class;
-//            }
-//        );
+        Event::on(
+            Elements::class,
+            Elements::EVENT_REGISTER_ELEMENT_TYPES,
+            function (RegisterComponentTypesEvent $event) {
+                $event->types[] = CharacteristicElement::class;
+            }
+        );
 
 //        Event::on(
 //            Fields::class,
@@ -111,13 +108,13 @@ class Characteristic extends Plugin
 //            }
 //        );
 
-//        Event::on(CraftVariable::class, CraftVariable::EVENT_INIT,
-//            function (Event $event) {
-//                /** @var CraftVariable $variable */
-//                $variable = $event->sender;
-//                $variable->set('characteristic', CharacteristicVariable::class);
-//            }
-//        );
+        Event::on(CraftVariable::class, CraftVariable::EVENT_INIT,
+            function (Event $event) {
+                /** @var CraftVariable $variable */
+                $variable = $event->sender;
+                $variable->set('characteristics', CharacteristicVariable::class);
+            }
+        );
 
         Event::on(Cp::class, Cp::EVENT_REGISTER_CP_SETTINGS,
             function(RegisterCpSettingsEvent $e) {

@@ -1,0 +1,13 @@
+{% extends "_layouts/elementindex" %}
+{% set title = "Characteristics"|t('characteristic') %}
+{% set elementType = 'venveo\\characteristic\\elements\\Characteristic' %}
+
+{% do view.registerTranslations('characteristic', [
+    'New characteristic',
+]) %}
+
+{#{% if sectionHandle is defined %}#}
+{#    {% js %}#}
+{#        window.defaultSectionHandle = '{{ sectionHandle }}';#}
+{#    {% endjs %}#}
+{#{% endif %}#}

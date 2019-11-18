@@ -10,7 +10,7 @@
 
 namespace venveo\characteristic\elements;
 
-use venveo\characteristic\Characteristic;
+use venveo\characteristic\Characteristic as Plugin;
 
 use Craft;
 use craft\base\Element;
@@ -48,7 +48,7 @@ class Characteristic extends Element
      */
     public static function hasContent(): bool
     {
-        return true;
+        return false;
     }
 
     /**
@@ -56,7 +56,7 @@ class Characteristic extends Element
      */
     public static function hasTitles(): bool
     {
-        return true;
+        return false;
     }
 
     /**
@@ -112,12 +112,6 @@ class Characteristic extends Element
      */
     public function getFieldLayout()
     {
-        $tagGroup = $this->getGroup();
-
-        if ($tagGroup) {
-            return $tagGroup->getFieldLayout();
-        }
-
         return null;
     }
 
@@ -194,21 +188,6 @@ class Characteristic extends Element
      * @inheritdoc
      */
     public function afterDelete()
-    {
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function beforeMoveInStructure(int $structureId): bool
-    {
-        return true;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function afterMoveInStructure(int $structureId)
     {
     }
 }
