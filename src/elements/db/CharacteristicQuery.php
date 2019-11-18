@@ -170,6 +170,8 @@ class CharacteristicQuery extends ElementQuery
 
         $this->query->select([
             'characteristic_characteristics.groupId',
+            'characteristic_characteristics.handle',
+            'characteristic_characteristics.title',
         ]);
 
         if ($this->groupId) {

@@ -226,6 +226,23 @@ class Characteristic extends Element
         parent::afterSave($isNew);
     }
 
+
+    /**
+     * @inheritdoc
+     */
+    protected static function defineTableAttributes(): array
+    {
+        $attributes = [
+            'title' => ['label' => Craft::t('app', 'Title')],
+            'handle' => ['label' => Craft::t('app', 'Handle')],
+            'id' => ['label' => Craft::t('app', 'ID')],
+            'uid' => ['label' => Craft::t('app', 'UID')],
+            'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
+            'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
+        ];
+        return $attributes;
+    }
+
     /**
      * @inheritdoc
      */
