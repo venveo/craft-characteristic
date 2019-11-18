@@ -16,12 +16,14 @@ use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterCpSettingsEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\services\Elements;
+use craft\services\Fields;
 use craft\web\twig\variables\Cp;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
 use venveo\characteristic\elements\Characteristic as CharacteristicElement;
 use venveo\characteristic\services\CharacteristicGroups;
 use venveo\characteristic\services\Characteristics;
+use venveo\characteristic\fields\Characteristics as CharacteristicsField;
 use venveo\characteristic\variables\CharacteristicVariable;
 use yii\base\Event;
 
@@ -99,13 +101,13 @@ class Characteristic extends Plugin
             }
         );
 
-//        Event::on(
-//            Fields::class,
-//            Fields::EVENT_REGISTER_FIELD_TYPES,
-//            function (RegisterComponentTypesEvent $event) {
-//                $event->types[] = CharacteristicsField::class;
-//            }
-//        );
+        Event::on(
+            Fields::class,
+            Fields::EVENT_REGISTER_FIELD_TYPES,
+            function (RegisterComponentTypesEvent $event) {
+                $event->types[] = CharacteristicsField::class;
+            }
+        );
 
         Event::on(CraftVariable::class, CraftVariable::EVENT_INIT,
             function (Event $event) {

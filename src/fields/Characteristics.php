@@ -10,6 +10,8 @@
 
 namespace venveo\characteristic\fields;
 
+use craft\elements\db\ElementQueryInterface;
+use craft\helpers\Html;
 use venveo\characteristic\Characteristic;
 use venveo\characteristic\assetbundles\characteristicsfield\CharacteristicsFieldAsset;
 
@@ -30,10 +32,26 @@ class Characteristics extends Field
     // Public Properties
     // =========================================================================
 
+
     /**
-     * @var string
+     * @var string|string[]|null The source keys that this field can relate elements from (used if [[allowMultipleSources]] is set to true)
      */
-    public $someAttribute = 'Some Default';
+    public $sources = '*';
+
+    /**
+     * @var string|null The source key that this field can relate elements from (used if [[allowMultipleSources]] is set to false)
+     */
+    public $source;
+
+    /**
+     * @var int|null The maximum number of relations this field can have (used if [[allowLimit]] is set to true)
+     */
+    public $limit;
+
+    /**
+     * @var bool Whether to allow the Limit setting
+     */
+    public $allowLimit = true;
 
     // Static Methods
     // =========================================================================
@@ -46,29 +64,72 @@ class Characteristics extends Field
         return Craft::t('characteristic', 'Characteristics');
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function hasContentColumn(): bool
+    {
+        return false;
+    }
+
+
+    /**
+     * @inheritdoc
+     */
+    public static function supportedTranslationMethods(): array
+    {
+        // Don't ever automatically propagate values to other sites.
+        return [];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return ElementQueryInterface::class;
+    }
+
     // Public Methods
     // =========================================================================
 
-    /**
-     * @inheritdoc
-     */
-    public function rules()
-    {
-        $rules = parent::rules();
-        $rules = array_merge($rules, [
-            ['someAttribute', 'string'],
-            ['someAttribute', 'default', 'value' => 'Some Default'],
-        ]);
-        return $rules;
-    }
 
     /**
      * @inheritdoc
      */
-    public function getContentColumnType(): string
+    public function __construct(array $config = [])
     {
-        return Schema::TYPE_STRING;
+        parent::__construct($config);
     }
+
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+
+        // Not possible to have no sources selected
+        if (!$this->sources) {
+            $this->sources = '*';
+        }
+    }
+
+
+    /**
+     * @inheritdoc
+     */
+    public function settingsAttributes(): array
+    {
+        $attributes = parent::settingsAttributes();
+        $attributes[] = 'sources';
+        $attributes[] = 'source';
+        $attributes[] = 'limit';
+
+        return $attributes;
+    }
+
 
     /**
      * @inheritdoc
@@ -98,6 +159,34 @@ class Characteristics extends Field
                 'field' => $this,
             ]
         );
+    }
+
+
+    /**
+     * Normalizes the available sources into select input options.
+     *
+     * @return array
+     */
+    public function getSourceOptions(): array
+    {
+        $options = [];
+        $optionNames = [];
+
+        foreach ($this->availableSources() as $source) {
+            // Make sure it's not a heading
+            if (!isset($source['heading'])) {
+                $options[] = [
+                    'label' => Html::encode($source['label']),
+                    'value' => $source['key']
+                ];
+                $optionNames[] = $source['label'];
+            }
+        }
+
+        // Sort alphabetically
+        array_multisort($optionNames, SORT_NATURAL | SORT_FLAG_CASE, $options);
+
+        return $options;
     }
 
     /**
@@ -133,5 +222,15 @@ class Characteristics extends Field
                 'namespacedId' => $namespacedId,
             ]
         );
+    }
+
+    /**
+     * Returns the sources that should be available to choose from within the field's settings
+     *
+     * @return array
+     */
+    protected function availableSources(): array
+    {
+        return Craft::$app->getElementIndexes()->getSources(\venveo\characteristic\elements\Characteristic::class, 'modal');
     }
 }
