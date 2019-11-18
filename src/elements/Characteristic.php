@@ -10,12 +10,17 @@
 
 namespace venveo\characteristic\elements;
 
-use venveo\characteristic\Characteristic as Plugin;
-
 use Craft;
 use craft\base\Element;
-use craft\elements\db\ElementQuery;
+use craft\db\Query;
+use craft\db\Table;
 use craft\elements\db\ElementQueryInterface;
+use craft\elements\Entry;
+use craft\helpers\DateTimeHelper;
+use craft\records\User as UserRecord;
+use venveo\characteristic\elements\db\CharacteristicQuery;
+use venveo\characteristic\records\Characteristic as CharacteristicRecord;
+use yii\base\Exception;
 
 /**
  * @author    Venveo
@@ -30,7 +35,11 @@ class Characteristic extends Element
     /**
      * @var string
      */
-    public $someAttribute = 'Some Default';
+    public $title = '';
+
+    public $handle = '';
+
+    public $groupId = null;
 
     // Static Methods
     // =========================================================================
@@ -43,10 +52,27 @@ class Characteristic extends Element
         return Craft::t('characteristic', 'Characteristic');
     }
 
+
+    /**
+     * @inheritdoc
+     */
+    public static function pluralDisplayName(): string
+    {
+        return Craft::t('characteristic', 'Characteristics');
+    }
+
     /**
      * @inheritdoc
      */
     public static function hasContent(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function hasStatuses(): bool
     {
         return false;
     }
@@ -64,7 +90,7 @@ class Characteristic extends Element
      */
     public static function isLocalized(): bool
     {
-        return true;
+        return false;
     }
 
     /**
@@ -72,7 +98,7 @@ class Characteristic extends Element
      */
     public static function find(): ElementQueryInterface
     {
-        return new ElementQuery(get_called_class());
+        return new CharacteristicQuery(static::class);
     }
 
     /**
@@ -80,8 +106,24 @@ class Characteristic extends Element
      */
     protected static function defineSources(string $context = null): array
     {
-        $sources = [];
-
+        $sources = [
+            [
+                'key' => '*',
+                'label' => Craft::t('characteristic', 'All characteristics'),
+                'criteria' => [
+                ]
+            ]
+        ];
+        $groups = \venveo\characteristic\Characteristic::$plugin->characteristicGroups->getEditableGroups();
+        foreach ($groups as $group) {
+            $sources[] = [
+                'key' => 'group' . $group->uid,
+                'label' => Craft::t('characteristic', $group->name),
+                'criteria' => [
+                    'groupId' => $group->id
+                ]
+            ];
+        }
         return $sources;
     }
 
@@ -121,11 +163,11 @@ class Characteristic extends Element
     public function getGroup()
     {
         if ($this->groupId === null) {
-            throw new InvalidConfigException('Tag is missing its group ID');
+            throw new InvalidConfigException('Group is missing its group ID');
         }
 
-        if (($group = Craft::$app->getTags()->getTagGroupById($this->groupId)) === null) {
-            throw new InvalidConfigException('Invalid tag group ID: '.$this->groupId);
+        if (($group = \venveo\characteristic\Characteristic::$plugin->characteristicGroups->getGroupById($this->groupId)) === null) {
+            throw new InvalidConfigException('Invalid characteristic group ID: ' . $this->groupId);
         }
 
         return $group;
@@ -160,20 +202,34 @@ class Characteristic extends Element
 
     // Events
     // -------------------------------------------------------------------------
+// Events
+    // -------------------------------------------------------------------------
 
     /**
      * @inheritdoc
-     */
-    public function beforeSave(bool $isNew): bool
-    {
-        return true;
-    }
-
-    /**
-     * @inheritdoc
+     * @throws Exception if reasons
      */
     public function afterSave(bool $isNew)
     {
+        // Get the user record
+        if (!$isNew) {
+            $record = CharacteristicRecord::findOne($this->id);
+
+            if (!$record) {
+                throw new Exception('Invalid characteristic ID: ' . $this->id);
+            }
+        } else {
+            $record = new CharacteristicRecord();
+            $record->id = (int)$this->id;
+        }
+
+        $record->groupId = $this->groupId;
+        $record->title = $this->title;
+        $record->handle = $this->handle;
+
+        $record->save(false);
+
+        parent::afterSave($isNew);
     }
 
     /**
@@ -181,13 +237,9 @@ class Characteristic extends Element
      */
     public function beforeDelete(): bool
     {
+        if (!parent::beforeDelete()) {
+            return false;
+        }
         return true;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function afterDelete()
-    {
     }
 }

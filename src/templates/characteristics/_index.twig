@@ -6,8 +6,8 @@
     'New characteristic',
 ]) %}
 
-{#{% if sectionHandle is defined %}#}
-{#    {% js %}#}
-{#        window.defaultSectionHandle = '{{ sectionHandle }}';#}
-{#    {% endjs %}#}
-{#{% endif %}#}
+{% if groupHandle is defined %}
+    {% js %}
+        window.defaultGroupHandle = '{{ groupHandle }}';
+    {% endjs %}
+{% endif %}
