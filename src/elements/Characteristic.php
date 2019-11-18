@@ -130,10 +130,9 @@ class Characteristic extends Element
      */
     public function rules()
     {
-        return [
-            ['someAttribute', 'string'],
-            ['someAttribute', 'default', 'value' => 'Some Default'],
-        ];
+        $rules = parent::rules();
+        $rules[] = [['groupId'], 'number', 'integerOnly' => true];
+        return $rules;
     }
 
     /**

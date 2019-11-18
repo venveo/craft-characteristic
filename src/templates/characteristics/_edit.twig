@@ -1,0 +1,116 @@
+{% extends "_layouts/cp" %}
+{% import "_includes/forms" as forms %}
+
+{% set fullPageForm = true %}
+{% do view.setIsDeltaRegistrationActive(true) %}
+
+{% set groupHandle = group.handle %}
+{% set isNewCharacteristic = characteristic.id ? false : true %}
+
+{% block header %}
+    <div class="flex flex-nowrap">
+        {{ block('pageTitle') }}
+        {{ block('contextMenu') }}
+    </div>
+    <div class="flex">
+        {{ block('actionButton') }}
+    </div>
+{% endblock %}
+
+{% block actionButton %}
+    <div class="btngroup">
+        <input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
+
+        <div class="btn submit menubtn"></div>
+        <div class="menu">
+            {% if not isNewCharacteristic %}
+                <hr>
+                <ul>
+                    <li><a class="formsubmit error" data-action="characteristic/characteristics/delete-characteristic" data-confirm="{{ 'Are you sure you want to delete this characteristic?'|t('app') }}" data-redirect="{{ 'characteristic#'|hash }}">{{ 'Delete'|t('app') }}</a></li>
+                </ul>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+
+
+{% block content %}
+    {{ actionInput('characteristic/characteristics/save-characteristic') }}
+    {{ redirectInput('characteristics/'~groupHandle) }}
+
+    {{ hiddenInput('groupId', group.id) }}
+    {% if characteristic.id %}{{ hiddenInput('characteristicId', characteristic.id) }}{% endif %}
+
+    <div id="fields">
+        {{ forms.textField({
+            label: "Title"|t('app'),
+            id: 'title',
+            name: 'title',
+            value: characteristic.title,
+            errors: characteristic.getErrors('title'),
+            first: true,
+            autofocus: true,
+            required: true,
+            maxlength: 255
+        }) }}
+    </div>
+{% endblock %}
+
+{% block details %}
+    <div id="settings" class="meta">
+
+        {{ forms.textField({
+            label: "Handle"|t('app'),
+            id: 'handle',
+            name: 'handle',
+            autocorrect: false,
+            autocapitalize: false,
+            value: characteristic.handle,
+            placeholder: "Enter handle"|t('app'),
+            errors: (characteristic.getErrors('handle')|merge(characteristic.getErrors('uri')))
+        }) }}
+
+        {% if parentOptionCriteria is defined %}
+            {{ forms.elementSelectField({
+                label: "Parent"|t('app'),
+                id: 'parentId',
+                name: 'parentId',
+                elementType: elementType,
+                selectionLabel: "Choose"|t('app'),
+                sources: ['group:'~group.uid],
+                criteria: parentOptionCriteria,
+                limit: 1,
+                elements: (parent is defined and parent ? [parent]),
+                errors: characteristic.getErrors('parent')
+            }) }}
+        {% endif %}
+
+        {{ forms.lightswitchField({
+            label: "Enabled"|t('app'),
+            id: 'enabled',
+            name: 'enabled',
+            on: characteristic.enabled
+        }) }}
+
+    </div>
+
+    {% if characteristic.id %}
+        <div class="meta read-only">
+            <div class="data">
+                <h5 class="heading">{{ "Date Created"|t('app') }}</h5>
+                <div class="value">{{ characteristic.dateCreated|datetime('short') }}</div>
+            </div>
+            <div class="data">
+                <h5 class="heading">{{ "Date Updated"|t('app') }}</h5>
+                <div class="value">{{ characteristic.dateUpdated|datetime('short') }}</div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
+
+
+{% if not characteristic.handle %}
+    {% js %}
+        window.handleGenerator = new Craft.HandleGenerator('#title', '#handle');
+    {% endjs %}
+{% endif %}
