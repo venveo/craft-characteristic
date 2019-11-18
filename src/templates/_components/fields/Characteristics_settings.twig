@@ -1,0 +1,26 @@
+{# @var craft \craft\web\twig\variables\CraftVariable #}
+{#
+/**
+ * Characteristic plugin for Craft CMS
+ *
+ * Characteristics Field Settings
+ *
+ * @author    Venveo
+ * @copyright Copyright (c) 2019 Venveo
+ * @link      https://www.venveo.com
+ * @package   Characteristic
+ * @since     1.0.0
+ */
+#}
+
+{% import "_includes/forms" as forms %}
+
+{% do view.registerAssetBundle("venveo\\characteristic\\assetbundles\\characteristic\\CharacteristicAsset") %}
+
+{{ forms.textField({
+    label: 'Some Attribute',
+    instructions: 'Enter some attribute here.',
+    id: 'someAttribute',
+    name: 'someAttribute',
+    value: field['someAttribute']})
+}}

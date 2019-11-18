@@ -1,0 +1,40 @@
+{# @var craft \craft\web\twig\variables\CraftVariable #}
+{#
+/**
+ * Characteristic plugin for Craft CMS 3.x
+ *
+ * Characteristic index.twig
+ *
+ * @author    Venveo
+ * @copyright Copyright (c) 2019 Venveo
+ * @link      https://www.venveo.com
+ * @package   Characteristic
+ * @since     1.0.0
+ */
+#}
+
+{% extends "_layouts/cp" %}
+{% import "_includes/forms" as forms %}
+
+{% do view.registerAssetBundle("venveo\\characteristic\\assetbundles\\characteristic\\CharacteristicAsset") %}
+{% do view.registerAssetBundle("venveo\\characteristic\\assetbundles\\elementcharacteristicscpsection\\ElementCharacteristicsCPSectionAsset") %}
+
+{% set docsUrl = "https://github.com/venveo/characteristic/blob/master/README.md" %}
+
+{% set title = "Characteristic" %}
+
+{% set pluginCpUrl = url('characteristic') %}
+
+{% set iconUrl = view.getAssetManager().getPublishedUrl('@venveo/characteristic/assetbundles/elementcharacteristicscpsection/dist', true) ~ '/img/ElementCharacteristics-icon.svg' %}
+
+{% set extraPageHeaderHtml %}
+    <div class="buttons">
+        <a href="{{ pluginCpUrl }}" class="btn submit add icon">{{ "Click Me!"|t('characteristic') }}</a>
+    </div>
+{% endset %}
+
+{% set content %}
+    <h2>{{ "ElementCharacteristics CP Section body goes here"|t('characteristic') }}</h2>
+    <img src="{{ iconUrl }}" height="64" width="64" />
+    <p class="textline"></p>
+{% endset %}
