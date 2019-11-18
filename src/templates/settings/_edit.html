@@ -1,0 +1,42 @@
+{% extends "_layouts/cp" %}
+{% set fullPageForm = true %}
+
+{% import "_includes/forms" as forms %}
+
+{% block content %}
+    {{ actionInput('characteristic/settings/save-group') }}
+    {{ redirectInput('settings/characteristics') }}
+
+    {% if group.id %}{{ hiddenInput('groupId', group.id) }}{% endif %}
+
+    {{ forms.textField({
+        first: true,
+        label: "Name"|t('app'),
+        instructions: "What this group will be called in the CP."|t('characteristic'),
+        id: 'name',
+        name: 'name',
+        value: group.name,
+        errors: group.getErrors('name'),
+        autofocus: true,
+        required: true,
+    }) }}
+
+    {{ forms.textField({
+        label: "Handle"|t('app'),
+        instructions: "How you’ll refer to this group in the templates."|t('app'),
+        id: 'handle',
+        name: 'handle',
+        class: 'code',
+        autocorrect: false,
+        autocapitalize: false,
+        value: group.handle,
+        errors: group.getErrors('handle'),
+        required: true
+    }) }}
+{% endblock %}
+
+{% if brandNewGroup %}
+    {% js %}
+        new Craft.HandleGenerator('#name', '#handle');
+    {% endjs %}
+{% endif %}

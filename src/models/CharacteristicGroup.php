@@ -10,10 +10,10 @@
 
 namespace venveo\characteristic\models;
 
-use venveo\characteristic\Characteristic;
-
-use Craft;
 use craft\base\Model;
+use craft\validators\HandleValidator;
+use craft\validators\UniqueValidator;
+use venveo\characteristic\records\CharacteristicGroup as CharacteristicGroupRecord;
 
 /**
  * @author    Venveo
@@ -25,10 +25,26 @@ class CharacteristicGroup extends Model
     // Public Properties
     // =========================================================================
 
+
     /**
-     * @var string
+     * @var int|null ID
      */
-    public $someAttribute = 'Some Default';
+    public $id;
+
+    /**
+     * @var string|null Name
+     */
+    public $name;
+
+    /**
+     * @var string|null Handle
+     */
+    public $handle;
+
+    /**
+     * @var string|null Group's UID
+     */
+    public $uid;
 
     // Public Methods
     // =========================================================================
@@ -38,9 +54,12 @@ class CharacteristicGroup extends Model
      */
     public function rules()
     {
-        return [
-            ['someAttribute', 'string'],
-            ['someAttribute', 'default', 'value' => 'Some Default'],
-        ];
+        $rules = parent::rules();
+        $rules[] = [['id'], 'number', 'integerOnly' => true];
+        $rules[] = [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']];
+        $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => CharacteristicGroupRecord::class];
+        $rules[] = [['name', 'handle'], 'required'];
+        $rules[] = [['name', 'handle'], 'string', 'max' => 255];
+        return $rules;
     }
 }

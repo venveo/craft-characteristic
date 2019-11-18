@@ -10,6 +10,7 @@
 
 namespace venveo\characteristic\records;
 
+use craft\db\SoftDeleteTrait;
 use venveo\characteristic\Characteristic;
 
 use Craft;
@@ -22,6 +23,11 @@ use craft\db\ActiveRecord;
  */
 class CharacteristicGroup extends ActiveRecord
 {
+    // Traits
+    // =========================================================================
+
+    use SoftDeleteTrait;
+
     // Public Static Methods
     // =========================================================================
 
@@ -30,6 +36,6 @@ class CharacteristicGroup extends ActiveRecord
      */
     public static function tableName()
     {
-        return '{{%characteristic_characteristicgroup}}';
+        return '{{%characteristic_groups}}';
     }
 }

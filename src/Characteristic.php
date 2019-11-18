@@ -10,7 +10,10 @@
 
 namespace venveo\characteristic;
 
-use venveo\characteristic\services\Characteristic as CharacteristicService;
+use craft\events\RegisterCpSettingsEvent;
+use craft\web\twig\variables\Cp;
+use venveo\characteristic\services\CharacteristicGroups;
+use venveo\characteristic\services\CharacteristicGroups as CharacteristicService;
 use venveo\characteristic\variables\CharacteristicVariable;
 use venveo\characteristic\elements\Characteristic as CharacteristicElement;
 use venveo\characteristic\fields\Characteristics as CharacteristicsField;
@@ -35,7 +38,7 @@ use yii\base\Event;
  * @package   Characteristic
  * @since     1.0.0
  *
- * @property  CharacteristicService $characteristic
+ * @property  CharacteristicGroups $characteristicGroups
  */
 class Characteristic extends Plugin
 {
@@ -65,66 +68,65 @@ class Characteristic extends Plugin
     {
         parent::init();
         self::$plugin = $this;
-
-        Event::on(
-            UrlManager::class,
-            UrlManager::EVENT_REGISTER_SITE_URL_RULES,
-            function (RegisterUrlRulesEvent $event) {
-                $event->rules['siteActionTrigger1'] = 'characteristic/characteristics';
-            }
-        );
+        $this->setComponents([
+            'characteristicGroups' => CharacteristicGroups::class
+        ]);
+//        Event::on(
+//            UrlManager::class,
+//            UrlManager::EVENT_REGISTER_SITE_URL_RULES,
+//            function (RegisterUrlRulesEvent $event) {
+//                $event->rules['siteActionTrigger1'] = 'characteristic/characteristics';
+//            }
+//        );
 
         Event::on(
             UrlManager::class,
             UrlManager::EVENT_REGISTER_CP_URL_RULES,
             function (RegisterUrlRulesEvent $event) {
-                $event->rules['cpActionTrigger1'] = 'characteristic/characteristics/do-something';
+                $event->rules['settings/characteristics'] = 'characteristic/settings/index';
+                $event->rules['settings/characteristics/new'] = 'characteristic/settings/edit-group';
+                $event->rules['settings/characteristics/<groupId:\d+>'] = 'characteristic/settings/edit-group';
             }
         );
 
-        Event::on(
-            Elements::class,
-            Elements::EVENT_REGISTER_ELEMENT_TYPES,
-            function (RegisterComponentTypesEvent $event) {
-                $event->types[] = CharacteristicElement::class;
-            }
-        );
 
-        Event::on(
-            Fields::class,
-            Fields::EVENT_REGISTER_FIELD_TYPES,
-            function (RegisterComponentTypesEvent $event) {
-                $event->types[] = CharacteristicsField::class;
-            }
-        );
+        Craft::$app->projectConfig
+            ->onAdd('characteristicGroups.{uid}', [$this->characteristicGroups, 'handleChangedGroup'])
+            ->onUpdate('characteristicGroups.{uid}', [$this->characteristicGroups, 'handleChangedGroup'])
+            ->onRemove('characteristicGroups.{uid}', [$this->characteristicGroups, 'handleDeletedGroup']);
 
-        Event::on(
-            CraftVariable::class,
-            CraftVariable::EVENT_INIT,
-            function (Event $event) {
-                /** @var CraftVariable $variable */
-                $variable = $event->sender;
-                $variable->set('characteristic', CharacteristicVariable::class);
-            }
-        );
+//        Event::on(
+//            Elements::class,
+//            Elements::EVENT_REGISTER_ELEMENT_TYPES,
+//            function (RegisterComponentTypesEvent $event) {
+//                $event->types[] = CharacteristicElement::class;
+//            }
+//        );
 
-        Event::on(
-            Plugins::class,
-            Plugins::EVENT_AFTER_INSTALL_PLUGIN,
-            function (PluginEvent $event) {
-                if ($event->plugin === $this) {
-                }
-            }
-        );
+//        Event::on(
+//            Fields::class,
+//            Fields::EVENT_REGISTER_FIELD_TYPES,
+//            function (RegisterComponentTypesEvent $event) {
+//                $event->types[] = CharacteristicsField::class;
+//            }
+//        );
 
-        Craft::info(
-            Craft::t(
-                'characteristic',
-                '{name} plugin loaded',
-                ['name' => $this->name]
-            ),
-            __METHOD__
-        );
+//        Event::on(CraftVariable::class, CraftVariable::EVENT_INIT,
+//            function (Event $event) {
+//                /** @var CraftVariable $variable */
+//                $variable = $event->sender;
+//                $variable->set('characteristic', CharacteristicVariable::class);
+//            }
+//        );
+
+        Event::on(Cp::class, Cp::EVENT_REGISTER_CP_SETTINGS,
+            function(RegisterCpSettingsEvent $e) {
+                $e->settings['Content']['characteristics'] = [
+                    'icon' => '@app/icons/sliders.svg',
+                    'url' => 'settings/characteristics',
+                    'label' => 'Characteristics'
+                ];
+            });
     }
 
     // Protected Methods

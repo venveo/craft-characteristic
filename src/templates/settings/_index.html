@@ -1,0 +1,56 @@
+{% extends "_layouts/cp" %}
+{% set title = "Characteristic Groups"|t('characteristic') %}
+
+{% set crumbs = [
+    { label: "Settings"|t('app'), url: url('settings') }
+] %}
+
+{% block actionButton %}
+    <a href="{{ url('settings/characteristics/new') }}" class="btn submit add icon">{{ "New group"|t('characteristic') }}</a>
+{% endblock %}
+
+
+{% block content %}
+    <div id="nogroups"{% if groups %} class="hidden"{% endif %}>
+        <p>{{ "No groups exist yet."|t('characteristic') }}</p>
+    </div>
+
+    {% if groups|length %}
+        <div class="scrolltable">
+            <table id="groups" class="data fullwidth">
+                <thead>
+                    <th scope="col">{{ "Name"|t('app') }}</th>
+                    <th scope="col">{{ "Handle"|t('app') }}</th>
+                    <td class="thin"></td>
+                </thead>
+                <tbody>
+                    {% for group in groups %}
+                        <tr data-id="{{ group.id }}" data-name="{{ group.name|t('site') }}">
+                            <th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/characteristics/' ~ group.id) }}">{{ group.name|t('site') }}</a></th>
+                            <td data-title="{{ 'Handle'|t('app') }}"><code>{{ group.handle }}</code></td>
+                            <td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+{% endblock %}
+
+
+{% js %}
+    var adminTable = new Craft.AdminTable({
+        tableSelector: '#groups',
+        noItemsSelector: '#nogroups',
+        deleteAction: 'characteristic/settings/delete-group',
+        confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}” and all its characteristics?"|t('characteristic') }}',
+        onDeleteItem: function()
+        {
+            // Hide the Entries tab if that was the last one
+            if (adminTable.totalItems == 0)
+            {
+                $('#nav-characteristics').remove();
+            }
+        }
+    });
+{% endjs %}
