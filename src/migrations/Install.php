@@ -98,7 +98,7 @@ class Install extends Migration
             'PRIMARY KEY([[id]])',
         ]);
 
-        $this->createTable('{{%characteristic_avlink}}', [
+        $this->createTable('{{%characteristic_links}}', [
             'id' => $this->primaryKey(),
             'elementId' => $this->integer()->notNull(),
             'characteristicId' => $this->integer()->notNull(),
@@ -139,8 +139,8 @@ class Install extends Migration
         $this->addForeignKey(null, '{{%characteristic_values}}', ['authorId'], Table::USERS, ['id'], 'CASCADE', null);
 
 
-        $this->addForeignKey(null, '{{%characteristic_avlink}}', ['elementId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, '{{%characteristic_avlink}}', ['valueId'], '{{%characteristic_values}}', ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, '{{%characteristic_links}}', ['elementId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, '{{%characteristic_links}}', ['valueId'], '{{%characteristic_values}}', ['id'], 'CASCADE', null);
     }
 
     /**
@@ -148,7 +148,7 @@ class Install extends Migration
      */
     protected function removeTables()
     {
-        $this->dropTableIfExists('{{%characteristic_avlink}}');
+        $this->dropTableIfExists('{{%characteristic_links}}');
         $this->dropTableIfExists('{{%characteristic_values}}');
         $this->dropTableIfExists('{{%characteristic_characteristics}}');
         $this->dropTableIfExists('{{%characteristic_groups}}');
