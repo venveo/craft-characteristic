@@ -13,9 +13,12 @@ namespace venveo\characteristic\elements;
 use Craft;
 use craft\base\Element;
 use craft\elements\db\ElementQueryInterface;
+use craft\helpers\UrlHelper;
+use venveo\characteristic\Characteristic as Plugin;
 use venveo\characteristic\elements\db\CharacteristicQuery;
 use venveo\characteristic\records\Characteristic as CharacteristicRecord;
 use yii\base\Exception;
+use yii\base\InvalidConfigException;
 
 /**
  * @author    Venveo
@@ -101,19 +104,13 @@ class Characteristic extends Element
      */
     protected static function defineSources(string $context = null): array
     {
-        $sources = [
-            [
-                'key' => '*',
-                'label' => Craft::t('characteristic', 'All characteristics'),
-                'criteria' => [
-                ]
-            ]
-        ];
-        $groups = \venveo\characteristic\Characteristic::$plugin->characteristicGroups->getEditableGroups();
+        $sources = [];
+        $groups = Plugin::$plugin->characteristicGroups->getEditableGroups();
         foreach ($groups as $group) {
             $sources[] = [
-                'key' => 'group' . $group->uid,
+                'key' => 'group:' . $group->uid,
                 'label' => Craft::t('characteristic', $group->name),
+                'data' => ['handle' => $group->handle],
                 'criteria' => [
                     'groupId' => $group->id
                 ]
@@ -160,11 +157,24 @@ class Characteristic extends Element
             throw new InvalidConfigException('Group is missing its group ID');
         }
 
-        if (($group = \venveo\characteristic\Characteristic::$plugin->characteristicGroups->getGroupById($this->groupId)) === null) {
+        if (($group = Plugin::$plugin->characteristicGroups->getGroupById($this->groupId)) === null) {
             throw new InvalidConfigException('Invalid characteristic group ID: ' . $this->groupId);
         }
 
         return $group;
+    }
+
+
+    /**
+     * @inheritdoc
+     */
+    public function getCpEditUrl()
+    {
+        $group = $this->getGroup();
+
+        $url = UrlHelper::cpUrl('characteristics/' . $group->handle . '/' . $this->id);
+
+        return $url;
     }
 
     // Indexes, etc.

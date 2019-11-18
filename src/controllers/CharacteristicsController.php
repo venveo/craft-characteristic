@@ -22,6 +22,7 @@ use craft\helpers\UrlHelper;
 use craft\models\Section;
 use craft\models\Site;
 use craft\web\Controller;
+use venveo\characteristic\assetbundles\characteristicelement\CharacteristicElement;
 use venveo\characteristic\Characteristic as Plugin;
 use venveo\characteristic\elements\Characteristic;
 use yii\base\InvalidConfigException;
@@ -46,6 +47,7 @@ class CharacteristicsController extends Controller
      */
     public function actionIndex()
     {
+        Craft::$app->view->registerAssetBundle(CharacteristicElement::class);
         return $this->renderTemplate('characteristic/characteristics/_index', []);
     }
 
