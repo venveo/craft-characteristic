@@ -12,12 +12,7 @@ namespace venveo\characteristic\elements;
 
 use Craft;
 use craft\base\Element;
-use craft\db\Query;
-use craft\db\Table;
 use craft\elements\db\ElementQueryInterface;
-use craft\elements\Entry;
-use craft\helpers\DateTimeHelper;
-use craft\records\User as UserRecord;
 use venveo\characteristic\elements\db\CharacteristicQuery;
 use venveo\characteristic\records\Characteristic as CharacteristicRecord;
 use yii\base\Exception;
