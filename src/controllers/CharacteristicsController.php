@@ -11,22 +11,14 @@
 namespace venveo\characteristic\controllers;
 
 use Craft;
-use craft\base\Element;
-use craft\base\Field;
-use craft\db\Query;
 use craft\elements\Entry;
-use craft\elements\User;
-use craft\errors\InvalidElementException;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Section;
-use craft\models\Site;
 use craft\web\Controller;
 use venveo\characteristic\assetbundles\characteristicelement\CharacteristicElement;
 use venveo\characteristic\Characteristic as Plugin;
 use venveo\characteristic\elements\Characteristic;
-use yii\base\InvalidConfigException;
-use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -209,26 +201,19 @@ class CharacteristicsController extends Controller
      * @return Response|null
      * @throws NotFoundHttpException if the requested entry cannot be found
      */
-    public function actionDeleteEntry()
+    public function actionDeleteCharacteristic()
     {
         $this->requirePostRequest();
 
         $request = Craft::$app->getRequest();
-        $entryId = $request->getRequiredBodyParam('entryId');
-        $siteId = $request->getBodyParam('siteId');
-        $entry = Craft::$app->getEntries()->getEntryById($entryId, $siteId);
+        $entryId = $request->getRequiredBodyParam('characteristicId');
+        $entry = Plugin::$plugin->characteristics->getCharacteristicById($entryId);
 
         if (!$entry) {
-            throw new NotFoundHttpException('Entry not found');
+            throw new NotFoundHttpException('Characteristic not found');
         }
 
         $currentUser = Craft::$app->getUser()->getIdentity();
-
-        if ($entry->authorId == $currentUser->id) {
-            $this->requirePermission('deleteEntries:' . $entry->getSection()->uid);
-        } else {
-            $this->requirePermission('deletePeerEntries:' . $entry->getSection()->uid);
-        }
 
         if (!Craft::$app->getElements()->deleteElement($entry)) {
             if ($request->getAcceptsJson()) {
@@ -285,7 +270,8 @@ class CharacteristicsController extends Controller
 
         if (empty($variables['characteristic'])) {
             if (!empty($variables['characteristicId'])) {
-                $variables['characteristic'] = Craft::$app->getCategories()->getCategoryById($variables['categoryId'], $site->id);
+
+                $variables['characteristic'] = Plugin::$plugin->characteristics->getCharacteristicById($variables['characteristicId']);
 
                 if (!$variables['characteristic']) {
                     throw new NotFoundHttpException('Characteristic not found');
@@ -311,7 +297,7 @@ class CharacteristicsController extends Controller
 
         if ($characteristicId) {
             $characteristic = null;
-//            $characteristic = Craft::$app->getEntries()->getEntryById($characteristicId);
+            $characteristic = Plugin::$plugin->characteristics->getCharacteristicById($characteristicId);
 
             if (!$characteristic) {
                 throw new NotFoundHttpException('Characteristic not found');

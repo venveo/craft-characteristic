@@ -10,25 +10,19 @@
 
 namespace venveo\characteristic;
 
-use craft\events\RegisterCpSettingsEvent;
-use craft\web\twig\variables\Cp;
-use venveo\characteristic\services\CharacteristicGroups;
-use venveo\characteristic\services\CharacteristicGroups as CharacteristicService;
-use venveo\characteristic\variables\CharacteristicVariable;
-use venveo\characteristic\elements\Characteristic as CharacteristicElement;
-use venveo\characteristic\fields\Characteristics as CharacteristicsField;
-
 use Craft;
 use craft\base\Plugin;
-use craft\services\Plugins;
-use craft\events\PluginEvent;
-use craft\web\UrlManager;
-use craft\services\Elements;
-use craft\services\Fields;
-use craft\web\twig\variables\CraftVariable;
 use craft\events\RegisterComponentTypesEvent;
+use craft\events\RegisterCpSettingsEvent;
 use craft\events\RegisterUrlRulesEvent;
-
+use craft\services\Elements;
+use craft\web\twig\variables\Cp;
+use craft\web\twig\variables\CraftVariable;
+use craft\web\UrlManager;
+use venveo\characteristic\elements\Characteristic as CharacteristicElement;
+use venveo\characteristic\services\CharacteristicGroups;
+use venveo\characteristic\services\Characteristics;
+use venveo\characteristic\variables\CharacteristicVariable;
 use yii\base\Event;
 
 /**
@@ -39,6 +33,7 @@ use yii\base\Event;
  * @since     1.0.0
  *
  * @property  CharacteristicGroups $characteristicGroups
+ * @property  Characteristics $characteristics
  */
 class Characteristic extends Plugin
 {
@@ -53,7 +48,6 @@ class Characteristic extends Plugin
     // Public Properties
     // =========================================================================
 
-    public $hasCpSection = true;
 
     /**
      * @var string
@@ -71,7 +65,8 @@ class Characteristic extends Plugin
         parent::init();
         self::$plugin = $this;
         $this->setComponents([
-            'characteristicGroups' => CharacteristicGroups::class
+            'characteristicGroups' => CharacteristicGroups::class,
+            'characteristics' => Characteristics::class,
         ]);
 
         Event::on(
@@ -121,7 +116,7 @@ class Characteristic extends Plugin
         );
 
         Event::on(Cp::class, Cp::EVENT_REGISTER_CP_SETTINGS,
-            function(RegisterCpSettingsEvent $e) {
+            function (RegisterCpSettingsEvent $e) {
                 $e->settings['Content']['characteristics'] = [
                     'icon' => '@app/icons/sliders.svg',
                     'url' => 'settings/characteristics',
