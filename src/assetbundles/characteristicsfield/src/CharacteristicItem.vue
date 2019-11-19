@@ -5,7 +5,6 @@
         <div class="titlebar"><div class="blocktype">Characteristic</div></div>
         <div class="actions">
             <a class="error icon delete" @click="$emit('delete')" title="Delete" role="button" data-icon="remove"></a>
-            <a class="move icon" title="Reorder" role="button"></a>
         </div>
         <div class="fields">
             <select v-model="attribute">
@@ -23,7 +22,8 @@
         components: {
         },
         props: {
-            name: String
+            name: String,
+            data: Object
         },
         data() {
             return {
@@ -39,6 +39,12 @@
         watch: {
         },
         mounted() {
+            if (this.data.hasOwnProperty('characteristic')) {
+                this.attribute = this.data.characteristic.handle;
+            }
+            if (this.data.hasOwnProperty('value')) {
+                this.value = this.data.value.text;
+            }
         }
     }
 </script>

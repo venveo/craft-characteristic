@@ -92,6 +92,7 @@ class CharacteristicValue extends Element
 
     /**
      * @inheritdoc
+     * @return CharacteristicValueQuery
      */
     public static function find(): ElementQueryInterface
     {

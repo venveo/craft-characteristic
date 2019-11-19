@@ -1,8 +1,9 @@
 <template>
     <div>
         <input type="hidden" :name="settings.name" />
-        <characteristic-item v-for="characteristic in characteristics"
+        <characteristic-item v-for="(characteristic) in characteristics"
                              :key="characteristic.id"
+                             :data="characteristic"
                              v-on:delete="() => handleDelete(characteristic)"
                              :name="settings.name + '['+characteristic.id+']'"
         />
@@ -31,8 +32,7 @@
             handleAdd(e) {
                 e.preventDefault();
                 this.characteristics.push({
-                    id: this.characteristics.length + 1,
-                    name: 'hello'
+                    id: 'new' + this.characteristics.length + 1
                 });
                 if (window.draftEditor) {
                     window.draftEditor.checkForm();
@@ -50,6 +50,7 @@
         watch: {
         },
         mounted() {
+            this.characteristics = this.settings.value;
         }
     }
 </script>

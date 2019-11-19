@@ -16,9 +16,15 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Html;
+use craft\helpers\Json;
 use venveo\characteristic\assetbundles\characteristicsfield\CharacteristicsFieldAsset;
 use venveo\characteristic\Characteristic;
+use venveo\characteristic\elements\Characteristic as CharacteristicElement;
+use venveo\characteristic\elements\CharacteristicValue;
+use venveo\characteristic\models\CharacteristicLink;
+use venveo\characteristic\records\CharacteristicLink as CharacteristicLinkRecord;
 
 /**
  * @author    Venveo
@@ -85,14 +91,6 @@ class Characteristics extends Field
         return [self::TRANSLATION_METHOD_NONE];
     }
 
-    /**
-     * @inheritdoc
-     */
-    public static function valueType(): string
-    {
-        return ElementQueryInterface::class;
-    }
-
     // Public Methods
     // =========================================================================
 
@@ -134,12 +132,29 @@ class Characteristics extends Field
     }
 
 
-    /**
-     * @inheritdoc
-     */
     public function normalizeValue($value, ElementInterface $element = null)
     {
-        return $value;
+        if (is_array($value)) {
+            $attributes = $value;
+        } elseif (is_string($value)) {
+            try {
+                $attributes = Json::decode($value);
+            } catch (Throwable $error) {
+                Craft::error($error->getMessage());
+                $attributes = null;
+            }
+            if (!is_array($attributes)) {
+                $attributes = [];
+            }
+        } else {
+            $recordQuery = CharacteristicLinkRecord::find();
+            $recordQuery->where(['fieldId' => $this->id, 'elementId' => $element->id]);
+            $records = $recordQuery->all();
+            $inputData = $this->prepareDataForInput($records);
+            return $inputData;
+        }
+        return $attributes;
+//        return $this->createModel($attributes, $element);
     }
 
     /**
@@ -215,17 +230,6 @@ class Characteristics extends Field
      */
     protected function inputTemplateVariables($value = null, ElementInterface $element = null): array
     {
-        /** @var Element|null $element */
-        if ($value instanceof ElementQueryInterface) {
-            $value = $value
-                ->all();
-        } else if (!is_array($value)) {
-            $value = [];
-        }
-
-
-        $selectionCriteria = $this->inputSelectionCriteria();
-
         return [
             'jsClass' => $this->inputJsClass,
             'id' => Craft::$app->getView()->formatInputId($this->handle),
@@ -234,7 +238,7 @@ class Characteristics extends Field
             'name' => $this->handle,
             'elements' => $value,
             'source' => $this->source,
-            'criteria' => $selectionCriteria,
+            'value' => $value,
             'sourceElementId' => !empty($element->id) ? $element->id : null,
         ];
     }
@@ -267,7 +271,7 @@ class Characteristics extends Field
      */
     protected function availableSources(): array
     {
-        return Craft::$app->getElementIndexes()->getSources(\venveo\characteristic\elements\Characteristic::class, 'modal');
+        return Craft::$app->getElementIndexes()->getSources(CharacteristicElement::class, 'modal');
     }
 
     /**
@@ -286,8 +290,16 @@ class Characteristics extends Field
         try {
             $linksToResave = [];
             foreach ($attributes as $attribute) {
-                $characteristic = Characteristic::$plugin->characteristics->getCharacteristicByHandle($this->groupId, $attribute['attribute']);
-                $value = Characteristic::$plugin->characteristicValues->getOrCreateValueElement($characteristic, $attribute['value']);
+                if (isset($attribute['characteristic']) && $attribute['characteristic'] instanceof \venveo\characteristic\elements\Characteristic) {
+                    $characteristic = $attribute['characteristic'];
+                } else {
+                    $characteristic = Characteristic::$plugin->characteristics->getCharacteristicByHandle($this->groupId, $attribute['attribute']);
+                }
+                if (isset($attribute['value']) && $attribute['value'] instanceof \venveo\characteristic\elements\CharacteristicValue) {
+                    $value = $attribute['value'];
+                } else {
+                    $value = Characteristic::$plugin->characteristicValues->getOrCreateValueElement($characteristic, $attribute['value']);
+                }
                 if ($characteristic) {
                     $linksToResave[] = [
                         'characteristic' => $characteristic,
@@ -301,5 +313,40 @@ class Characteristics extends Field
             Craft::dd($e);
         }
         parent::afterElementSave($element, $isNew);
+    }
+
+    protected function prepareDataForInput($results)
+    {
+        $valueIds = [];
+        $characteristicIds = [];
+        /** @var CharacteristicLinkRecord $result */
+        foreach ($results as $result) {
+            $valueIds[] = $result->valueId;
+            $characteristicIds[] = $result->characteristicId;
+        }
+        $values = [];
+        $characteristics = [];
+        $characteristicQuery = CharacteristicElement::find();
+        $characteristicQuery->id($characteristicIds);
+        $characteristicQuery->indexBy('id');
+        $characteristics = $characteristicQuery->all();
+
+        $valueQuery = CharacteristicValue::find();
+        $valueQuery->id($valueIds);
+        $valueQuery->indexBy('id');
+        $values = $valueQuery->all();
+
+        $inputData = [];
+
+        /** @var CharacteristicLinkRecord $result */
+        foreach($results as $result) {
+            $inputData[] = [
+                'id' => $result->id,
+                'characteristic' => $characteristics[$result->characteristicId],
+                'value' => $values[$result->valueId]
+            ];
+        }
+
+        return $inputData;
     }
 }
