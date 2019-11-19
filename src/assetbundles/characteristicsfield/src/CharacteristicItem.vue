@@ -8,8 +8,7 @@
         </div>
         <div class="fields">
             <select v-model="attribute">
-                <option value="fastFood">Fast Food</option>
-                <option value="hasSeating">Has Seating</option>
+                <option v-for="option in options" :key="option.id" :value="option.handle">{{option.title}}</option>
             </select>
             <input type="text" v-model="value">
         </div>
@@ -22,6 +21,7 @@
         components: {
         },
         props: {
+            options: Array,
             name: String,
             data: Object
         },

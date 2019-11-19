@@ -4,6 +4,7 @@
         <characteristic-item v-for="(characteristic) in characteristics"
                              :key="characteristic.id"
                              :data="characteristic"
+                             :options="characteristicAttributes"
                              v-on:delete="() => handleDelete(characteristic)"
                              :name="settings.name + '['+characteristic.id+']'"
         />
@@ -14,6 +15,8 @@
 </template>
 <script>
     import CharacteristicItem from "./CharacteristicItem";
+    import api from './api/characteristics';
+
     /* eslint-disable */
     /* global Craft */
     export default {
@@ -25,7 +28,9 @@
         },
         data() {
             return {
-                characteristics: []
+                characteristics: [],
+                characteristicAttributes: [],
+                loading: true
             }
         },
         methods: {
@@ -52,6 +57,12 @@
         },
         mounted() {
             this.characteristics = this.settings.value;
+            this.loading = true;
+            api.getCharacteristicsForSource(this.settings.source).then((result) => {
+                this.characteristicAttributes = result.data;
+            }).finally(() => {
+                this.loading = false;
+            })
         }
     }
 </script>
