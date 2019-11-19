@@ -39,7 +39,8 @@
                 }
             },
             handleDelete(e) {
-                console.log('need to delete', e);
+                const result = this.characteristics.filter(characteristic => characteristic.id != e.id);
+                this.characteristics = result;
                 if (window.draftEditor) {
                     window.draftEditor.checkForm();
                 }

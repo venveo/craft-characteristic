@@ -39,7 +39,6 @@ class CharacteristicLinks extends Component
         foreach ($results as $result) {
             $result->delete();
         }
-//        }
         foreach ($data as $datum) {
             $link = new CharacteristicLink();
             $link->characteristicId = $datum['characteristic']->id;

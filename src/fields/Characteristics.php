@@ -282,7 +282,7 @@ class Characteristics extends Field
             return parent::afterElementSave($element, $isNew);
         }
         $attributes = $element->getFieldValue($this->handle);
-        if (!$attributes || !is_iterable($attributes)) {
+        if (!is_iterable($attributes)) {
             return parent::afterElementSave($element, $isNew);
         }
         try {
