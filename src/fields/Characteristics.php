@@ -16,14 +16,12 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use venveo\characteristic\assetbundles\characteristicsfield\CharacteristicsFieldAsset;
 use venveo\characteristic\Characteristic;
 use venveo\characteristic\elements\Characteristic as CharacteristicElement;
 use venveo\characteristic\elements\CharacteristicValue;
-use venveo\characteristic\models\CharacteristicLink;
 use venveo\characteristic\records\CharacteristicLink as CharacteristicLinkRecord;
 
 /**
@@ -339,7 +337,7 @@ class Characteristics extends Field
         $inputData = [];
 
         /** @var CharacteristicLinkRecord $result */
-        foreach($results as $result) {
+        foreach ($results as $result) {
             $inputData[] = [
                 'id' => $result->id,
                 'characteristic' => $characteristics[$result->characteristicId],
