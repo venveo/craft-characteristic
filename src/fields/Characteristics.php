@@ -202,7 +202,7 @@ class Characteristics extends Field
     public function getInputHtml($value, ElementInterface $element = null): string
     {
         // Register our asset bundle
-//        Craft::$app->getView()->registerAssetBundle(CharacteristicsFieldAsset::class);
+        Craft::$app->getView()->registerAssetBundle(CharacteristicsFieldAsset::class);
 
 
         /** @var ElementQuery|array $value */
