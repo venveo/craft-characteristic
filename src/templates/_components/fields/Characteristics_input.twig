@@ -16,3 +16,9 @@
 {% import "_includes/forms" as forms %}
 
 <div class="vue-characteristics-input"></div>
+{% js %}
+    var field = new Craft.VueCharacteristicsField({
+        name: {{ name|json_encode|raw }},
+        source: {{ source|json_encode|raw }}
+    });
+{% endjs %}
