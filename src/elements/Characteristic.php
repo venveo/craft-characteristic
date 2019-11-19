@@ -13,11 +13,13 @@ namespace venveo\characteristic\elements;
 use Craft;
 use craft\base\Element;
 use craft\elements\db\ElementQueryInterface;
+use craft\elements\Entry;
 use craft\helpers\UrlHelper;
 use venveo\characteristic\Characteristic as Plugin;
 use venveo\characteristic\elements\db\CharacteristicQuery;
 use venveo\characteristic\elements\db\CharacteristicValueQuery;
 use venveo\characteristic\records\Characteristic as CharacteristicRecord;
+use venveo\characteristic\records\CharacteristicLink;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 
@@ -209,6 +211,18 @@ class Characteristic extends Element
     public function getValues($criteria = []) {
         $criteria['characteristicId'] = $this->id;
         $query = Craft::configure(CharacteristicValue::find(), $criteria);
+        return $query;
+    }
+
+    /**
+     * @param string $type
+     */
+    public function getRelatedElements($type = Entry::class) {
+        $linkQuery = CharacteristicLink::find();
+        $linkQuery->where(['characteristicId' => $this->id]);
+        $ids = $linkQuery->select('elementId')->indexBy('elementId')->all();
+        $criteria['id'] = array_keys($ids);
+        $query = Craft::configure($type::find(), $criteria);
         return $query;
     }
 

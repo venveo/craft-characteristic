@@ -26,7 +26,9 @@
             {% if not isNewCharacteristic %}
                 <hr>
                 <ul>
-                    <li><a class="formsubmit error" data-action="characteristic/characteristics/delete-characteristic" data-confirm="{{ 'Are you sure you want to delete this characteristic?'|t('app') }}" data-redirect="{{ 'characteristic#'|hash }}">{{ 'Delete'|t('app') }}</a></li>
+                    <li><a class="formsubmit error" data-action="characteristic/characteristics/delete-characteristic"
+                           data-confirm="{{ 'Are you sure you want to delete this characteristic?'|t('app') }}"
+                           data-redirect="{{ 'characteristic#'|hash }}">{{ 'Delete'|t('app') }}</a></li>
                 </ul>
             {% endif %}
         </div>
@@ -56,27 +58,52 @@
 
         {% if characteristic.id %}
             {% set values = characteristic.values.all() %}
+            <h2>All Values</h2>
+            <table class="data fullwidth collapsible">
+                <thead>
+                <tr>
+                    <th class="thin">{{ "ID" }}</th>
+                    <th class="thin">{{ "Text" }}</th>
+                    <th>{{ "Created On"|t }}</th>
+                    <th>{{ "Updated On"|t }}</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for value in values %}
+                    <tr>
+                        <td>{{ value.id }}</td>
+                        <td>{{ value.text }}</td>
+                        <td>{{ value.dateCreated|datetime('short') }}</td>
+                        <td>{{ value.dateUpdated|datetime('short') }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+
+            {% set relatedElements = characteristic.relatedElements.all() %}
+            <h2>Elements</h2>
         <table class="data fullwidth collapsible">
             <thead>
             <tr>
                 <th class="thin">{{ "ID" }}</th>
-                <th class="thin">{{ "Text" }}</th>
-                <th>{{ "Created On"|t }}</th>
-                <th>{{ "Updated On"|t }}</th>
+                <th>{{ "Title" }}</th>
+                <th>{{ "Value" }}</th>
             </tr>
             </thead>
             <tbody>
-            {% for value in values %}
+            {% for relatedElement in relatedElements %}
+                {% set links = relatedElement.characteristicLinks(characteristic) %}
                 <tr>
-                    <td>{{ value.id }}</td>
-                    <td>{{ value.text }}</td>
-                    <td>{{ value.dateCreated|datetime('short') }}</td>
-                    <td>{{ value.dateUpdated|datetime('short') }}</td>
+                    <td>{{ relatedElement.id }}</td>
+                    <td>{{ relatedElement.title }}</td>
+                    <td>{{ links[0].characteristicValue.text }}</td>
                 </tr>
             {% endfor %}
             </tbody>
         </table>
         {% endif %}
+
+
     </div>
 {% endblock %}
 

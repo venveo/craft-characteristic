@@ -11,7 +11,9 @@
 namespace venveo\characteristic;
 
 use Craft;
+use craft\base\Element;
 use craft\base\Plugin;
+use craft\events\DefineBehaviorsEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterCpSettingsEvent;
 use craft\events\RegisterUrlRulesEvent;
@@ -20,6 +22,7 @@ use craft\services\Fields;
 use craft\web\twig\variables\Cp;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
+use venveo\characteristic\behaviors\ElementCharacteristicsBehavior;
 use venveo\characteristic\elements\Characteristic as CharacteristicElement;
 use venveo\characteristic\elements\CharacteristicValue as CharacteristicValueElement;
 use venveo\characteristic\fields\Characteristics as CharacteristicsField;
@@ -108,6 +111,10 @@ class Characteristic extends Plugin
                 $event->types[] = CharacteristicValueElement::class;
             }
         );
+
+        Event::on(Element::class, Element::EVENT_DEFINE_BEHAVIORS, function(DefineBehaviorsEvent $e) {
+            $e->behaviors[] = ElementCharacteristicsBehavior::class;
+        });
 
         Event::on(
             Fields::class,
