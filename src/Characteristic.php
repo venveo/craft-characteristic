@@ -24,6 +24,7 @@ use venveo\characteristic\elements\Characteristic as CharacteristicElement;
 use venveo\characteristic\elements\CharacteristicValue as CharacteristicValueElement;
 use venveo\characteristic\fields\Characteristics as CharacteristicsField;
 use venveo\characteristic\services\CharacteristicGroups;
+use venveo\characteristic\services\CharacteristicLinks;
 use venveo\characteristic\services\Characteristics;
 use venveo\characteristic\services\CharacteristicValues;
 use venveo\characteristic\variables\CharacteristicVariable;
@@ -39,6 +40,7 @@ use yii\base\Event;
  * @property  CharacteristicGroups $characteristicGroups
  * @property  Characteristics $characteristics
  * @property  CharacteristicValues $characteristicValues
+ * @property  CharacteristicLinks $characteristicLinks
  */
 class Characteristic extends Plugin
 {
@@ -73,6 +75,7 @@ class Characteristic extends Plugin
             'characteristicGroups' => CharacteristicGroups::class,
             'characteristics' => Characteristics::class,
             'characteristicValues' => CharacteristicValues::class,
+            'characteristicLinks' => CharacteristicLinks::class,
         ]);
 
         Event::on(

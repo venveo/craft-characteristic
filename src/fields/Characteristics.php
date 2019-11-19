@@ -19,7 +19,6 @@ use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Html;
 use venveo\characteristic\assetbundles\characteristicsfield\CharacteristicsFieldAsset;
 use venveo\characteristic\Characteristic;
-use venveo\characteristic\records\CharacteristicLink;
 
 /**
  * @author    Venveo
@@ -201,7 +200,6 @@ class Characteristics extends Field
         // Register our asset bundle
         Craft::$app->getView()->registerAssetBundle(CharacteristicsFieldAsset::class);
 
-
         /** @var ElementQuery|array $value */
         $variables = $this->inputTemplateVariables($value, $element);
 
@@ -286,31 +284,22 @@ class Characteristics extends Field
             return parent::afterElementSave($element, $isNew);
         }
         try {
+            $linksToResave = [];
             foreach ($attributes as $attribute) {
                 $characteristic = Characteristic::$plugin->characteristics->getCharacteristicByHandle($this->groupId, $attribute['attribute']);
                 $value = Characteristic::$plugin->characteristicValues->getOrCreateValueElement($characteristic, $attribute['value']);
                 if ($characteristic) {
-                    $link = new CharacteristicLink();
-                    $link->characteristicId = $characteristic->id;
-                    $link->valueId = $value->id;
-                    $link->elementId = $element->id;
-                    $link->save();
+                    $linksToResave[] = [
+                        'characteristic' => $characteristic,
+                        'value' => $value
+                    ];
                 }
             }
+
+            Characteristic::$plugin->characteristicLinks->resaveLinks($linksToResave, $element, $this);
         } catch (\Exception $e) {
             Craft::dd($e);
         }
         parent::afterElementSave($element, $isNew);
     }
-
-//    /**
-//     * @inheritdoc
-//     */
-//    public function beforeElementSave(ElementInterface $element, bool $isNew): bool
-//    {
-//        var_dump($element->productAttributes);
-//        die();
-////        die('Before element save');
-//        return parent::beforeElementSave($element, $isNew);
-//    }
 }
