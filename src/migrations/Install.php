@@ -76,7 +76,6 @@ class Install extends Migration
         $this->createTable('{{%characteristic_characteristics}}', [
             'id' => $this->integer()->notNull(),
             'groupId' => $this->integer()->notNull(),
-            'authorId' => $this->integer(),
             'handle' => $this->string(),
             'title' => $this->string(),
             'deletedWithGroup' => $this->boolean()->null(),
@@ -90,7 +89,6 @@ class Install extends Migration
         $this->createTable('{{%characteristic_values}}', [
             'id' => $this->integer()->notNull(),
             'characteristicId' => $this->integer()->notNull(),
-            'authorId' => $this->integer(),
             'sortOrder' => $this->smallInteger()->unsigned(),
             'text' => $this->string(),
             'dateCreated' => $this->dateTime()->notNull(),
@@ -130,18 +128,17 @@ class Install extends Migration
      */
     protected function addForeignKeys()
     {
-        $this->addForeignKey(null, '{{%characteristic_characteristics}}', ['authorId'], Table::USERS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%characteristic_characteristics}}', ['id'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%characteristic_characteristics}}', ['groupId'], '{{%characteristic_groups}}', ['id'], 'CASCADE', null);
 
 
         $this->addForeignKey(null, '{{%characteristic_values}}', ['id'], Table::ELEMENTS, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, '{{%characteristic_values}}', ['characteristicId'], '{{%characteristic_groups}}', ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, '{{%characteristic_values}}', ['authorId'], Table::USERS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, '{{%characteristic_values}}', ['characteristicId'], '{{%characteristic_characteristics}}', ['id'], 'CASCADE', null);
 
 
         $this->addForeignKey(null, '{{%characteristic_links}}', ['elementId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%characteristic_links}}', ['valueId'], '{{%characteristic_values}}', ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, '{{%characteristic_links}}', ['characteristicId'], '{{%characteristic_characteristics}}', ['id'], 'CASCADE', null);
     }
 
     /**

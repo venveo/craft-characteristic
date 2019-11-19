@@ -1,7 +1,11 @@
 <template>
     <div>
         <input type="hidden" :name="settings.name" />
-        <characteristic-item v-for="characteristic in characteristics" :key="characteristic.id" />
+        <characteristic-item v-for="characteristic in characteristics"
+                             :key="characteristic.id"
+                             v-on:delete="() => handleDelete(characteristic)"
+                             :name="settings.name + '['+characteristic.id+']'"
+        />
         <div class="buttons last">
             <div class="btn add icon" @click="handleAdd">Add Characteristic</div>
         </div>
@@ -27,9 +31,18 @@
             handleAdd(e) {
                 e.preventDefault();
                 this.characteristics.push({
-                    id: 0,
+                    id: this.characteristics.length + 1,
                     name: 'hello'
                 });
+                if (window.draftEditor) {
+                    window.draftEditor.checkForm();
+                }
+            },
+            handleDelete(e) {
+                console.log('need to delete', e);
+                if (window.draftEditor) {
+                    window.draftEditor.checkForm();
+                }
             }
         },
         computed: {

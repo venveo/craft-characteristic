@@ -10,19 +10,16 @@
 
 namespace venveo\characteristic\fields;
 
+use Craft;
 use craft\base\Element;
+use craft\base\ElementInterface;
+use craft\base\Field;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Html;
-use venveo\characteristic\Characteristic;
 use venveo\characteristic\assetbundles\characteristicsfield\CharacteristicsFieldAsset;
-
-use Craft;
-use craft\base\ElementInterface;
-use craft\base\Field;
-use craft\helpers\Db;
-use yii\db\Schema;
-use craft\helpers\Json;
+use venveo\characteristic\Characteristic;
+use venveo\characteristic\records\CharacteristicLink;
 
 /**
  * @author    Venveo
@@ -86,7 +83,7 @@ class Characteristics extends Field
     public static function supportedTranslationMethods(): array
     {
         // Don't ever automatically propagate values to other sites.
-        return [];
+        return [self::TRANSLATION_METHOD_NONE];
     }
 
     /**
@@ -274,4 +271,46 @@ class Characteristics extends Field
     {
         return Craft::$app->getElementIndexes()->getSources(\venveo\characteristic\elements\Characteristic::class, 'modal');
     }
+
+    /**
+     * @inheritDoc
+     * @throws Exception
+     */
+    public function afterElementSave(ElementInterface $element, bool $isNew)
+    {
+        if (!$element instanceof Element || $element->propagating) {
+            return parent::afterElementSave($element, $isNew);
+        }
+        $attributes = $element->getFieldValue($this->handle);
+        if (!$attributes || !is_iterable($attributes)) {
+            return parent::afterElementSave($element, $isNew);
+        }
+        try {
+            foreach ($attributes as $attribute) {
+                $characteristic = Characteristic::$plugin->characteristics->getCharacteristicByHandle($this->groupId, $attribute['attribute']);
+                $value = Characteristic::$plugin->characteristicValues->getOrCreateValueElement($characteristic, $attribute['value']);
+                if ($characteristic) {
+                    $link = new CharacteristicLink();
+                    $link->characteristicId = $characteristic->id;
+                    $link->valueId = $value->id;
+                    $link->elementId = $element->id;
+                    $link->save();
+                }
+            }
+        } catch (\Exception $e) {
+            Craft::dd($e);
+        }
+        parent::afterElementSave($element, $isNew);
+    }
+
+//    /**
+//     * @inheritdoc
+//     */
+//    public function beforeElementSave(ElementInterface $element, bool $isNew): bool
+//    {
+//        var_dump($element->productAttributes);
+//        die();
+////        die('Before element save');
+//        return parent::beforeElementSave($element, $isNew);
+//    }
 }

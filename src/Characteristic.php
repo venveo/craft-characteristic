@@ -21,9 +21,11 @@ use craft\web\twig\variables\Cp;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
 use venveo\characteristic\elements\Characteristic as CharacteristicElement;
+use venveo\characteristic\elements\CharacteristicValue as CharacteristicValueElement;
+use venveo\characteristic\fields\Characteristics as CharacteristicsField;
 use venveo\characteristic\services\CharacteristicGroups;
 use venveo\characteristic\services\Characteristics;
-use venveo\characteristic\fields\Characteristics as CharacteristicsField;
+use venveo\characteristic\services\CharacteristicValues;
 use venveo\characteristic\variables\CharacteristicVariable;
 use yii\base\Event;
 
@@ -36,6 +38,7 @@ use yii\base\Event;
  *
  * @property  CharacteristicGroups $characteristicGroups
  * @property  Characteristics $characteristics
+ * @property  CharacteristicValues $characteristicValues
  */
 class Characteristic extends Plugin
 {
@@ -69,6 +72,7 @@ class Characteristic extends Plugin
         $this->setComponents([
             'characteristicGroups' => CharacteristicGroups::class,
             'characteristics' => Characteristics::class,
+            'characteristicValues' => CharacteristicValues::class,
         ]);
 
         Event::on(
@@ -98,6 +102,7 @@ class Characteristic extends Plugin
             Elements::EVENT_REGISTER_ELEMENT_TYPES,
             function (RegisterComponentTypesEvent $event) {
                 $event->types[] = CharacteristicElement::class;
+                $event->types[] = CharacteristicValueElement::class;
             }
         );
 

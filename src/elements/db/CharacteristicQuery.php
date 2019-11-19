@@ -50,6 +50,8 @@ class CharacteristicQuery extends ElementQuery
      */
     public $groupId;
 
+    public $handle;
+
     // Public Methods
     // =========================================================================
 
@@ -153,6 +155,12 @@ class CharacteristicQuery extends ElementQuery
         return $this;
     }
 
+    public function handle($value)
+    {
+        $this->handle = $value;
+        return $this;
+    }
+
     // Protected Methods
     // =========================================================================
 
@@ -176,6 +184,9 @@ class CharacteristicQuery extends ElementQuery
 
         if ($this->groupId) {
             $this->subQuery->andWhere(Db::parseParam('characteristic_characteristics.groupId', $this->groupId));
+        }
+        if ($this->handle) {
+            $this->subQuery->andWhere(Db::parseParam('characteristic_characteristics.handle', $this->handle));
         }
 
         return parent::beforePrepare();

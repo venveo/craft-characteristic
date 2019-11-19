@@ -1,16 +1,18 @@
 <template>
     <div class="characteristic-item matrixblock">
-        <div class="titlebar"><div class="blocktype">Restaurant Criteria</div></div>
+        <input type="hidden" :name="name + '[attribute]'" :value="attribute" />
+        <input type="hidden" :name="name + '[value]'" :value="value"/>
+        <div class="titlebar"><div class="blocktype">Characteristic</div></div>
         <div class="actions">
-            <a class="error icon delete" title="Delete" role="button" data-icon="remove"></a>
+            <a class="error icon delete" @click="$emit('delete')" title="Delete" role="button" data-icon="remove"></a>
             <a class="move icon" title="Reorder" role="button"></a>
         </div>
         <div class="fields">
-            <select>
-                <option>Option 1</option>
-                <option>Option 2</option>
-                <option>Option 3</option>
+            <select v-model="attribute">
+                <option value="fastFood">Fast Food</option>
+                <option value="hasSeating">Has Seating</option>
             </select>
+            <input type="text" v-model="value">
         </div>
     </div>
 </template>
@@ -21,10 +23,12 @@
         components: {
         },
         props: {
+            name: String
         },
         data() {
             return {
-                characteristics: []
+                attribute: '',
+                value: ''
             }
         },
         methods: {

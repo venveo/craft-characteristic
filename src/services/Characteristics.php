@@ -12,6 +12,7 @@ namespace venveo\characteristic\services;
 
 use Craft;
 use craft\base\Component;
+use venveo\characteristic\Characteristic;
 
 /**
  * @author    Venveo
@@ -46,4 +47,12 @@ class Characteristics extends Component
         return Craft::$app->getElements()->getElementById($characteristicId, \venveo\characteristic\elements\Characteristic::class);
     }
 
+    public function getCharacteristicByHandle(int $groupId, string $characteristicHandle)
+    {
+        if (!$characteristicHandle) {
+            return null;
+        }
+
+        return \venveo\characteristic\elements\Characteristic::find()->handle($characteristicHandle)->groupId($groupId)->one();
+    }
 }
