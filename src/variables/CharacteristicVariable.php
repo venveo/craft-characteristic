@@ -13,6 +13,7 @@ namespace venveo\characteristic\variables;
 use venveo\characteristic\Characteristic;
 
 use Craft;
+use venveo\characteristic\elements\db\CharacteristicQuery;
 
 /**
  * @author    Venveo
@@ -25,15 +26,13 @@ class CharacteristicVariable
     // =========================================================================
 
     /**
-     * @param null $optional
-     * @return string
+     * @param array $criteria
+     * @return CharacteristicQuery
      */
-    public function exampleVariable($optional = null)
+    public function characteristics(array $criteria = []): CharacteristicQuery
     {
-        $result = "And away we go to the Twig template...";
-        if ($optional) {
-            $result = "I'm feeling optional today...";
-        }
-        return $result;
+        $query = \venveo\characteristic\elements\Characteristic::find();
+        Craft::configure($query, $criteria);
+        return $query;
     }
 }

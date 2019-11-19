@@ -113,7 +113,7 @@ class Characteristic extends Plugin
             function (Event $event) {
                 /** @var CraftVariable $variable */
                 $variable = $event->sender;
-                $variable->set('characteristics', CharacteristicVariable::class);
+                $variable->set('characteristic', CharacteristicVariable::class);
             }
         );
 

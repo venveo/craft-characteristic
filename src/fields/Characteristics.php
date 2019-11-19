@@ -10,6 +10,8 @@
 
 namespace venveo\characteristic\fields;
 
+use craft\base\Element;
+use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Html;
 use venveo\characteristic\Characteristic;
@@ -52,6 +54,11 @@ class Characteristics extends Field
      * @var bool Whether to allow the Limit setting
      */
     public $allowLimit = true;
+
+    /**
+     * @var string|null The JS class that should be initialized for the input
+     */
+    protected $inputJsClass;
 
     // Static Methods
     // =========================================================================
@@ -195,33 +202,67 @@ class Characteristics extends Field
     public function getInputHtml($value, ElementInterface $element = null): string
     {
         // Register our asset bundle
-        Craft::$app->getView()->registerAssetBundle(CharacteristicsFieldAsset::class);
+//        Craft::$app->getView()->registerAssetBundle(CharacteristicsFieldAsset::class);
 
-        // Get our id and namespace
-        $id = Craft::$app->getView()->formatInputId($this->handle);
-        $namespacedId = Craft::$app->getView()->namespaceInputId($id);
 
-        // Variables to pass down to our field JavaScript to let it namespace properly
-        $jsonVars = [
-            'id' => $id,
+        /** @var ElementQuery|array $value */
+        $variables = $this->inputTemplateVariables($value, $element);
+
+        return Craft::$app->getView()->renderTemplate('characteristic/_components/fields/Characteristics_input', $variables);
+    }
+
+    /**
+     * Returns an array of variables that should be passed to the input template.
+     *
+     * @param ElementQueryInterface|array|null $value
+     * @param ElementInterface|null $element
+     * @return array
+     */
+    protected function inputTemplateVariables($value = null, ElementInterface $element = null): array
+    {
+        /** @var Element|null $element */
+        if ($value instanceof ElementQueryInterface) {
+            $value = $value
+                ->all();
+        } else if (!is_array($value)) {
+            $value = [];
+        }
+
+
+        $selectionCriteria = $this->inputSelectionCriteria();
+
+        return [
+            'jsClass' => $this->inputJsClass,
+            'id' => Craft::$app->getView()->formatInputId($this->handle),
+            'fieldId' => $this->id,
+            'storageKey' => 'field.' . $this->id,
             'name' => $this->handle,
-            'namespace' => $namespacedId,
-            'prefix' => Craft::$app->getView()->namespaceInputId(''),
-            ];
-        $jsonVars = Json::encode($jsonVars);
-        Craft::$app->getView()->registerJs("$('#{$namespacedId}-field').CharacteristicCharacteristics(" . $jsonVars . ");");
+            'elements' => $value,
+            'source' => $this->source,
+            'criteria' => $selectionCriteria,
+            'sourceElementId' => !empty($element->id) ? $element->id : null,
+        ];
+    }
 
-        // Render the input template
-        return Craft::$app->getView()->renderTemplate(
-            'characteristic/_components/fields/Characteristics_input',
-            [
-                'name' => $this->handle,
-                'value' => $value,
-                'field' => $this,
-                'id' => $id,
-                'namespacedId' => $namespacedId,
-            ]
-        );
+    /**
+     * Returns an array of the source keys the field should be able to select elements from.
+     *
+     * @param ElementInterface|null $element
+     * @return array|string
+     */
+    protected function inputSources(ElementInterface $element = null)
+    {
+        return $this->source;
+    }
+
+    /**
+     * Returns any additional criteria parameters limiting which elements the field should be able to select.
+     *
+     * @return array
+     */
+    protected function inputSelectionCriteria(): array
+    {
+        return [];
     }
 
     /**
