@@ -53,12 +53,35 @@
             required: true,
             maxlength: 255
         }) }}
+
+        {% if characteristic.id %}
+            {% set values = characteristic.values.all() %}
+        <table class="data fullwidth collapsible">
+            <thead>
+            <tr>
+                <th class="thin">{{ "ID" }}</th>
+                <th class="thin">{{ "Text" }}</th>
+                <th>{{ "Created On"|t }}</th>
+                <th>{{ "Updated On"|t }}</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for value in values %}
+                <tr>
+                    <td>{{ value.id }}</td>
+                    <td>{{ value.text }}</td>
+                    <td>{{ value.dateCreated|datetime('short') }}</td>
+                    <td>{{ value.dateUpdated|datetime('short') }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
     </div>
 {% endblock %}
 
 {% block details %}
     <div id="settings" class="meta">
-
         {{ forms.textField({
             label: "Handle"|t('app'),
             id: 'handle',
@@ -69,29 +92,6 @@
             placeholder: "Enter handle"|t('app'),
             errors: (characteristic.getErrors('handle')|merge(characteristic.getErrors('uri')))
         }) }}
-
-        {% if parentOptionCriteria is defined %}
-            {{ forms.elementSelectField({
-                label: "Parent"|t('app'),
-                id: 'parentId',
-                name: 'parentId',
-                elementType: elementType,
-                selectionLabel: "Choose"|t('app'),
-                sources: ['group:'~group.uid],
-                criteria: parentOptionCriteria,
-                limit: 1,
-                elements: (parent is defined and parent ? [parent]),
-                errors: characteristic.getErrors('parent')
-            }) }}
-        {% endif %}
-
-        {{ forms.lightswitchField({
-            label: "Enabled"|t('app'),
-            id: 'enabled',
-            name: 'enabled',
-            on: characteristic.enabled
-        }) }}
-
     </div>
 
     {% if characteristic.id %}

@@ -16,6 +16,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\helpers\UrlHelper;
 use venveo\characteristic\Characteristic as Plugin;
 use venveo\characteristic\elements\db\CharacteristicQuery;
+use venveo\characteristic\elements\db\CharacteristicValueQuery;
 use venveo\characteristic\records\Characteristic as CharacteristicRecord;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -203,6 +204,12 @@ class Characteristic extends Element
         $html .= parent::getEditorHtml();
 
         return $html;
+    }
+
+    public function getValues($criteria = []) {
+        $criteria['characteristicId'] = $this->id;
+        $query = Craft::configure(CharacteristicValue::find(), $criteria);
+        return $query;
     }
 
     // Events
