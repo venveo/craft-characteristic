@@ -12,9 +12,7 @@ namespace venveo\characteristic\services;
 
 use Craft;
 use craft\base\Component;
-use craft\db\Table;
-use craft\helpers\Db;
-use craft\records\Section as SectionRecord;
+use Throwable;
 use venveo\characteristic\elements\Characteristic;
 use venveo\characteristic\elements\CharacteristicValue;
 use venveo\characteristic\records\CharacteristicValue as CharacteristicValueRecord;
@@ -34,23 +32,6 @@ class CharacteristicValues extends Component
 
     // Characteristics
     // -------------------------------------------------------------------------
-
-    /**
-     * Returns a category by its ID.
-     *
-     * @param int $characteristicValueId
-     * @return Characteristic|null
-     */
-    public function getCharacteristicValueById(int $characteristicValueId)
-    {
-        if (!$characteristicValueId) {
-            return null;
-        }
-
-
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return Craft::$app->getElements()->getElementById($characteristicValueId, CharacteristicValue::class);
-    }
 
     /**
      * @param $characteristic
@@ -76,7 +57,7 @@ class CharacteristicValues extends Component
      *
      * @param array $entryTypeIds
      * @return bool Whether the entry types were reordered successfully
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function reorderValues(array $valueIds): bool
     {
@@ -99,9 +80,26 @@ class CharacteristicValues extends Component
         return $this->deleteValue($value);
     }
 
+    /**
+     * Returns a category by its ID.
+     *
+     * @param int $characteristicValueId
+     * @return Characteristic|null
+     */
+    public function getCharacteristicValueById(int $characteristicValueId)
+    {
+        if (!$characteristicValueId) {
+            return null;
+        }
+
+
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return Craft::$app->getElements()->getElementById($characteristicValueId, CharacteristicValue::class);
+    }
+
     public function deleteValue(CharacteristicValue $value): bool
     {
-        \Craft::$app->elements->deleteElement($value);
+        Craft::$app->elements->deleteElement($value);
         return true;
     }
 }

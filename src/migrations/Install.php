@@ -45,20 +45,6 @@ class Install extends Migration
         return true;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function safeDown()
-    {
-        $this->driver = Craft::$app->getConfig()->getDb()->driver;
-        $this->removeTables();
-
-        return true;
-    }
-
-    // Protected Methods
-    // =========================================================================
-
     protected function createTables()
     {
         $this->createTable('{{%characteristic_groups}}',
@@ -111,6 +97,9 @@ class Install extends Migration
         ]);
     }
 
+    // Protected Methods
+    // =========================================================================
+
     /**
      * @return void
      */
@@ -145,6 +134,17 @@ class Install extends Migration
         $this->addForeignKey(null, '{{%characteristic_links}}', ['fieldId'], Table::FIELDS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%characteristic_links}}', ['valueId'], '{{%characteristic_values}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%characteristic_links}}', ['characteristicId'], '{{%characteristic_characteristics}}', ['id'], 'CASCADE', null);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function safeDown()
+    {
+        $this->driver = Craft::$app->getConfig()->getDb()->driver;
+        $this->removeTables();
+
+        return true;
     }
 
     /**

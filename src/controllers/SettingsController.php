@@ -8,14 +8,7 @@
 namespace venveo\characteristic\controllers;
 
 use Craft;
-use craft\base\Element;
-use craft\elements\Entry;
-use craft\helpers\Json;
 use craft\helpers\UrlHelper;
-use craft\models\EntryType;
-use craft\models\Section;
-use craft\models\Section_SiteSettings;
-use craft\web\assets\editsection\EditSectionAsset;
 use craft\web\Controller;
 use venveo\characteristic\Characteristic;
 use venveo\characteristic\models\CharacteristicGroup;

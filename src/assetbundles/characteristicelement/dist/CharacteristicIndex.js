@@ -9,12 +9,12 @@ Craft.CharacteristicIndex = Craft.BaseElementIndex.extend(
         $newCategoryBtnGroup: null,
         $newCategoryBtn: null,
 
-        init: function(elementType, $container, settings) {
+        init: function (elementType, $container, settings) {
             this.on('selectSource', $.proxy(this, 'updateButton'));
             this.base(elementType, $container, settings);
         },
 
-        afterInit: function() {
+        afterInit: function () {
             // Find which of the visible groups the user has permission to create new categories in
             this.editableCharacteristics = [];
 
@@ -29,7 +29,7 @@ Craft.CharacteristicIndex = Craft.BaseElementIndex.extend(
             this.base();
         },
 
-        getDefaultSourceKey: function() {
+        getDefaultSourceKey: function () {
             // Did they request a specific category group in the URL?
             if (this.settings.context === 'index' && typeof defaultGroupHandle !== 'undefined') {
                 for (var i = 0; i < this.$sources.length; i++) {
@@ -44,7 +44,7 @@ Craft.CharacteristicIndex = Craft.BaseElementIndex.extend(
             return this.base();
         },
 
-        updateButton: function() {
+        updateButton: function () {
             if (!this.$source) {
                 return;
             }
@@ -94,8 +94,7 @@ Craft.CharacteristicIndex = Craft.BaseElementIndex.extend(
                     if (this.editableCharacteristics.length > 1) {
                         $menuBtn = $('<div class="btn submit menubtn"></div>').appendTo(this.$newCategoryBtnGroup);
                     }
-                }
-                else {
+                } else {
                     this.$newCategoryBtn = $menuBtn = $('<div class="btn submit add icon menubtn">' + Craft.t('app', 'New characteristic') + '</div>').appendTo(this.$newCategoryBtnGroup);
                 }
 
@@ -118,7 +117,7 @@ Craft.CharacteristicIndex = Craft.BaseElementIndex.extend(
                     var menuBtn = new Garnish.MenuBtn($menuBtn);
 
                     if (this.settings.context !== 'index') {
-                        menuBtn.on('optionSelect', $.proxy(function(ev) {
+                        menuBtn.on('optionSelect', $.proxy(function (ev) {
                             this._openCreateCategoryModal(ev.option.getAttribute('data-id'));
                         }, this));
                     }
@@ -141,13 +140,12 @@ Craft.CharacteristicIndex = Craft.BaseElementIndex.extend(
             }
         },
 
-        _getGroupTriggerHref: function(group) {
+        _getGroupTriggerHref: function (group) {
             if (this.settings.context === 'index') {
                 var uri = 'characteristics/' + group.handle + '/new';
 
                 return 'href="' + Craft.getUrl(uri) + '"';
-            }
-            else {
+            } else {
                 return 'data-id="' + group.id + '"';
             }
         },

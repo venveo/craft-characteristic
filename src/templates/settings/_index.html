@@ -6,7 +6,8 @@
 ] %}
 
 {% block actionButton %}
-    <a href="{{ cpurl('settings/characteristics/new') }}" class="btn submit add icon">{{ "New group"|t('characteristic') }}</a>
+    <a href="{{ cpurl('settings/characteristics/new') }}"
+       class="btn submit add icon">{{ "New group"|t('characteristic') }}</a>
 {% endblock %}
 
 
@@ -19,20 +20,25 @@
         <div class="scrolltable">
             <table id="groups" class="data fullwidth">
                 <thead>
-                    <th scope="col">{{ "Name"|t('app') }}</th>
-                    <th scope="col">{{ "Handle"|t('app') }}</th>
-                    <th></td>
-                    <td class="thin"></td>
+                <th scope="col">{{ "Name"|t('app') }}</th>
+                <th scope="col">{{ "Handle"|t('app') }}</th>
+                <th>
+                </td>
+                <td class="thin"></td>
                 </thead>
                 <tbody>
-                    {% for group in groups %}
-                        <tr data-id="{{ group.id }}" data-name="{{ group.name|t('site') }}">
-                            <th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/characteristics/' ~ group.id) }}">{{ group.name|t('site') }}</a></th>
-                            <td data-title="{{ 'Handle'|t('app') }}"><code>{{ group.handle }}</code></td>
-                            <td><a href="{{ cpUrl('characteristics/' ~ group.handle) }}">{{ 'Manage Characteristics'|t('characteristic') }}</a></td>
-                            <td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
-                        </tr>
-                    {% endfor %}
+                {% for group in groups %}
+                    <tr data-id="{{ group.id }}" data-name="{{ group.name|t('site') }}">
+                        <th scope="row" data-title="{{ 'Name'|t('app') }}"><a
+                                    href="{{ url('settings/characteristics/' ~ group.id) }}">{{ group.name|t('site') }}</a>
+                        </th>
+                        <td data-title="{{ 'Handle'|t('app') }}"><code>{{ group.handle }}</code></td>
+                        <td>
+                            <a href="{{ cpUrl('characteristics/' ~ group.handle) }}">{{ 'Manage Characteristics'|t('characteristic') }}</a>
+                        </td>
+                        <td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
+                    </tr>
+                {% endfor %}
                 </tbody>
             </table>
         </div>
@@ -42,17 +48,17 @@
 
 {% js %}
     var adminTable = new Craft.AdminTable({
-        tableSelector: '#groups',
-        noItemsSelector: '#nogroups',
-        deleteAction: 'characteristic/settings/delete-group',
-        confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}” and all its characteristics?"|t('characteristic') }}',
-        onDeleteItem: function()
-        {
-            // Hide the Entries tab if that was the last one
-            if (adminTable.totalItems == 0)
-            {
-                $('#nav-characteristics').remove();
-            }
-        }
+    tableSelector: '#groups',
+    noItemsSelector: '#nogroups',
+    deleteAction: 'characteristic/settings/delete-group',
+    confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}” and all its characteristics?"|t('characteristic') }}',
+    onDeleteItem: function()
+    {
+    // Hide the Entries tab if that was the last one
+    if (adminTable.totalItems == 0)
+    {
+    $('#nav-characteristics').remove();
+    }
+    }
     });
 {% endjs %}

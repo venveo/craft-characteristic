@@ -8,27 +8,16 @@
 namespace venveo\characteristic\elements\db;
 
 use craft\db\Query;
-use craft\db\Table;
 use craft\elements\db\ElementQuery;
-use craft\elements\Tag;
 use craft\helpers\Db;
 use craft\models\TagGroup;
 use venveo\characteristic\models\CharacteristicGroup;
 use venveo\characteristic\records\CharacteristicGroup as CharacteristicGroupRecord;
-use yii\db\Connection;
 
 class CharacteristicQuery extends ElementQuery
 {
     // Properties
     // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    protected $defaultOrderBy = ['title' => SORT_ASC];
-
-    // General parameters
-    // -------------------------------------------------------------------------
 
     /**
      * @var int|int[]|null The tag group ID(s) that the resulting tags must be in.
@@ -50,7 +39,13 @@ class CharacteristicQuery extends ElementQuery
      */
     public $groupId;
 
+    // General parameters
+    // -------------------------------------------------------------------------
     public $handle;
+    /**
+     * @inheritdoc
+     */
+    protected $defaultOrderBy = ['title' => SORT_ASC];
 
     // Public Methods
     // =========================================================================

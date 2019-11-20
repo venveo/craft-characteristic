@@ -28,14 +28,14 @@ class DrilldownState extends Component
         return $this;
     }
 
-    public function __toString()
-    {
-        return base64_encode(Json::encode($this->getAttributes()));
-    }
-
     public function getUrl()
     {
         return UrlHelper::urlWithParams(UrlHelper::baseRequestUrl(), ['state' => $this->__toString()]);
+    }
+
+    public function __toString()
+    {
+        return base64_encode(Json::encode($this->getAttributes()));
     }
 
     public function modifyQuery(ElementQueryInterface $elementQuery)

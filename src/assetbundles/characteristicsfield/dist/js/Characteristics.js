@@ -10,17 +10,16 @@
  * @since     1.0.0CharacteristicCharacteristics
  */
 
- ;(function ( $, window, document, undefined ) {
+;(function ($, window, document, undefined) {
 
     var pluginName = "CharacteristicCharacteristics",
-        defaults = {
-        };
+        defaults = {};
 
     // Plugin constructor
-    function Plugin( element, options ) {
+    function Plugin(element, options) {
         this.element = element;
 
-        this.options = $.extend( {}, defaults, options) ;
+        this.options = $.extend({}, defaults, options);
 
         this._defaults = defaults;
         this._name = pluginName;
@@ -30,12 +29,12 @@
 
     Plugin.prototype = {
 
-        init: function(id) {
+        init: function (id) {
             var _this = this;
 
             $(function () {
 
-/* -- _this.options gives us access to the $jsonVars that our FieldType passed down to us */
+                /* -- _this.options gives us access to the $jsonVars that our FieldType passed down to us */
 
             });
         }
@@ -43,13 +42,13 @@
 
     // A really lightweight plugin wrapper around the constructor,
     // preventing against multiple instantiations
-    $.fn[pluginName] = function ( options ) {
+    $.fn[pluginName] = function (options) {
         return this.each(function () {
             if (!$.data(this, "plugin_" + pluginName)) {
                 $.data(this, "plugin_" + pluginName,
-                new Plugin( this, options ));
+                    new Plugin(this, options));
             }
         });
     };
 
-})( jQuery, window, document );
+})(jQuery, window, document);

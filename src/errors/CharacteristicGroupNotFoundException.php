@@ -1,6 +1,7 @@
 <?php
 
 namespace venveo\characteristic\errors;
+
 use yii\base\Exception;
 
 

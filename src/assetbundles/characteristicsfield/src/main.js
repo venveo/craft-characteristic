@@ -8,11 +8,10 @@ Craft.VueCharacteristicsField = Garnish.Base.extend(
     {
         settings: {
             container: '.vue-characteristics-input',
-            options: {
-            },
+            options: {},
         },
 
-        init: function(settings) {
+        init: function (settings) {
 
             if (settings.options) {
                 settings.options = {...this.settings.options, ...settings.options};

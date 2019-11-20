@@ -1,14 +1,14 @@
 <template>
     <div class="characteristic-item matrixblock">
-        <input type="hidden" :name="name + '[attribute]'" :value="attribute"/>
-        <input type="hidden" :name="name + '[value]'" :value="value"/>
+        <input :name="name + '[attribute]'" :value="attribute" type="hidden"/>
+        <input :name="name + '[value]'" :value="value" type="hidden"/>
 
         <div class="fields flex flex-nowrap">
             <div class="input ltr">
                 <div class="select">
                     <select v-model="attribute">
-                        <option v-for="option in options" :key="option.id" :value="option.handle"
-                                :disabled="option.disabled">{{option.title}}
+                        <option :disabled="option.disabled" :key="option.id" :value="option.handle"
+                                v-for="option in options">{{option.title}}
                         </option>
                     </select>
                 </div>
@@ -17,8 +17,8 @@
                 <input class="text fullwidth" type="text" v-model="value">
             </div>
             <div class="actions">
-                <a class="error icon delete" @click="$emit('delete')" title="Delete" role="button"
-                   data-icon="remove"></a>
+                <a @click="$emit('delete')" class="error icon delete" data-icon="remove" role="button"
+                   title="Delete"></a>
             </div>
         </div>
     </div>

@@ -13,6 +13,7 @@ namespace venveo\characteristic\controllers;
 use Craft;
 use craft\helpers\Json;
 use craft\web\Controller;
+use Exception;
 use venveo\characteristic\Characteristic as Plugin;
 use yii\web\Response;
 
@@ -36,7 +37,7 @@ class CharacteristicValuesController extends Controller
 
         $valueIds = Json::decode(Craft::$app->getRequest()->getRequiredBodyParam('ids'));
         if (!is_array($valueIds)) {
-            throw new \Exception('Expected array of ids');
+            throw new Exception('Expected array of ids');
         }
         Plugin::$plugin->characteristicValues->reorderValues($valueIds);
         return $this->asJson(['success' => true]);

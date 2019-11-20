@@ -15,13 +15,13 @@ class ElementCharacteristicsBehavior extends Behavior
         $element = $this->owner;
         $linksQuery = CharacteristicLink::find()->where(['elementId' => $element->id]);
         $linksQuery
-        ->alias('link')
-        ->leftJoin('{{%elements}} elements1', '[[elements1.id]] = [[link.characteristicId]]')
-        ->leftJoin('{{%elements}} elements2', '[[elements2.id]] = [[link.valueId]]');
+            ->alias('link')
+            ->leftJoin('{{%elements}} elements1', '[[elements1.id]] = [[link.characteristicId]]')
+            ->leftJoin('{{%elements}} elements2', '[[elements2.id]] = [[link.valueId]]');
         $linksQuery->where(['elements1.dateDeleted' => null, 'elements2.dateDeleted' => null]);
 
         if ($characteristic) {
-            if($characteristic instanceof Characteristic) {
+            if ($characteristic instanceof Characteristic) {
                 $characteristicId = $characteristic->id;
             } else {
                 $characteristicId = $characteristic;

@@ -10,32 +10,19 @@
 
 namespace venveo\characteristic\services;
 
-use craft\base\Element;
-use craft\db\Query;
-use craft\db\Table;
-use craft\elements\Entry;
-use craft\errors\SectionNotFoundException;
-use craft\events\ConfigEvent;
-use craft\events\SectionEvent;
-use craft\helpers\ArrayHelper;
-use craft\helpers\Db;
-use craft\helpers\ProjectConfig as ProjectConfigHelper;
-use craft\helpers\StringHelper;
-use craft\models\EntryType;
-use craft\models\Section;
-use craft\models\Site;
-use craft\models\Structure;
-use craft\queue\jobs\ResaveElements;
-use craft\records\EntryType as EntryTypeRecord;
-use craft\records\Section as SectionRecord;
-use venveo\characteristic\Characteristic;
-
 use Craft;
 use craft\base\Component;
+use craft\db\Query;
+use craft\errors\SectionNotFoundException;
+use craft\events\ConfigEvent;
+use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
+use craft\helpers\StringHelper;
+use craft\models\Section;
+use Throwable;
 use venveo\characteristic\events\CharacteristicGroupEvent;
 use venveo\characteristic\models\CharacteristicGroup;
 use venveo\characteristic\records\CharacteristicGroup as CharacteristicGroupRecord;
-use yii\base\Exception;
 
 /**
  * @author    Venveo
@@ -106,27 +93,6 @@ class CharacteristicGroups extends Component
         return ArrayHelper::getColumn($this->getAllGroups(), 'id', false);
     }
 
-
-    /**
-     * Returns all of the group IDs that are editable by the current user.
-     *
-     * ---
-     *
-     * ```php
-     * $groupIds = Craft::$app->sections->editableSectionIds;
-     * ```
-     * ```twig
-     * {% set groupIds = craft.app.sections.editableSectionIds %}
-     * ```
-     *
-     * @return int[] All the editable groups’ IDs.
-     */
-    public function getEditableGroupIds(): array
-    {
-        return ArrayHelper::getColumn($this->getEditableGroups(), 'id', false);
-    }
-
-
     /**
      * Returns all groups.
      *
@@ -159,6 +125,48 @@ class CharacteristicGroups extends Component
         return $this->_groups;
     }
 
+    /**
+     * Returns a Query object prepped for retrieving groups.
+     *
+     * @return Query
+     */
+    private function _createGroupQuery(): Query
+    {
+        $condition = null;
+        $condition = ['groups.dateDeleted' => null];
+
+        $query = (new Query())
+            ->select([
+                'groups.id',
+                'groups.name',
+                'groups.handle',
+                'groups.uid',
+            ])
+            ->from(['{{%characteristic_groups}} groups'])
+            ->where($condition)
+            ->orderBy(['name' => SORT_ASC]);
+
+        return $query;
+    }
+
+    /**
+     * Returns all of the group IDs that are editable by the current user.
+     *
+     * ---
+     *
+     * ```php
+     * $groupIds = Craft::$app->sections->editableSectionIds;
+     * ```
+     * ```twig
+     * {% set groupIds = craft.app.sections.editableSectionIds %}
+     * ```
+     *
+     * @return int[] All the editable groups’ IDs.
+     */
+    public function getEditableGroupIds(): array
+    {
+        return ArrayHelper::getColumn($this->getEditableGroups(), 'id', false);
+    }
 
     /**
      * Returns all editable groups.
@@ -177,11 +185,10 @@ class CharacteristicGroups extends Component
     public function getEditableGroups(): array
     {
         $userSession = Craft::$app->getUser();
-        return ArrayHelper::where($this->getAllGroups(), function(CharacteristicGroup $group) use ($userSession) {
+        return ArrayHelper::where($this->getAllGroups(), function (CharacteristicGroup $group) use ($userSession) {
             return $userSession->checkPermission('editCharacteristics:' . $group->uid);
         });
     }
-
 
     /**
      * Gets the total number of groups.
@@ -202,7 +209,6 @@ class CharacteristicGroups extends Component
         return count($this->getAllGroups());
     }
 
-
     /**
      * Gets the total number of groups that are editable by the current user.
      *
@@ -221,28 +227,6 @@ class CharacteristicGroups extends Component
     {
         return count($this->getEditableGroups());
     }
-
-
-    /**
-     * Returns a group by its ID.
-     *
-     * ---
-     *
-     * ```php
-     * $group = Craft::$app->sections->getSectionById(1);
-     * ```
-     * ```twig
-     * {% set group = craft.app.sections.getSectionById(1) %}
-     * ```
-     *
-     * @param int $groupId
-     * @return CharacteristicGroup|null
-     */
-    public function getGroupById(int $groupId)
-    {
-        return ArrayHelper::firstWhere($this->getAllGroups(), 'id', $groupId);
-    }
-
 
     /**
      * Gets a group by its UID.
@@ -307,7 +291,7 @@ class CharacteristicGroups extends Component
      * @param bool $runValidation Whether the section should be validated
      * @return bool
      * @throws SectionNotFoundException if $section->id is invalid
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function saveGroup(CharacteristicGroup $group, bool $runValidation = true): bool
     {
@@ -359,7 +343,7 @@ class CharacteristicGroups extends Component
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -396,7 +380,7 @@ class CharacteristicGroups extends Component
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -417,6 +401,40 @@ class CharacteristicGroups extends Component
     }
 
     /**
+     * Gets a group's record by uid.
+     *
+     * @param string $uid
+     * @param bool $withTrashed Whether to include trashed groups in search
+     * @return CharacteristicGroupRecord
+     */
+    private function _getGroupRecord(string $uid, bool $withTrashed = false): CharacteristicGroupRecord
+    {
+        $query = $withTrashed ? CharacteristicGroupRecord::findWithTrashed() : CharacteristicGroupRecord::find();
+        $query->andWhere(['uid' => $uid]);
+        return $query->one() ?? new CharacteristicGroupRecord();
+    }
+
+    /**
+     * Returns a group by its ID.
+     *
+     * ---
+     *
+     * ```php
+     * $group = Craft::$app->sections->getSectionById(1);
+     * ```
+     * ```twig
+     * {% set group = craft.app.sections.getSectionById(1) %}
+     * ```
+     *
+     * @param int $groupId
+     * @return CharacteristicGroup|null
+     */
+    public function getGroupById(int $groupId)
+    {
+        return ArrayHelper::firstWhere($this->getAllGroups(), 'id', $groupId);
+    }
+
+    /**
      * Deletes a group by its ID.
      *
      * ---
@@ -427,7 +445,7 @@ class CharacteristicGroups extends Component
      *
      * @param int $groupId
      * @return bool Whether the section was deleted successfully
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function deleteGroupById(int $groupId): bool
     {
@@ -440,6 +458,10 @@ class CharacteristicGroups extends Component
         return $this->deleteGroup($group);
     }
 
+
+    // Private Methods
+    // =========================================================================
+
     /**
      * Deletes a group.
      *
@@ -451,7 +473,7 @@ class CharacteristicGroups extends Component
      *
      * @param CharacteristicGroup $group
      * @return bool Whether the group was deleted successfully
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function deleteGroup(CharacteristicGroup $group): bool
     {
@@ -499,7 +521,7 @@ class CharacteristicGroups extends Component
                 ->execute();
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -513,48 +535,5 @@ class CharacteristicGroups extends Component
                 'group' => $group,
             ]));
         }
-    }
-
-
-    // Private Methods
-    // =========================================================================
-
-    /**
-     * Returns a Query object prepped for retrieving groups.
-     *
-     * @return Query
-     */
-    private function _createGroupQuery(): Query
-    {
-        $condition = null;
-        $condition = ['groups.dateDeleted' => null];
-
-        $query = (new Query())
-            ->select([
-                'groups.id',
-                'groups.name',
-                'groups.handle',
-                'groups.uid',
-            ])
-            ->from(['{{%characteristic_groups}} groups'])
-            ->where($condition)
-            ->orderBy(['name' => SORT_ASC]);
-
-        return $query;
-    }
-
-
-    /**
-     * Gets a group's record by uid.
-     *
-     * @param string $uid
-     * @param bool $withTrashed Whether to include trashed groups in search
-     * @return CharacteristicGroupRecord
-     */
-    private function _getGroupRecord(string $uid, bool $withTrashed = false): CharacteristicGroupRecord
-    {
-        $query = $withTrashed ? CharacteristicGroupRecord::findWithTrashed() : CharacteristicGroupRecord::find();
-        $query->andWhere(['uid' => $uid]);
-        return $query->one() ?? new CharacteristicGroupRecord();
     }
 }

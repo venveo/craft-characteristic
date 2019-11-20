@@ -16,8 +16,11 @@ use craft\helpers\UrlHelper;
 use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
 use craft\web\assets\vue\VueAsset;
+use Throwable;
+use yii\base\Exception;
 use yii\caching\TagDependency;
 use yii\web\NotFoundHttpException;
+use function count;
 
 /**
  * @author    Venveo
@@ -102,7 +105,7 @@ class CharacteristicsFieldAsset extends AssetBundle
      *
      * @return null|string
      * @throws NotFoundHttpException
-     * @throws \yii\base\Exception
+     * @throws Exception
      */
     private function getModule(array $config, string $moduleName, string $type = 'modern', bool $soft = true)
     {
@@ -120,6 +123,7 @@ class CharacteristicsFieldAsset extends AssetBundle
         }
         return $module;
     }
+
     /**
      * Return a module's raw entry from the manifest
      *
@@ -130,7 +134,7 @@ class CharacteristicsFieldAsset extends AssetBundle
      *
      * @return null|string
      * @throws NotFoundHttpException
-     * @throws \yii\base\Exception
+     * @throws Exception
      */
     private function getModuleEntry(array $config, string $moduleName, string $type = 'modern', bool $soft = false)
     {
@@ -151,6 +155,7 @@ class CharacteristicsFieldAsset extends AssetBundle
         }
         return $module;
     }
+
     /**
      * Return a JSON-decoded manifest file
      *
@@ -158,7 +163,7 @@ class CharacteristicsFieldAsset extends AssetBundle
      * @param string $type
      *
      * @return null|array
-     * @throws \yii\base\Exception
+     * @throws Exception
      */
     private function getManifestFile($config, $type = 'modern')
     {
@@ -184,18 +189,51 @@ class CharacteristicsFieldAsset extends AssetBundle
         }
         return $manifest;
     }
+
+    /**
+     * Combined the passed in paths, whether file system or URL
+     *
+     * @param string ...$paths
+     *
+     * @return string
+     */
+    private static function combinePaths(string ...$paths): string
+    {
+        $last_key = count($paths) - 1;
+        array_walk($paths, function (&$val, $key) use ($last_key) {
+            switch ($key) {
+                case 0:
+                    $val = rtrim($val, '/ ');
+                    break;
+                case $last_key:
+                    $val = ltrim($val, '/ ');
+                    break;
+                default:
+                    $val = trim($val, '/ ');
+                    break;
+            }
+        });
+        $first = array_shift($paths);
+        $last = array_pop($paths);
+        $paths = array_filter($paths);
+        array_unshift($paths, $first);
+        $paths[] = $last;
+        return implode('/', $paths);
+    }
+
     /**
      * Return the contents of a JSON file from a URI path
      *
      * @param string $path
      *
      * @return null|array
-     * @throws \yii\base\Exception
+     * @throws Exception
      */
     private function getJsonFile(string $path)
     {
         return $this->getFileFromUri($path, [$this, 'jsonFileDecode']);
     }
+
     /**
      * Return the contents of a file from a URI path
      *
@@ -204,7 +242,7 @@ class CharacteristicsFieldAsset extends AssetBundle
      * @param bool $pathOnly
      *
      * @return null|mixed
-     * @throws \yii\base\Exception
+     * @throws Exception
      */
     private function getFileFromUri(string $path, callable $callback = null, bool $pathOnly = false)
     {
@@ -226,16 +264,17 @@ class CharacteristicsFieldAsset extends AssetBundle
         if (!UrlHelper::isAbsoluteUrl($path) && !is_file($path)) {
             try {
                 $path = UrlHelper::siteUrl($path);
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 Craft::error($e->getMessage(), __METHOD__);
             }
         }
         return $this->getFileContents($path, $callback);
     }
+
     /**
      * Return the contents of a file from the passed in path
      *
-     * @param string   $path
+     * @param string $path
      * @param callable $callback
      *
      * @return null|mixed
@@ -250,7 +289,7 @@ class CharacteristicsFieldAsset extends AssetBundle
         $dependency = new TagDependency([
             'tags' => [
                 self::CACHE_TAG,
-                self::CACHE_TAG.$path,
+                self::CACHE_TAG . $path,
             ],
         ]);
         // Set the cache duration based on devMode
@@ -260,7 +299,7 @@ class CharacteristicsFieldAsset extends AssetBundle
         // Get the result from the cache, or parse the file
         $cache = Craft::$app->getCache();
         $file = $cache->getOrSet(
-            self::CACHE_KEY.$path,
+            self::CACHE_KEY . $path,
             function () use ($path, $callback) {
                 $result = null;
                 if (UrlHelper::isAbsoluteUrl($path)) {
@@ -297,39 +336,10 @@ class CharacteristicsFieldAsset extends AssetBundle
         $this->files[$path] = $file;
         return $file;
     }
-    /**
-     * Combined the passed in paths, whether file system or URL
-     *
-     * @param string ...$paths
-     *
-     * @return string
-     */
-    private static function combinePaths(string ...$paths): string
-    {
-        $last_key = \count($paths) - 1;
-        array_walk($paths, function (&$val, $key) use ($last_key) {
-            switch ($key) {
-                case 0:
-                    $val = rtrim($val, '/ ');
-                    break;
-                case $last_key:
-                    $val = ltrim($val, '/ ');
-                    break;
-                default:
-                    $val = trim($val, '/ ');
-                    break;
-            }
-        });
-        $first = array_shift($paths);
-        $last = array_pop($paths);
-        $paths = array_filter($paths);
-        array_unshift($paths, $first);
-        $paths[] = $last;
-        return implode('/', $paths);
-    }
+
     /**
      * @param string $error
-     * @param bool   $soft
+     * @param bool $soft
      *
      * @throws NotFoundHttpException
      */
@@ -341,6 +351,7 @@ class CharacteristicsFieldAsset extends AssetBundle
         }
         Craft::error($error, __METHOD__);
     }
+
     /**
      * @param $string
      *

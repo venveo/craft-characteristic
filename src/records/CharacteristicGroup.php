@@ -10,11 +10,8 @@
 
 namespace venveo\characteristic\records;
 
-use craft\db\SoftDeleteTrait;
-use venveo\characteristic\Characteristic;
-
-use Craft;
 use craft\db\ActiveRecord;
+use craft\db\SoftDeleteTrait;
 
 /**
  * @author    Venveo

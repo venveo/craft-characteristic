@@ -10,10 +10,9 @@
 
 namespace venveo\characteristic\variables;
 
-use craft\elements\db\ElementQueryInterface;
-use venveo\characteristic\Characteristic;
-
 use Craft;
+use craft\elements\db\ElementQueryInterface;
+use venveo\characteristic\elements\Characteristic;
 use venveo\characteristic\elements\db\CharacteristicQuery;
 use venveo\characteristic\helpers\Drilldown;
 
@@ -33,12 +32,13 @@ class CharacteristicVariable
      */
     public function characteristics(array $criteria = []): CharacteristicQuery
     {
-        $query = \venveo\characteristic\elements\Characteristic::find();
+        $query = Characteristic::find();
         Craft::configure($query, $criteria);
         return $query;
     }
 
-    public function drilldown($group, ElementQueryInterface $query) {
+    public function drilldown($group, ElementQueryInterface $query)
+    {
         $drilldown = new Drilldown([
             'group' => $group,
             'query' => $query

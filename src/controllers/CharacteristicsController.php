@@ -116,6 +116,47 @@ class CharacteristicsController extends Controller
         return $this->renderTemplate('characteristic/characteristics/_edit', $variables);
     }
 
+    /**
+     * Preps entry edit variables.
+     *
+     * @param array &$variables
+     * @return Response|null
+     * @throws NotFoundHttpException if the requested section or entry cannot be found
+     * @throws ForbiddenHttpException if the user is not permitted to edit content in the requested site
+     */
+    private function _prepEditCharacteristicVariables(array &$variables)
+    {
+        // Get the section
+        // ---------------------------------------------------------------------
+
+        if (!empty($variables['groupHandle'])) {
+            $variables['group'] = Plugin::$plugin->characteristicGroups->getGroupByHandle($variables['groupHandle']);
+        } else if (!empty($variables['groupId'])) {
+            $variables['group'] = Plugin::$plugin->characteristicGroups->getGroupById($variables['groupId']);
+        }
+
+        if (empty($variables['group'])) {
+            throw new NotFoundHttpException('Group not found');
+        }
+
+        // Get the characteristic
+        // ---------------------------------------------------------------------
+
+        if (empty($variables['characteristic'])) {
+            if (!empty($variables['characteristicId'])) {
+
+                $variables['characteristic'] = Plugin::$plugin->characteristics->getCharacteristicById($variables['characteristicId']);
+
+                if (!$variables['characteristic']) {
+                    throw new NotFoundHttpException('Characteristic not found');
+                }
+            } else {
+                $variables['characteristic'] = new Characteristic();
+                $variables['characteristic']->groupId = $variables['group']->id;
+            }
+        }
+        return null;
+    }
 
     /**
      * Saves an entry.
@@ -184,6 +225,48 @@ class CharacteristicsController extends Controller
     }
 
     /**
+     * Fetches or creates an Entry.
+     *
+     * @return Entry
+     * @throws NotFoundHttpException if the requested entry cannot be found
+     */
+    private function _getCharacteristicModel(): Characteristic
+    {
+        $request = Craft::$app->getRequest();
+        $characteristicId = $request->getBodyParam('characteristicId');
+
+        if ($characteristicId) {
+            $characteristic = null;
+            $characteristic = Plugin::$plugin->characteristics->getCharacteristicById($characteristicId);
+
+            if (!$characteristic) {
+                throw new NotFoundHttpException('Characteristic not found');
+            }
+        } else {
+            $characteristic = new Characteristic();
+            $characteristic->groupId = $request->getRequiredBodyParam('groupId');
+        }
+
+        return $characteristic;
+    }
+
+    // Private Methods
+    // =========================================================================
+
+    /**
+     * Populates an Entry with post data.
+     *
+     * @param Entry $characteristic
+     */
+    private function _populateCharacteristicModel(Characteristic $characteristic)
+    {
+        $request = Craft::$app->getRequest();
+
+        $characteristic->handle = $request->getBodyParam('handle', $characteristic->handle);
+        $characteristic->title = $request->getBodyParam('title', $characteristic->title);
+    }
+
+    /**
      * Duplicates an entry.
      *
      * @return Response|null
@@ -237,89 +320,5 @@ class CharacteristicsController extends Controller
         Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry deleted.'));
 
         return $this->redirectToPostedUrl($entry);
-    }
-
-    // Private Methods
-    // =========================================================================
-
-    /**
-     * Preps entry edit variables.
-     *
-     * @param array &$variables
-     * @return Response|null
-     * @throws NotFoundHttpException if the requested section or entry cannot be found
-     * @throws ForbiddenHttpException if the user is not permitted to edit content in the requested site
-     */
-    private function _prepEditCharacteristicVariables(array &$variables)
-    {
-        // Get the section
-        // ---------------------------------------------------------------------
-
-        if (!empty($variables['groupHandle'])) {
-            $variables['group'] = Plugin::$plugin->characteristicGroups->getGroupByHandle($variables['groupHandle']);
-        } else if (!empty($variables['groupId'])) {
-            $variables['group'] = Plugin::$plugin->characteristicGroups->getGroupById($variables['groupId']);
-        }
-
-        if (empty($variables['group'])) {
-            throw new NotFoundHttpException('Group not found');
-        }
-
-        // Get the characteristic
-        // ---------------------------------------------------------------------
-
-        if (empty($variables['characteristic'])) {
-            if (!empty($variables['characteristicId'])) {
-
-                $variables['characteristic'] = Plugin::$plugin->characteristics->getCharacteristicById($variables['characteristicId']);
-
-                if (!$variables['characteristic']) {
-                    throw new NotFoundHttpException('Characteristic not found');
-                }
-            } else {
-                $variables['characteristic'] = new Characteristic();
-                $variables['characteristic']->groupId = $variables['group']->id;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Fetches or creates an Entry.
-     *
-     * @return Entry
-     * @throws NotFoundHttpException if the requested entry cannot be found
-     */
-    private function _getCharacteristicModel(): Characteristic
-    {
-        $request = Craft::$app->getRequest();
-        $characteristicId = $request->getBodyParam('characteristicId');
-
-        if ($characteristicId) {
-            $characteristic = null;
-            $characteristic = Plugin::$plugin->characteristics->getCharacteristicById($characteristicId);
-
-            if (!$characteristic) {
-                throw new NotFoundHttpException('Characteristic not found');
-            }
-        } else {
-            $characteristic = new Characteristic();
-            $characteristic->groupId = $request->getRequiredBodyParam('groupId');
-        }
-
-        return $characteristic;
-    }
-
-    /**
-     * Populates an Entry with post data.
-     *
-     * @param Entry $characteristic
-     */
-    private function _populateCharacteristicModel(Characteristic $characteristic)
-    {
-        $request = Craft::$app->getRequest();
-
-        $characteristic->handle = $request->getBodyParam('handle', $characteristic->handle);
-        $characteristic->title = $request->getBodyParam('title', $characteristic->title);
     }
 }

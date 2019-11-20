@@ -33,7 +33,8 @@ class CharacteristicLink extends ActiveRecord
         return '{{%characteristic_links}}';
     }
 
-    public function getCharacteristicValue() {
+    public function getCharacteristicValue()
+    {
         return $this->hasOne(CharacteristicValue::class, ['id' => 'valueId']);
     }
 }

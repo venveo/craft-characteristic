@@ -10,6 +10,7 @@
 
 namespace venveo\characteristic\assetbundles\characteristicelement;
 
+use Craft;
 use craft\helpers\Json;
 use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
@@ -49,12 +50,13 @@ class CharacteristicElement extends AssetBundle
         $js = <<<JS
 window.Characteristic = {$craftJson};
 JS;
-        \Craft::$app->view->registerJs($js, View::POS_HEAD);
+        Craft::$app->view->registerJs($js, View::POS_HEAD);
 
         parent::init();
     }
 
-    private function _data() {
+    private function _data()
+    {
         return [
             'editableCharacteristicGroups' => Characteristic::$plugin->characteristicGroups->getEditableGroups()
         ];

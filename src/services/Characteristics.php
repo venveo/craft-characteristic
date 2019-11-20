@@ -12,7 +12,7 @@ namespace venveo\characteristic\services;
 
 use Craft;
 use craft\base\Component;
-use venveo\characteristic\Characteristic;
+use venveo\characteristic\elements\Characteristic;
 
 /**
  * @author    Venveo
@@ -34,7 +34,7 @@ class Characteristics extends Component
      * Returns a category by its ID.
      *
      * @param int $characteristicId
-     * @return \venveo\characteristic\elements\Characteristic|null
+     * @return Characteristic|null
      */
     public function getCharacteristicById(int $characteristicId)
     {
@@ -44,7 +44,7 @@ class Characteristics extends Component
 
 
         /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return Craft::$app->getElements()->getElementById($characteristicId, \venveo\characteristic\elements\Characteristic::class);
+        return Craft::$app->getElements()->getElementById($characteristicId, Characteristic::class);
     }
 
     public function getCharacteristicByHandle(int $groupId, string $characteristicHandle)
@@ -53,6 +53,6 @@ class Characteristics extends Component
             return null;
         }
 
-        return \venveo\characteristic\elements\Characteristic::find()->handle($characteristicHandle)->groupId($groupId)->one();
+        return Characteristic::find()->handle($characteristicHandle)->groupId($groupId)->one();
     }
 }

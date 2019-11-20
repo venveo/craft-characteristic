@@ -10,23 +10,19 @@ class CharacteristicValueQuery extends ElementQuery
     // Properties
     // =========================================================================
 
+    public $characteristicId;
+
+    // General parameters
+    // -------------------------------------------------------------------------
+    public $text;
+    public $sortOrder;
     /**
      * @inheritdoc
      */
     protected $defaultOrderBy = ['characteristic_values.sortOrder' => SORT_ASC];
 
-    // General parameters
-    // -------------------------------------------------------------------------
-
-    public $characteristicId;
-
-    public $text;
-
-    public $sortOrder;
-
     // Public Methods
     // =========================================================================
-
 
     public function characteristicId($value)
     {

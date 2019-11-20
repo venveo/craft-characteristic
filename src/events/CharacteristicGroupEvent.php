@@ -1,4 +1,5 @@
 <?php
+
 namespace venveo\characteristic\events;
 
 use venveo\characteristic\models\CharacteristicGroup;

@@ -1,17 +1,17 @@
 <template>
     <div>
-        <input type="hidden" :name="settings.name"/>
-        <characteristic-item v-for="(characteristic) in characteristics"
-                             :key="characteristic.id"
+        <input :name="settings.name" type="hidden"/>
+        <characteristic-item :consumedOptions="consumedOptions"
                              :data="characteristic"
-                             :consumedOptions="consumedOptions"
+                             :key="characteristic.id"
+                             :name="settings.name + '['+characteristic.id+']'"
                              :options="characteristicAttributes"
+                             v-for="(characteristic) in characteristics"
                              v-on:change="handleChange"
                              v-on:delete="() => handleDelete(characteristic)"
-                             :name="settings.name + '['+characteristic.id+']'"
         />
         <div class="buttons last">
-            <div class="btn add icon" @click="handleAdd">Add Characteristic</div>
+            <div @click="handleAdd" class="btn add icon">Add Characteristic</div>
         </div>
     </div>
 </template>

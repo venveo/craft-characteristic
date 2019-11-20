@@ -1,16 +1,13 @@
 <?php
 /**
  *  OAuth 2.0 Client plugin for Craft CMS 3
- *  @link      https://www.venveo.com
- *  @copyright Copyright (c) 2018-2019 Venveo
+ * @link      https://www.venveo.com
+ * @copyright Copyright (c) 2018-2019 Venveo
  */
 
 namespace venveo\characteristic\models;
 
 use craft\base\Model;
-use craft\validators\HandleValidator;
-use craft\validators\UniqueValidator;
-use venveo\characteristic\records\CharacteristicGroup as CharacteristicGroupRecord;
 
 /**
  * @author    Venveo

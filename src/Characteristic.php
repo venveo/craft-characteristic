@@ -112,7 +112,7 @@ class Characteristic extends Plugin
             }
         );
 
-        Event::on(Element::class, Element::EVENT_DEFINE_BEHAVIORS, function(DefineBehaviorsEvent $e) {
+        Event::on(Element::class, Element::EVENT_DEFINE_BEHAVIORS, function (DefineBehaviorsEvent $e) {
             $e->behaviors[] = ElementCharacteristicsBehavior::class;
         });
 

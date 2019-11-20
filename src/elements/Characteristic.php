@@ -17,7 +17,6 @@ use craft\elements\Entry;
 use craft\helpers\UrlHelper;
 use venveo\characteristic\Characteristic as Plugin;
 use venveo\characteristic\elements\db\CharacteristicQuery;
-use venveo\characteristic\elements\db\CharacteristicValueQuery;
 use venveo\characteristic\records\Characteristic as CharacteristicRecord;
 use venveo\characteristic\records\CharacteristicLink;
 use yii\base\Exception;
@@ -129,6 +128,22 @@ class Characteristic extends Element
     /**
      * @inheritdoc
      */
+    protected static function defineTableAttributes(): array
+    {
+        $attributes = [
+            'title' => ['label' => Craft::t('app', 'Title')],
+            'handle' => ['label' => Craft::t('app', 'Handle')],
+            'id' => ['label' => Craft::t('app', 'ID')],
+            'uid' => ['label' => Craft::t('app', 'UID')],
+            'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
+            'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
+        ];
+        return $attributes;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function rules()
     {
         $rules = parent::rules();
@@ -155,6 +170,21 @@ class Characteristic extends Element
     /**
      * @inheritdoc
      */
+    public function getCpEditUrl()
+    {
+        $group = $this->getGroup();
+
+        $url = UrlHelper::cpUrl('characteristics/' . $group->handle . '/' . $this->id);
+
+        return $url;
+    }
+
+    // Indexes, etc.
+    // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     */
     public function getGroup()
     {
         if ($this->groupId === null) {
@@ -167,22 +197,6 @@ class Characteristic extends Element
 
         return $group;
     }
-
-
-    /**
-     * @inheritdoc
-     */
-    public function getCpEditUrl()
-    {
-        $group = $this->getGroup();
-
-        $url = UrlHelper::cpUrl('characteristics/' . $group->handle . '/' . $this->id);
-
-        return $url;
-    }
-
-    // Indexes, etc.
-    // -------------------------------------------------------------------------
 
     /**
      * @inheritdoc
@@ -208,21 +222,10 @@ class Characteristic extends Element
         return $html;
     }
 
-    public function getValues($criteria = []) {
+    public function getValues($criteria = [])
+    {
         $criteria['characteristicId'] = $this->id;
         $query = Craft::configure(CharacteristicValue::find(), $criteria);
-        return $query;
-    }
-
-    /**
-     * @param string $type
-     */
-    public function getRelatedElements($type = Entry::class) {
-        $linkQuery = CharacteristicLink::find();
-        $linkQuery->where(['characteristicId' => $this->id]);
-        $ids = $linkQuery->select('elementId')->indexBy('elementId')->all();
-        $criteria['id'] = array_keys($ids);
-        $query = Craft::configure($type::find(), $criteria);
         return $query;
     }
 
@@ -230,6 +233,19 @@ class Characteristic extends Element
     // -------------------------------------------------------------------------
 // Events
     // -------------------------------------------------------------------------
+
+    /**
+     * @param string $type
+     */
+    public function getRelatedElements($type = Entry::class)
+    {
+        $linkQuery = CharacteristicLink::find();
+        $linkQuery->where(['characteristicId' => $this->id]);
+        $ids = $linkQuery->select('elementId')->indexBy('elementId')->all();
+        $criteria['id'] = array_keys($ids);
+        $query = Craft::configure($type::find(), $criteria);
+        return $query;
+    }
 
     /**
      * @inheritdoc
@@ -256,23 +272,6 @@ class Characteristic extends Element
         $record->save(false);
 
         parent::afterSave($isNew);
-    }
-
-
-    /**
-     * @inheritdoc
-     */
-    protected static function defineTableAttributes(): array
-    {
-        $attributes = [
-            'title' => ['label' => Craft::t('app', 'Title')],
-            'handle' => ['label' => Craft::t('app', 'Handle')],
-            'id' => ['label' => Craft::t('app', 'ID')],
-            'uid' => ['label' => Craft::t('app', 'UID')],
-            'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
-            'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
-        ];
-        return $attributes;
     }
 
     /**

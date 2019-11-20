@@ -18,6 +18,7 @@ use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Html;
 use craft\helpers\Json;
+use Exception;
 use venveo\characteristic\assetbundles\characteristicsfield\CharacteristicsFieldAsset;
 use venveo\characteristic\Characteristic;
 use venveo\characteristic\elements\Characteristic as CharacteristicElement;
@@ -66,6 +67,14 @@ class Characteristics extends Field
     /**
      * @inheritdoc
      */
+    public function __construct(array $config = [])
+    {
+        parent::__construct($config);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function displayName(): string
     {
         return Craft::t('characteristic', 'Characteristics');
@@ -79,6 +88,8 @@ class Characteristics extends Field
         return false;
     }
 
+    // Public Methods
+    // =========================================================================
 
     /**
      * @inheritdoc
@@ -88,19 +99,6 @@ class Characteristics extends Field
         // Don't ever automatically propagate values to other sites.
         return [self::TRANSLATION_METHOD_NONE];
     }
-
-    // Public Methods
-    // =========================================================================
-
-
-    /**
-     * @inheritdoc
-     */
-    public function __construct(array $config = [])
-    {
-        parent::__construct($config);
-    }
-
 
     /**
      * @inheritdoc
@@ -149,8 +147,8 @@ class Characteristics extends Field
             $recordQuery = CharacteristicLinkRecord::find()
                 ->addSelect(['link.id', 'link.characteristicId', 'link.valueId'])
                 ->alias('link')
-            ->leftJoin('{{%elements}} elements1', '[[elements1.id]] = [[link.characteristicId]]')
-            ->leftJoin('{{%elements}} elements2', '[[elements2.id]] = [[link.valueId]]');
+                ->leftJoin('{{%elements}} elements1', '[[elements1.id]] = [[link.characteristicId]]')
+                ->leftJoin('{{%elements}} elements2', '[[elements2.id]] = [[link.valueId]]');
             $recordQuery->where(['link.fieldId' => $this->id, 'link.elementId' => $element->id]);
             $recordQuery->andWhere(['elements1.dateDeleted' => null, 'elements2.dateDeleted' => null]);
             $records = $recordQuery->asArray()->all();
@@ -159,6 +157,41 @@ class Characteristics extends Field
         }
         return $attributes;
 //        return $this->createModel($attributes, $element);
+    }
+
+    protected function prepareDataForInput($results)
+    {
+        $valueIds = [];
+        $characteristicIds = [];
+        /** @var CharacteristicLinkRecord $result */
+        foreach ($results as $result) {
+            $valueIds[] = $result['valueId'];
+            $characteristicIds[] = $result['characteristicId'];
+        }
+        $values = [];
+        $characteristics = [];
+        $characteristicQuery = CharacteristicElement::find();
+        $characteristicQuery->id($characteristicIds);
+        $characteristicQuery->indexBy('id');
+        $characteristics = $characteristicQuery->all();
+
+        $valueQuery = CharacteristicValue::find();
+        $valueQuery->id($valueIds);
+        $valueQuery->indexBy('id');
+        $values = $valueQuery->all();
+
+        $inputData = [];
+
+        /** @var CharacteristicLinkRecord $result */
+        foreach ($results as $result) {
+            $inputData[] = [
+                'id' => $result['id'],
+                'characteristic' => $characteristics[$result['characteristicId']],
+                'value' => $values[$result['valueId']]
+            ];
+        }
+
+        return $inputData;
     }
 
     /**
@@ -182,7 +215,6 @@ class Characteristics extends Field
             ]
         );
     }
-
 
     /**
      * Normalizes the available sources into select input options.
@@ -209,6 +241,16 @@ class Characteristics extends Field
         array_multisort($optionNames, SORT_NATURAL | SORT_FLAG_CASE, $options);
 
         return $options;
+    }
+
+    /**
+     * Returns the sources that should be available to choose from within the field's settings
+     *
+     * @return array
+     */
+    protected function availableSources(): array
+    {
+        return Craft::$app->getElementIndexes()->getSources(CharacteristicElement::class, 'modal');
     }
 
     /**
@@ -248,6 +290,47 @@ class Characteristics extends Field
     }
 
     /**
+     * @inheritDoc
+     * @throws Exception
+     */
+    public function afterElementSave(ElementInterface $element, bool $isNew)
+    {
+        if (!$element instanceof Element || $element->propagating) {
+            return parent::afterElementSave($element, $isNew);
+        }
+        $attributes = $element->getFieldValue($this->handle);
+        if (!is_iterable($attributes)) {
+            return parent::afterElementSave($element, $isNew);
+        }
+        try {
+            $linksToResave = [];
+            foreach ($attributes as $attribute) {
+                if (isset($attribute['characteristic']) && $attribute['characteristic'] instanceof CharacteristicElement) {
+                    $characteristic = $attribute['characteristic'];
+                } else {
+                    $characteristic = Characteristic::$plugin->characteristics->getCharacteristicByHandle($this->groupId, $attribute['attribute']);
+                }
+                if (isset($attribute['value']) && $attribute['value'] instanceof CharacteristicValue) {
+                    $value = $attribute['value'];
+                } else {
+                    $value = Characteristic::$plugin->characteristicValues->getOrCreateValueElement($characteristic, $attribute['value']);
+                }
+                if ($characteristic) {
+                    $linksToResave[] = [
+                        'characteristic' => $characteristic,
+                        'value' => $value
+                    ];
+                }
+            }
+
+            Characteristic::$plugin->characteristicLinks->resaveLinks($linksToResave, $element, $this);
+        } catch (Exception $e) {
+            Craft::dd($e);
+        }
+        parent::afterElementSave($element, $isNew);
+    }
+
+    /**
      * Returns an array of the source keys the field should be able to select elements from.
      *
      * @param ElementInterface|null $element
@@ -266,91 +349,5 @@ class Characteristics extends Field
     protected function inputSelectionCriteria(): array
     {
         return [];
-    }
-
-    /**
-     * Returns the sources that should be available to choose from within the field's settings
-     *
-     * @return array
-     */
-    protected function availableSources(): array
-    {
-        return Craft::$app->getElementIndexes()->getSources(CharacteristicElement::class, 'modal');
-    }
-
-    /**
-     * @inheritDoc
-     * @throws Exception
-     */
-    public function afterElementSave(ElementInterface $element, bool $isNew)
-    {
-        if (!$element instanceof Element || $element->propagating) {
-            return parent::afterElementSave($element, $isNew);
-        }
-        $attributes = $element->getFieldValue($this->handle);
-        if (!is_iterable($attributes)) {
-            return parent::afterElementSave($element, $isNew);
-        }
-        try {
-            $linksToResave = [];
-            foreach ($attributes as $attribute) {
-                if (isset($attribute['characteristic']) && $attribute['characteristic'] instanceof \venveo\characteristic\elements\Characteristic) {
-                    $characteristic = $attribute['characteristic'];
-                } else {
-                    $characteristic = Characteristic::$plugin->characteristics->getCharacteristicByHandle($this->groupId, $attribute['attribute']);
-                }
-                if (isset($attribute['value']) && $attribute['value'] instanceof \venveo\characteristic\elements\CharacteristicValue) {
-                    $value = $attribute['value'];
-                } else {
-                    $value = Characteristic::$plugin->characteristicValues->getOrCreateValueElement($characteristic, $attribute['value']);
-                }
-                if ($characteristic) {
-                    $linksToResave[] = [
-                        'characteristic' => $characteristic,
-                        'value' => $value
-                    ];
-                }
-            }
-
-            Characteristic::$plugin->characteristicLinks->resaveLinks($linksToResave, $element, $this);
-        } catch (\Exception $e) {
-            Craft::dd($e);
-        }
-        parent::afterElementSave($element, $isNew);
-    }
-
-    protected function prepareDataForInput($results)
-    {
-        $valueIds = [];
-        $characteristicIds = [];
-        /** @var CharacteristicLinkRecord $result */
-        foreach ($results as $result) {
-            $valueIds[] = $result['valueId'];
-            $characteristicIds[] = $result['characteristicId'];
-        }
-        $values = [];
-        $characteristics = [];
-        $characteristicQuery = CharacteristicElement::find();
-        $characteristicQuery->id($characteristicIds);
-        $characteristicQuery->indexBy('id');
-        $characteristics = $characteristicQuery->all();
-
-        $valueQuery = CharacteristicValue::find();
-        $valueQuery->id($valueIds);
-        $valueQuery->indexBy('id');
-        $values = $valueQuery->all();
-
-        $inputData = [];
-
-        /** @var CharacteristicLinkRecord $result */
-        foreach ($results as $result) {
-            $inputData[] = [
-                'id' => $result['id'],
-                'characteristic' => $characteristics[$result['characteristicId']],
-                'value' => $values[$result['valueId']]
-            ];
-        }
-
-        return $inputData;
     }
 }
