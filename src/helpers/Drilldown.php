@@ -55,7 +55,7 @@ class Drilldown extends Component
             ->asArray()
             ->all());
 
-        $values = CharacteristicValueElement::find()->id($valueIds)->fixedOrder(true);
+        $values = CharacteristicValueElement::find()->id($valueIds);
 
         return $values;
     }
