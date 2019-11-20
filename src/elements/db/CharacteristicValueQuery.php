@@ -13,7 +13,7 @@ class CharacteristicValueQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected $defaultOrderBy = ['sortOrder' => SORT_DESC];
+    protected $defaultOrderBy = ['characteristic_values.sortOrder' => SORT_ASC];
 
     // General parameters
     // -------------------------------------------------------------------------

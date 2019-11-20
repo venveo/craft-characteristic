@@ -12,8 +12,12 @@ namespace venveo\characteristic\services;
 
 use Craft;
 use craft\base\Component;
+use craft\db\Table;
+use craft\helpers\Db;
+use craft\records\Section as SectionRecord;
 use venveo\characteristic\elements\Characteristic;
 use venveo\characteristic\elements\CharacteristicValue;
+use venveo\characteristic\records\CharacteristicValue as CharacteristicValueRecord;
 
 /**
  * @author    Venveo
@@ -65,5 +69,39 @@ class CharacteristicValues extends Component
         $characteristicValue->characteristicId = $characteristic->id;
         Craft::$app->elements->saveElement($characteristicValue);
         return $characteristicValue;
+    }
+
+    /**
+     * Reorders entry types.
+     *
+     * @param array $entryTypeIds
+     * @return bool Whether the entry types were reordered successfully
+     * @throws \Throwable if reasons
+     */
+    public function reorderValues(array $valueIds): bool
+    {
+        foreach ($valueIds as $sortOrder => $valueId) {
+            $value = CharacteristicValueRecord::findOne($valueId);
+            $value->sortOrder = $sortOrder;
+            $value->save();
+        }
+        return true;
+    }
+
+    public function deleteValueById(int $valueId): bool
+    {
+        $value = $this->getCharacteristicValueById($valueId);
+
+        if (!$value) {
+            return false;
+        }
+
+        return $this->deleteValue($value);
+    }
+
+    public function deleteValue(CharacteristicValue $value): bool
+    {
+        \Craft::$app->elements->deleteElement($value);
+        return true;
     }
 }
