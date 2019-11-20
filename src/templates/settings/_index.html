@@ -2,11 +2,11 @@
 {% set title = "Characteristic Groups"|t('characteristic') %}
 
 {% set crumbs = [
-    { label: "Settings"|t('app'), url: url('settings') }
+    { label: "Settings"|t('app'), url: cpUrl('settings') }
 ] %}
 
 {% block actionButton %}
-    <a href="{{ url('settings/characteristics/new') }}" class="btn submit add icon">{{ "New group"|t('characteristic') }}</a>
+    <a href="{{ cpurl('settings/characteristics/new') }}" class="btn submit add icon">{{ "New group"|t('characteristic') }}</a>
 {% endblock %}
 
 
