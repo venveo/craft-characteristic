@@ -8,7 +8,7 @@
         </div>
         <div class="fields">
             <select v-model="attribute">
-                <option v-for="option in options" :key="option.id" :value="option.handle">{{option.title}}</option>
+                <option v-for="option in options" :key="option.id" :value="option.handle" :disabled="option.disabled">{{option.title}}</option>
             </select>
             <input type="text" v-model="value">
         </div>
@@ -34,9 +34,10 @@
         methods: {
 
         },
-        computed: {
-        },
         watch: {
+            attribute: function(newVal) {
+                this.$emit('change', newVal);
+            }
         },
         mounted() {
             if (this.data.hasOwnProperty('characteristic')) {

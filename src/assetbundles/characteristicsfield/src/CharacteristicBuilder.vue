@@ -4,6 +4,8 @@
         <characteristic-item v-for="(characteristic) in characteristics"
                              :key="characteristic.id"
                              :data="characteristic"
+                             v-on:change="handleChange"
+                             :consumedOptions="consumedOptions"
                              :options="characteristicAttributes"
                              v-on:delete="() => handleDelete(characteristic)"
                              :name="settings.name + '['+characteristic.id+']'"
@@ -30,6 +32,7 @@
             return {
                 characteristics: [],
                 characteristicAttributes: [],
+                consumedOptions: [],
                 loading: true
             }
         },
@@ -49,6 +52,9 @@
                 if (window.draftEditor) {
                     window.draftEditor.checkForm();
                 }
+            },
+            handleChange(e) {
+                console.log(e);
             }
         },
         computed: {
