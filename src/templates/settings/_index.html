@@ -21,6 +21,7 @@
                 <thead>
                     <th scope="col">{{ "Name"|t('app') }}</th>
                     <th scope="col">{{ "Handle"|t('app') }}</th>
+                    <th></td>
                     <td class="thin"></td>
                 </thead>
                 <tbody>
@@ -28,6 +29,7 @@
                         <tr data-id="{{ group.id }}" data-name="{{ group.name|t('site') }}">
                             <th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/characteristics/' ~ group.id) }}">{{ group.name|t('site') }}</a></th>
                             <td data-title="{{ 'Handle'|t('app') }}"><code>{{ group.handle }}</code></td>
+                            <td><a href="{{ cpUrl('characteristics/' ~ group.handle) }}">{{ 'Manage Characteristics'|t('characteristic') }}</a></td>
                             <td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
                         </tr>
                     {% endfor %}
