@@ -45,14 +45,25 @@ class DrilldownState extends Component
         }
         $ids = $elementQuery->ids();
         $query = CharacteristicLink::find();
-        $query->select('elementId');
+        $query->select(['elementId', 'count(elementId) as total']);
+
+//        $subquery = CharacteristicLink::find();
+//        $subquery->select(['id', 'characteristicId', 'valueId']);
         foreach ($this->values as $characteristicId => $valueId) {
             $query->orWhere(['characteristicId' => $characteristicId, 'valueId' => $valueId]);
         }
+//        $subquery->andWhere(['IN', 'elementId', $ids]);
+        $query->groupBy(['elementId']);
+        $query->having(['>=', 'total', count($this->values)]);
+
+
         $query->andWhere(['IN', 'elementId', $ids]);
-        $query->groupBy('elementId')
-            ->indexBy('elementId')
-            ->asArray();
+//        $query->andWhere(['IN', 'id', $subquery]);
+        $query->indexBy('elementId');
+        $query->asArray();
+
+//        \Craft::dd($query->all());
+
         $validIds = array_keys($query->all());
         $elementQuery->andWhere(['IN', '[[elements.id]]', $validIds]);
         return $elementQuery;

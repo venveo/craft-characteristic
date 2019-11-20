@@ -69,8 +69,7 @@ class Drilldown extends Component
     public function getCurrentOptions()
     {
         $characteristic = $this->getCurrentCharacteristic();
-        $ids = $this->query->ids();
-
+        $ids = $this->getResults()->ids();
         $valueIds = array_keys(CharacteristicLink::find()
             ->addSelect(['COUNT(elementId) as score', 'valueId'])
             ->where(['in', 'elementId', $ids])
