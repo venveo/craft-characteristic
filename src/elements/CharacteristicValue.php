@@ -15,6 +15,7 @@ use craft\base\Element;
 use craft\elements\db\ElementQueryInterface;
 use venveo\characteristic\Characteristic as Plugin;
 use venveo\characteristic\elements\db\CharacteristicValueQuery;
+use venveo\characteristic\helpers\DrilldownState;
 use venveo\characteristic\records\CharacteristicValue as CharacteristicValueRecord;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -150,6 +151,11 @@ class CharacteristicValue extends Element
         }
 
         return $characteristic;
+    }
+
+    public function applyToDrilldownState(DrilldownState $state) {
+        $newState = clone $state;
+        return $newState->setCharacteristicValue($this);
     }
 
 

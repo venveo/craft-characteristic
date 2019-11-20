@@ -4,8 +4,6 @@ namespace venveo\characteristic\helpers;
 
 use craft\base\Component;
 use craft\elements\db\ElementQueryInterface;
-use craft\helpers\ArrayHelper;
-use craft\helpers\Json;
 use venveo\characteristic\Characteristic;
 use venveo\characteristic\elements\Characteristic as CharacteristicElement;
 use venveo\characteristic\elements\CharacteristicValue as CharacteristicValueElement;
@@ -14,7 +12,8 @@ use venveo\characteristic\records\CharacteristicLink;
 
 class Drilldown extends Component
 {
-    public $state = [];
+    /** @var DrilldownState $state */
+    public $state = null;
 
     /** @var CharacteristicGroup $group */
     public $group = null;
@@ -35,9 +34,9 @@ class Drilldown extends Component
 
         $state = \Craft::$app->request->getParam('state');
         if (!$state) {
-            $this->state = [];
+            $this->state = new DrilldownState();
         } else {
-            $this->state = Json::decode(base64_decode($state));
+            $this->state = DrilldownState::fromString($state);
         }
     }
 
@@ -50,21 +49,25 @@ class Drilldown extends Component
             return $this->_currentCharacteristic;
         }
         $ids = $this->query->ids();
-        $links = array_keys(CharacteristicLink::find()
+        $linksQuery = CharacteristicLink::find()
             ->addSelect(['COUNT(characteristicId) as score', 'characteristicId'])
             ->where(['in', 'elementId', $ids])
             ->groupBy('characteristicId')
             ->orderBy('score DESC')
-            ->indexBy('characteristicId')
-            ->asArray()
-            ->all());
+            ->indexBy('characteristicId');
+
+        $skipIds = array_keys($this->state->satisfiedAttributes);
+        $linksQuery->andWhere(['NOT IN', 'characteristicId', $skipIds]);
+
+        $links = array_keys($linksQuery->asArray()->all());
 
         $characteristic = $this->_currentCharacteristic = CharacteristicElement::find()->groupId($this->_group->id)->id($links)->fixedOrder(true)->one();
 
         return $characteristic;
     }
 
-    public function getCurrentOptions() {
+    public function getCurrentOptions()
+    {
         $characteristic = $this->getCurrentCharacteristic();
         $ids = $this->query->ids();
 
@@ -83,7 +86,13 @@ class Drilldown extends Component
         return $values;
     }
 
-    public function getResults() {
-        return $this->query;
+    public function getResults()
+    {
+        return $this->state->modifyQuery($this->query);
+    }
+
+    public function getState()
+    {
+        return $this->state;
     }
 }

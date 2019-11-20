@@ -39,7 +39,6 @@ class CharacteristicVariable
     }
 
     public function drilldown($group, ElementQueryInterface $query) {
-        $state = null;
         $drilldown = new Drilldown([
             'group' => $group,
             'query' => $query
