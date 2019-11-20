@@ -66,6 +66,7 @@ class Install extends Migration
                 'id' => $this->primaryKey(),
                 'handle' => $this->string()->notNull(),
                 'name' => $this->string()->notNull(),
+                'fieldLayoutId' => $this->integer()->notNull(),
                 'dateCreated' => $this->dateTime()->notNull(),
                 'dateUpdated' => $this->dateTime()->notNull(),
                 'dateDeleted' => $this->dateTime()->null(),
@@ -103,9 +104,9 @@ class Install extends Migration
             'characteristicId' => $this->integer()->notNull(),
             'valueId' => $this->integer()->notNull(),
             'fieldId' => $this->integer()->notNull(),
+            'deletedWithElement' => $this->boolean()->defaultValue(false),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'deletedWithElement' => $this->boolean()->defaultValue(false),
             'uid' => $this->uid()
         ]);
     }

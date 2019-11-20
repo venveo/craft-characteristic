@@ -47,7 +47,7 @@ class CharacteristicValue extends Element
      */
     public static function displayName(): string
     {
-        return Craft::t('characteristic', 'Characteristic Values');
+        return Craft::t('characteristic', 'Characteristic Value');
     }
 
 
@@ -134,6 +134,7 @@ class CharacteristicValue extends Element
      */
     public function getFieldLayout()
     {
+        // TODO: Get field layout id off of characteristic group
         return null;
     }
 
@@ -153,7 +154,8 @@ class CharacteristicValue extends Element
         return $characteristic;
     }
 
-    public function applyToDrilldownState(DrilldownState $state) {
+    public function applyToDrilldownState(DrilldownState $state)
+    {
         $newState = clone $state;
         return $newState->setCharacteristicValue($this);
     }
