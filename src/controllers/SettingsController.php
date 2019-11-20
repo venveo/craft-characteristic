@@ -55,7 +55,7 @@ class SettingsController extends Controller
 
         if ($groupId !== null) {
             if ($group === null) {
-                $group = Craft::$app->getSections()->getSectionById($groupId);
+                $group = Characteristic::$plugin->characteristicGroups->getGroupById($groupId);
 
                 if (!$group) {
                     throw new NotFoundHttpException('Group not found');
