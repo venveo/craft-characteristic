@@ -1,12 +1,12 @@
 <template>
     <div>
-        <input type="hidden" :name="settings.name" />
+        <input type="hidden" :name="settings.name"/>
         <characteristic-item v-for="(characteristic) in characteristics"
                              :key="characteristic.id"
                              :data="characteristic"
-                             v-on:change="handleChange"
                              :consumedOptions="consumedOptions"
                              :options="characteristicAttributes"
+                             v-on:change="handleChange"
                              v-on:delete="() => handleDelete(characteristic)"
                              :name="settings.name + '['+characteristic.id+']'"
         />
@@ -57,10 +57,8 @@
                 console.log(e);
             }
         },
-        computed: {
-        },
-        watch: {
-        },
+        computed: {},
+        watch: {},
         mounted() {
             this.characteristics = this.settings.value;
             this.loading = true;

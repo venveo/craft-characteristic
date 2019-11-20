@@ -145,9 +145,16 @@ class Characteristics extends Field
                 $attributes = [];
             }
         } else {
-            $recordQuery = CharacteristicLinkRecord::find();
-            $recordQuery->where(['fieldId' => $this->id, 'elementId' => $element->id]);
-            $records = $recordQuery->all();
+            // Ensure we get links that don't have deleted elements
+            $recordQuery = CharacteristicLinkRecord::find()
+                ->addSelect(['link.id', 'link.characteristicId', 'link.valueId'])
+                ->alias('link')
+            ->leftJoin('{{%elements}} elements1', '[[elements1.id]] = [[link.characteristicId]]')
+            ->leftJoin('{{%elements}} elements2', '[[elements2.id]] = [[link.valueId]]');
+            $recordQuery->where(['link.fieldId' => $this->id, 'link.elementId' => $element->id]);
+            $recordQuery->andWhere(['elements1.dateDeleted' => null]);
+            $recordQuery->andWhere(['elements2.dateDeleted' => null]);
+            $records = $recordQuery->asArray()->all();
             $inputData = $this->prepareDataForInput($records);
             return $inputData;
         }
@@ -319,8 +326,8 @@ class Characteristics extends Field
         $characteristicIds = [];
         /** @var CharacteristicLinkRecord $result */
         foreach ($results as $result) {
-            $valueIds[] = $result->valueId;
-            $characteristicIds[] = $result->characteristicId;
+            $valueIds[] = $result['valueId'];
+            $characteristicIds[] = $result['characteristicId'];
         }
         $values = [];
         $characteristics = [];
@@ -339,9 +346,9 @@ class Characteristics extends Field
         /** @var CharacteristicLinkRecord $result */
         foreach ($results as $result) {
             $inputData[] = [
-                'id' => $result->id,
-                'characteristic' => $characteristics[$result->characteristicId],
-                'value' => $values[$result->valueId]
+                'id' => $result['id'],
+                'characteristic' => $characteristics[$result['characteristicId']],
+                'value' => $values[$result['valueId']]
             ];
         }
 
