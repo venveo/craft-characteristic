@@ -152,8 +152,7 @@ class Characteristics extends Field
             ->leftJoin('{{%elements}} elements1', '[[elements1.id]] = [[link.characteristicId]]')
             ->leftJoin('{{%elements}} elements2', '[[elements2.id]] = [[link.valueId]]');
             $recordQuery->where(['link.fieldId' => $this->id, 'link.elementId' => $element->id]);
-            $recordQuery->andWhere(['elements1.dateDeleted' => null]);
-            $recordQuery->andWhere(['elements2.dateDeleted' => null]);
+            $recordQuery->andWhere(['elements1.dateDeleted' => null, 'elements2.dateDeleted' => null]);
             $records = $recordQuery->asArray()->all();
             $inputData = $this->prepareDataForInput($records);
             return $inputData;
