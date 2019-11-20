@@ -6,6 +6,7 @@ use craft\base\Component;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
+use venveo\characteristic\elements\Characteristic;
 use venveo\characteristic\elements\CharacteristicValue;
 use venveo\characteristic\records\CharacteristicLink;
 
@@ -25,6 +26,11 @@ class DrilldownState extends Component
         $characteristicId = $characteristicValue->characteristicId;
         $this->values[$characteristicId] = $characteristicValue->id;
         $this->satisfiedAttributes[$characteristicId] = true;
+        return $this;
+    }
+
+    public function setCharacteristicSatisfied(Characteristic $characteristic) {
+        $this->satisfiedAttributes[$characteristic->id] = true;
         return $this;
     }
 

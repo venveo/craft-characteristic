@@ -70,14 +70,20 @@ class Drilldown extends Component
         }
         $ids = $this->query->ids();
         $linksQuery = CharacteristicLink::find()
+            ->alias('link')
+            ->leftJoin('{{%elements}} elements1', '[[elements1.id]] = [[link.characteristicId]]')
+            ->leftJoin('{{%elements}} elements2', '[[elements2.id]] = [[link.valueId]]')
             ->addSelect(['COUNT(characteristicId) as score', 'characteristicId'])
             ->where(['in', 'elementId', $ids])
+
             ->groupBy('characteristicId')
-            ->orderBy('score DESC')
+            // TODO: Not sure if this makes sense...
+            ->orderBy('score ASC')
             ->indexBy('characteristicId');
 
         $skipIds = array_keys($this->state->satisfiedAttributes);
         $linksQuery->andWhere(['NOT IN', 'characteristicId', $skipIds]);
+        $linksQuery->andWhere([ 'elements1.dateDeleted' => null, 'elements2.dateDeleted' => null]);
 
         $links = array_keys($linksQuery->asArray()->all());
 
@@ -94,5 +100,10 @@ class Drilldown extends Component
     public function getState()
     {
         return $this->state;
+    }
+
+    public function getSkipUrl() {
+        $localState = clone $this->state;
+        return $localState->setCharacteristicSatisfied($this->getCurrentCharacteristic())->getUrl();
     }
 }
