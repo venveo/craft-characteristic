@@ -17,6 +17,11 @@ use craft\db\SoftDeleteTrait;
  * @author    Venveo
  * @package   Characteristic
  * @since     1.0.0
+ * @property int $id [int(11)]
+ * @property int $groupId [int(11)]
+ * @property string $handle [varchar(255)]
+ * @property string $title [varchar(255)]
+ * @property bool $deletedWithGroup [tinyint(1)]
  */
 class Characteristic extends ActiveRecord
 {

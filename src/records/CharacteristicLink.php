@@ -16,6 +16,8 @@ use craft\db\ActiveRecord;
  * @author    Venveo
  * @package   Characteristic
  * @since     1.0.0
+ *
+ * @property mixed $characteristicValue
  */
 class CharacteristicLink extends ActiveRecord
 {

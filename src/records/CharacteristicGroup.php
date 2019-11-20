@@ -20,6 +20,9 @@ use craft\db\ActiveRecord;
  * @author    Venveo
  * @package   Characteristic
  * @since     1.0.0
+ * @property int $id [int(11)]
+ * @property string $handle [varchar(255)]
+ * @property string $name [varchar(255)]
  */
 class CharacteristicGroup extends ActiveRecord
 {

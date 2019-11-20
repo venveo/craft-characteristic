@@ -16,6 +16,10 @@ use craft\db\ActiveRecord;
  * @author    Venveo
  * @package   Characteristic
  * @since     1.0.0
+ * @property int $id [int(11)]
+ * @property int $characteristicId [int(11)]
+ * @property int $sortOrder [smallint(6) unsigned]
+ * @property string $text [varchar(255)]
  */
 class CharacteristicValue extends ActiveRecord
 {
