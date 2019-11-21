@@ -17,6 +17,7 @@ use craft\events\DefineBehaviorsEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterCpSettingsEvent;
 use craft\events\RegisterUrlRulesEvent;
+use craft\helpers\UrlHelper;
 use craft\services\Elements;
 use craft\services\Fields;
 use craft\web\twig\variables\Cp;
@@ -58,6 +59,7 @@ class Characteristic extends Plugin
     // Public Properties
     // =========================================================================
 
+    public $hasCpSettings = true;
 
     /**
      * @var string
@@ -142,7 +144,10 @@ class Characteristic extends Plugin
             });
     }
 
+    public function getSettingsResponse()
+    {
+        return Craft::$app->response->redirect(UrlHelper::cpUrl('settings/characteristics'));
+    }
     // Protected Methods
     // =========================================================================
-
 }
