@@ -73,9 +73,9 @@
                 </thead>
                 <tbody>
                 {% for value in values %}
-                    <tr data-id="{{ value.id }}" data-uid="{{ value.uid }}" data-name="{{ value.text }}">
+                    <tr data-id="{{ value.id }}" data-uid="{{ value.uid }}" data-name="{{ value.value }}">
                         <td>{{ value.id }}</td>
-                        <td>{{ value.text }}</td>
+                        <td>{{ value.value }}</td>
                         <td>{{ value.dateCreated|datetime('short') }}</td>
                         <td>{{ value.dateUpdated|datetime('short') }}</td>
                         <td class="thin"><a class="move icon" title="{{ 'Reorder'|t('app') }}" role="button"></a></td>
@@ -111,7 +111,7 @@
                     <tr>
                         <td>{{ relatedElement.id }}</td>
                         <td>{{ relatedElement.title }}</td>
-                        <td>{{ links[0].characteristicValue.text }}</td>
+                        <td>{{ links[0].characteristicValue.value }}</td>
                     </tr>
                 {% endfor %}
                 </tbody>

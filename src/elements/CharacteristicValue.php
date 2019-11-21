@@ -12,6 +12,7 @@ namespace venveo\characteristic\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\db\Query;
 use craft\elements\db\ElementQueryInterface;
 use venveo\characteristic\Characteristic as Plugin;
 use venveo\characteristic\elements\db\CharacteristicValueQuery;
@@ -57,6 +58,14 @@ class CharacteristicValue extends Element
     public static function pluralDisplayName(): string
     {
         return Craft::t('characteristic', 'Characteristic Values');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function refHandle()
+    {
+        return 'characteristicValue';
     }
 
     /**
@@ -129,17 +138,18 @@ class CharacteristicValue extends Element
         return true;
     }
 
+
     /**
      * @inheritdoc
      */
     public function getFieldLayout()
     {
-        // TODO: Get field layout id off of characteristic group
-        return null;
+        return parent::getFieldLayout() ?? $this->getCharacteristic()->getGroup()->getValueFieldLayout();
     }
 
     /**
-     * @inheritdoc
+     * @return Characteristic|null
+     * @throws InvalidConfigException
      */
     public function getCharacteristic()
     {
@@ -152,6 +162,35 @@ class CharacteristicValue extends Element
         }
 
         return $characteristic;
+    }
+
+
+    /**
+     * @inheritdoc
+     */
+    public static function eagerLoadingMap(array $sourceElements, string $handle): array
+    {
+        if ($handle == 'characteristic') {
+            // Get the source element IDs
+            $sourceElementIds = [];
+
+            foreach ($sourceElements as $sourceElement) {
+                $sourceElementIds[] = $sourceElement->id;
+            }
+
+            $map = (new Query())
+                ->select('id as source, characteristicId as target')
+                ->from('{{%characteristic_characteristics}}')
+                ->where(['in', 'id', $sourceElementIds])
+                ->all();
+
+            return [
+                'elementType' => Characteristic::class,
+                'map' => $map
+            ];
+        }
+
+        return parent::eagerLoadingMap($sourceElements, $handle);
     }
 
     public function applyToDrilldownState(DrilldownState $state)
@@ -201,6 +240,17 @@ class CharacteristicValue extends Element
         parent::afterSave($isNew);
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function beforeValidate()
+    {
+        $group = $this->getCharacteristic()->getGroup();
+
+        $this->fieldLayoutId = $group->valueFieldLayoutId;
+
+        return parent::beforeValidate();
+    }
 
     /**
      * @inheritdoc

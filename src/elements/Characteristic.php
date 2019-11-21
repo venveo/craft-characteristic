@@ -12,6 +12,7 @@ namespace venveo\characteristic\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\db\Query;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\Entry;
 use craft\helpers\UrlHelper;
@@ -53,6 +54,14 @@ class Characteristic extends Element
     public static function pluralDisplayName(): string
     {
         return Craft::t('characteristic', 'Characteristics');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function refHandle()
+    {
+        return 'characteristic';
     }
 
     /**
@@ -158,7 +167,35 @@ class Characteristic extends Element
      */
     public function getFieldLayout()
     {
-        return null;
+        return parent::getFieldLayout() ?? $this->getGroup()->getCharacteristicFieldLayout();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function eagerLoadingMap(array $sourceElements, string $handle): array
+    {
+        if ($handle == 'values') {
+            // Get the source element IDs
+            $sourceElementIds = [];
+
+            foreach ($sourceElements as $sourceElement) {
+                $sourceElementIds[] = $sourceElement->id;
+            }
+
+            $map = (new Query())
+                ->select('id as source, characteristicValueId as target')
+                ->from('{{%characteristic_values}}')
+                ->where(['in', 'characteristicId', $sourceElementIds])
+                ->all();
+
+            return [
+                'elementType' => CharacteristicValue::class,
+                'map' => $map
+            ];
+        }
+
+        return parent::eagerLoadingMap($sourceElements, $handle);
     }
 
     /**
@@ -276,5 +313,18 @@ class Characteristic extends Element
             return false;
         }
         return true;
+    }
+
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeValidate()
+    {
+        $group = $this->getGroup();
+
+        $this->fieldLayoutId = $group->characteristicFieldLayoutId;
+
+        return parent::beforeValidate();
     }
 }
