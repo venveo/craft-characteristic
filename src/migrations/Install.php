@@ -52,10 +52,10 @@ class Install extends Migration
                 'id' => $this->primaryKey(),
                 'handle' => $this->string()->notNull(),
                 'name' => $this->string()->notNull(),
-                'fieldLayoutId' => $this->integer()->notNull(),
+                'characteristicFieldLayoutId' => $this->integer()->null(),
+                'valueFieldLayoutId' => $this->integer()->null(),
                 'dateCreated' => $this->dateTime()->notNull(),
                 'dateUpdated' => $this->dateTime()->notNull(),
-                'dateDeleted' => $this->dateTime()->null(),
                 'uid' => $this->uid(),
             ]
         );
@@ -64,7 +64,6 @@ class Install extends Migration
             'id' => $this->integer()->notNull(),
             'groupId' => $this->integer()->notNull(),
             'handle' => $this->string(),
-            'title' => $this->string(),
             'deletedWithGroup' => $this->boolean()->null(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
@@ -77,7 +76,7 @@ class Install extends Migration
             'id' => $this->integer()->notNull(),
             'characteristicId' => $this->integer()->notNull(),
             'sortOrder' => $this->smallInteger()->unsigned(),
-            'text' => $this->string(),
+            'value' => $this->string()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -106,13 +105,13 @@ class Install extends Migration
     protected function createIndexes()
     {
         $this->createIndex(null, '{{%characteristic_groups}}', ['name'], false);
-        $this->createIndex(null, '{{%characteristic_groups}}', ['handle'], false);
-        $this->createIndex(null, '{{%characteristic_groups}}', ['dateDeleted'], false);
+        $this->createIndex(null, '{{%characteristic_groups}}', ['handle'], true);
 
         $this->createIndex(null, '{{%characteristic_characteristics}}', ['handle'], false);
 
         $this->createIndex(null, '{{%characteristic_values}}', ['sortOrder'], false);
-        $this->createIndex(null, '{{%characteristic_values}}', ['text'], false);
+        $this->createIndex(null, '{{%characteristic_values}}', ['value'], false);
+        $this->createIndex(null, '{{%characteristic_values}}', ['value', 'characteristicId'], true);
 
         $this->createIndex(null, '{{%characteristic_links}}', ['deletedWithElement'], false);
     }
@@ -122,6 +121,9 @@ class Install extends Migration
      */
     protected function addForeignKeys()
     {
+        $this->addForeignKey(null, '{{%characteristic_groups}}', ['characteristicFieldLayoutId'], Table::FIELDLAYOUTS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, '{{%characteristic_groups}}', ['valueFieldLayoutId'], Table::FIELDLAYOUTS, ['id'], 'CASCADE', null);
+
         $this->addForeignKey(null, '{{%characteristic_characteristics}}', ['id'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%characteristic_characteristics}}', ['groupId'], '{{%characteristic_groups}}', ['id'], 'CASCADE', null);
 

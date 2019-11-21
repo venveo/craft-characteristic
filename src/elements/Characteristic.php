@@ -31,12 +31,6 @@ class Characteristic extends Element
 {
     // Public Properties
     // =========================================================================
-
-    /**
-     * @var string
-     */
-    public $title = '';
-
     public $handle = '';
 
     public $groupId = null;
@@ -66,7 +60,7 @@ class Characteristic extends Element
      */
     public static function hasContent(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -82,7 +76,7 @@ class Characteristic extends Element
      */
     public static function hasTitles(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -266,7 +260,6 @@ class Characteristic extends Element
         }
 
         $record->groupId = $this->groupId;
-        $record->title = $this->title;
         $record->handle = $this->handle;
 
         $record->save(false);

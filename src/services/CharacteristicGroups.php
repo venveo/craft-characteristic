@@ -17,9 +17,13 @@ use craft\errors\SectionNotFoundException;
 use craft\events\ConfigEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
+use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
+use craft\models\FieldLayout;
 use craft\models\Section;
 use Throwable;
+use venveo\characteristic\elements\Characteristic;
+use venveo\characteristic\elements\CharacteristicValue;
 use venveo\characteristic\events\CharacteristicGroupEvent;
 use venveo\characteristic\models\CharacteristicGroup;
 use venveo\characteristic\records\CharacteristicGroup as CharacteristicGroupRecord;
@@ -132,19 +136,16 @@ class CharacteristicGroups extends Component
      */
     private function _createGroupQuery(): Query
     {
-        $condition = null;
-        $condition = ['groups.dateDeleted' => null];
-
         $query = (new Query())
             ->select([
                 'groups.id',
                 'groups.name',
                 'groups.handle',
+                'groups.characteristicFieldLayoutId',
+                'groups.valueFieldLayoutId',
                 'groups.uid',
             ])
-            ->from(['{{%characteristic_groups}} groups'])
-            ->where($condition)
-            ->orderBy(['name' => SORT_ASC]);
+            ->from(['{{%characteristic_groups}} groups']);
 
         return $query;
     }
@@ -326,6 +327,26 @@ class CharacteristicGroups extends Component
             'handle' => $group->handle
         ];
 
+        $generateLayoutConfig = function(FieldLayout $fieldLayout): array {
+            $fieldLayoutConfig = $fieldLayout->getConfig();
+
+            if ($fieldLayoutConfig) {
+                if (empty($fieldLayout->id)) {
+                    $layoutUid = StringHelper::UUID();
+                    $fieldLayout->uid = $layoutUid;
+                } else {
+                    $layoutUid = Db::uidById('{{%fieldlayouts}}', $fieldLayout->id);
+                }
+
+                return [$layoutUid => $fieldLayoutConfig];
+            }
+
+            return [];
+        };
+
+        $configData['characteristicFieldLayouts'] = $generateLayoutConfig($group->getCharacteristicFieldLayout());
+        $configData['valueFieldLayouts'] = $generateLayoutConfig($group->getValueFieldLayout());
+
         // Do everything that follows in a transaction so no DB changes will be
         // saved if an exception occurs that ends up preventing the project config
         // changes from getting saved
@@ -361,23 +382,52 @@ class CharacteristicGroups extends Component
         $groupUid = $event->tokenMatches[0];
         $data = $event->newValue;
 
+        // Make sure fields and sites are processed
+        ProjectConfigHelper::ensureAllSitesProcessed();
+        ProjectConfigHelper::ensureAllFieldsProcessed();
+
         $db = Craft::$app->getDb();
         $transaction = $db->beginTransaction();
 
         try {
             // Basic data
-            $groupRecord = $this->_getGroupRecord($groupUid, true);
+            $groupRecord = $this->_getGroupRecord($groupUid);
+            $isNewGroup = $groupRecord->getIsNewRecord();
+            $fieldsService = Craft::$app->getFields();
+
             $groupRecord->uid = $groupUid;
             $groupRecord->name = $data['name'];
             $groupRecord->handle = $data['handle'];
 
-            $isNewGroup = $groupRecord->getIsNewRecord();
-
-            if ($groupRecord->dateDeleted) {
-                $groupRecord->restore();
-            } else {
-                $groupRecord->save(false);
+            if (!empty($data['characteristicFieldLayouts']) && !empty($config = reset($data['characteristicFieldLayouts']))) {
+                // Save the characteristic field layout
+                $layout = FieldLayout::createFromConfig($config);
+                $layout->id = $groupRecord->characteristicFieldLayoutId;
+                $layout->type = Characteristic::class;
+                $layout->uid = key($data['characteristicFieldLayouts']);
+                $fieldsService->saveLayout($layout);
+                $groupRecord->characteristicFieldLayoutId = $layout->id;
+            } else if ($groupRecord->characteristicFieldLayoutId) {
+                // Delete the main field layout
+                $fieldsService->deleteLayoutById($groupRecord->characteristicFieldLayoutId);
+                $groupRecord->characteristicFieldLayoutId = null;
             }
+
+            if (!empty($data['valueFieldLayouts']) && !empty($config = reset($data['valueFieldLayouts']))) {
+                // Save the variant field layout
+                $layout = FieldLayout::createFromConfig($config);
+                $layout->id = $groupRecord->valueFieldLayoutId;
+                $layout->type = CharacteristicValue::class;
+                $layout->uid = key($data['valueFieldLayouts']);
+                $fieldsService->saveLayout($layout);
+                $groupRecord->valueFieldLayoutId = $layout->id;
+            } else if ($groupRecord->valueFieldLayoutId) {
+                // Delete the variant field layout
+                $fieldsService->deleteLayoutById($groupRecord->valueFieldLayoutId);
+                $groupRecord->valueFieldLayoutId = null;
+            }
+
+            $groupRecord->save(false);
 
             $transaction->commit();
         } catch (Throwable $e) {
@@ -407,9 +457,9 @@ class CharacteristicGroups extends Component
      * @param bool $withTrashed Whether to include trashed groups in search
      * @return CharacteristicGroupRecord
      */
-    private function _getGroupRecord(string $uid, bool $withTrashed = false): CharacteristicGroupRecord
+    private function _getGroupRecord(string $uid): CharacteristicGroupRecord
     {
-        $query = $withTrashed ? CharacteristicGroupRecord::findWithTrashed() : CharacteristicGroupRecord::find();
+        $query = CharacteristicGroupRecord::find();
         $query->andWhere(['uid' => $uid]);
         return $query->one() ?? new CharacteristicGroupRecord();
     }
@@ -515,11 +565,26 @@ class CharacteristicGroups extends Component
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            // Delete the group
-            Craft::$app->getDb()->createCommand()
-                ->softDelete(CharacteristicGroupRecord::tableName(), ['id' => $groupRecord->id])
-                ->execute();
+            $characteristics = Characteristic::find()
+                ->groupId($group->id)
+                ->limit(null)
+                ->all();
 
+            foreach($characteristics as $characteristic) {
+                Craft::$app->getElements()->deleteElement($characteristic);
+            }
+
+            $characteristicFieldLayoutId = $group->characteristicFieldLayoutId;
+            $valueFieldLayoutId = $group->valueFieldLayoutId;
+
+            if ($characteristicFieldLayoutId) {
+                Craft::$app->getFields()->deleteLayoutById($characteristicFieldLayoutId);
+            }
+            if ($valueFieldLayoutId) {
+                Craft::$app->getFields()->deleteLayoutById($valueFieldLayoutId);
+            }
+
+            $groupRecord->delete();
             $transaction->commit();
         } catch (Throwable $e) {
             $transaction->rollBack();

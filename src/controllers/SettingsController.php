@@ -8,9 +8,12 @@
 namespace venveo\characteristic\controllers;
 
 use Craft;
+use craft\behaviors\FieldLayoutBehavior;
 use craft\helpers\UrlHelper;
 use craft\web\Controller;
 use venveo\characteristic\Characteristic;
+use venveo\characteristic\elements\Characteristic as CharacteristicElement;
+use venveo\characteristic\elements\CharacteristicValue as CharacteristicValueElement;
 use venveo\characteristic\models\CharacteristicGroup;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
@@ -85,7 +88,24 @@ class SettingsController extends Controller
             ],
         ];
 
-//        Craft::$app->getView()->registerAssetBundle(EditSectionAsset::class);
+
+        $tabs = [
+            'groupSettings' => [
+                'label' => Craft::t('characteristic', 'Settings'),
+                'url' => '#group-settings',
+            ],
+            'characteristicFields' => [
+                'label' => Craft::t('characteristic', 'Characteristic Fields'),
+                'url' => '#characteristic-fields',
+            ],
+            'valueFields' => [
+                'label' => Craft::t('characteristic', 'Characteristic Value Fields'),
+                'url' => '#value-fields',
+            ]
+        ];
+
+        $variables['tabs'] = $tabs;
+        $variables['selectedTab'] = 'groupSettings';
 
         return $this->renderTemplate('characteristic/settings/_edit', $variables);
     }
@@ -108,6 +128,18 @@ class SettingsController extends Controller
         $group->id = $request->getBodyParam('groupId');
         $group->name = $request->getBodyParam('name');
         $group->handle = $request->getBodyParam('handle');
+
+        $characteristicFieldLayout = Craft::$app->getFields()->assembleLayoutFromPost('characteristic-layout');
+        $characteristicFieldLayout->type = CharacteristicElement::class;
+        /** @var FieldLayoutBehavior $behavior */
+        $behavior = $group->getBehavior('characteristicFieldLayout');
+        $behavior->setFieldLayout($characteristicFieldLayout);
+
+        // Set the variant field layout
+        $valueFieldLayout = Craft::$app->getFields()->assembleLayoutFromPost('value-layout');
+        $valueFieldLayout->type = CharacteristicValueElement::class;
+        $behavior = $group->getBehavior('valueFieldLayout');
+        $behavior->setFieldLayout($valueFieldLayout);
 
         // Save it
         if (!Characteristic::$plugin->characteristicGroups->saveGroup($group)) {
