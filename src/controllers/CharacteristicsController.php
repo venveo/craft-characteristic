@@ -71,24 +71,6 @@ class CharacteristicsController extends Controller
         /** @var Section $group */
         $group = $variables['group'];
 
-        // Make sure they have permission to edit this entry
-//        $this->enforceEditEntryPermissions($characteristic);
-
-        $currentUser = Craft::$app->getUser()->getIdentity();
-
-//        try {
-//            if (($variables['author'] = $characteristic->getAuthor()) === null) {
-//                // Default to the current user
-//                $variables['author'] = $currentUser;
-//            }
-//        } catch (InvalidConfigException $e) {
-//            // The author doesn't exist anymore
-//            $variables['author'] = $currentUser;
-//        }
-
-        // Other variables
-        // ---------------------------------------------------------------------
-
         // Body class
         $variables['bodyClass'] = 'edit-characteristic';
 
@@ -111,6 +93,23 @@ class CharacteristicsController extends Controller
             'label' => Craft::t('site', $group->name),
             'url' => UrlHelper::url('characteristics/' . $group->handle)
         ];
+
+        $tabs = [];
+        if ($characteristicId) {
+            $tabs['overview'] =[
+                'label' => Craft::t('characteristic', 'Overview'),
+                'url' => '#overview',
+            ];
+        }
+
+        $tabs['characteristicFields'] = [
+                'label' => Craft::t('characteristic', 'Content'),
+                'url' => '#fields',
+        ];
+
+        $variables['tabs'] = $tabs;
+        $variables['selectedTab'] = 'overview';
+
 
         // Render the template!
         return $this->renderTemplate('characteristic/characteristics/_edit', $variables);
@@ -164,6 +163,7 @@ class CharacteristicsController extends Controller
      * @param bool $duplicate Whether the entry should be duplicated
      * @return Response|null
      * @throws ServerErrorHttpException if reasons
+     * @throws NotFoundHttpException
      */
     public function actionSaveCharacteristic(bool $duplicate = false)
     {
@@ -264,6 +264,7 @@ class CharacteristicsController extends Controller
 
         $characteristic->handle = $request->getBodyParam('handle', $characteristic->handle);
         $characteristic->title = $request->getBodyParam('title', $characteristic->title);
+        $characteristic->setFieldValuesFromRequest('fields');
     }
 
     /**
@@ -275,7 +276,7 @@ class CharacteristicsController extends Controller
      */
     public function actionDuplicateEntry()
     {
-        return $this->runAction('save-entry', ['duplicate' => true]);
+        return $this->runAction('save-characteristic', ['duplicate' => true]);
     }
 
     /**

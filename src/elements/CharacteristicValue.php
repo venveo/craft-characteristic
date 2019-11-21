@@ -34,7 +34,7 @@ class CharacteristicValue extends Element
     /**
      * @var string
      */
-    public $text = '';
+    public $value = '';
 
     public $characteristicId = null;
 
@@ -232,7 +232,7 @@ class CharacteristicValue extends Element
         }
 
         $record->characteristicId = $this->characteristicId;
-        $record->text = $this->text;
+        $record->value = $this->value;
         $record->sortOrder = $this->sortOrder;
 
         $record->save(false);

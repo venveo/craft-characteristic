@@ -42,20 +42,8 @@
 
     {{ hiddenInput('groupId', group.id) }}
     {% if characteristic.id %}{{ hiddenInput('characteristicId', characteristic.id) }}{% endif %}
-
-    <div id="fields">
-        {{ forms.textField({
-            label: "Title"|t('app'),
-            id: 'title',
-            name: 'title',
-            value: characteristic.title,
-            errors: characteristic.getErrors('title'),
-            first: true,
-            autofocus: true,
-            required: true,
-            maxlength: 255
-        }) }}
-
+    {% if characteristic.id %}
+    <div id="overview">
         {% if characteristic.id %}
             {% set values = characteristic.values.all() %}
             <h2>All Values</h2>
@@ -117,8 +105,27 @@
                 </tbody>
             </table>
         {% endif %}
-
-
+    </div>
+    {% endif %}
+    <div id="fields" class="{% if characteristic.id %}hidden{% endif %}">
+        {% set tabs = characteristic.getFieldLayout().getTabs() %}
+        {{ forms.textField({
+            label: "Title"|t('app'),
+            id: 'title',
+            name: 'title',
+            value: characteristic.title,
+            errors: characteristic.getErrors('title'),
+            first: true,
+            autofocus: true,
+            required: true,
+            maxlength: 255
+        }) }}
+        {% if tabs|length %}
+        {% include "_includes/fields" with {
+            fields: tabs[0].getFields(),
+            element: characteristic,
+        } only %}
+        {% endif %}
     </div>
 {% endblock %}
 

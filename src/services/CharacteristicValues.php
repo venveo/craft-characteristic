@@ -35,18 +35,18 @@ class CharacteristicValues extends Component
 
     /**
      * @param $characteristic
-     * @param $text
+     * @param $value
      */
-    public function getOrCreateValueElement(Characteristic $characteristic, $text)
+    public function getOrCreateValueElement(Characteristic $characteristic, $value)
     {
-        $existing = CharacteristicValue::find()->text($text)->characteristicId($characteristic->id)->one();
+        $existing = CharacteristicValue::find()->value($value)->characteristicId($characteristic->id)->one();
         if ($existing) {
             return $existing;
         }
 
 
         $characteristicValue = new CharacteristicValue();
-        $characteristicValue->text = $text;
+        $characteristicValue->value = $value;
         $characteristicValue->characteristicId = $characteristic->id;
         Craft::$app->elements->saveElement($characteristicValue);
         return $characteristicValue;

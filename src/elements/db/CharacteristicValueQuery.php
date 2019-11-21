@@ -56,7 +56,7 @@ class CharacteristicValueQuery extends ElementQuery
             $this->subQuery->andWhere(Db::parseParam('characteristic_values.characteristicId', $this->characteristicId));
         }
         if ($this->value) {
-            $this->subQuery->andWhere(Db::parseParam('characteristic_values.value', $this->text));
+            $this->subQuery->andWhere(Db::parseParam('characteristic_values.value', $this->value));
         }
 
         return parent::beforePrepare();
