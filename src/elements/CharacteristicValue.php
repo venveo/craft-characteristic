@@ -42,6 +42,10 @@ class CharacteristicValue extends Element
 
     // Static Methods
     // =========================================================================
+    /**
+     * @var Characteristic
+     */
+    private $_characteristic;
 
     /**
      * @inheritdoc
@@ -153,6 +157,10 @@ class CharacteristicValue extends Element
      */
     public function getCharacteristic()
     {
+        if ($this->_characteristic !== null) {
+            return $this->_characteristic;
+        }
+
         if ($this->characteristicId === null) {
             throw new InvalidConfigException('Characteristic value is missing its characteristic ID');
         }
@@ -161,9 +169,31 @@ class CharacteristicValue extends Element
             throw new InvalidConfigException('Invalid characteristic ID: ' . $this->characteristicId);
         }
 
-        return $characteristic;
+        return $this->_characteristic = $characteristic;
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function setEagerLoadedElements(string $handle, array $elements)
+    {
+        if ($handle == 'characteristic') {
+            $characteristic = $elements[0] ?? null;
+            $this->setCharacteristic($characteristic);
+        } else {
+            parent::setEagerLoadedElements($handle, $elements);
+        }
+    }
+
+    public function setCharacteristic(Characteristic $characteristic)
+    {
+
+        if ($characteristic->id) {
+            $this->characteristicId = $characteristic->id;
+        }
+
+        $this->_characteristic = $characteristic;
+    }
 
     /**
      * @inheritdoc

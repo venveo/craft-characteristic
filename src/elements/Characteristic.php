@@ -38,6 +38,10 @@ class Characteristic extends Element
 
     // Static Methods
     // =========================================================================
+    /**
+     * @var \craft\base\ElementInterface[]|string|null
+     */
+    private $_values;
 
     /**
      * @inheritdoc
@@ -184,7 +188,7 @@ class Characteristic extends Element
             }
 
             $map = (new Query())
-                ->select('id as source, characteristicValueId as target')
+                ->select('id as target, characteristicId as source')
                 ->from('{{%characteristic_values}}')
                 ->where(['in', 'characteristicId', $sourceElementIds])
                 ->all();
@@ -197,6 +201,60 @@ class Characteristic extends Element
 
         return parent::eagerLoadingMap($sourceElements, $handle);
     }
+
+    public function setValues($values) {
+        $this->_values = [];
+        $count = 1;
+
+        if (empty($values)) {
+            return;
+        }
+
+        foreach ($values as $key => $value) {
+            if (!$value instanceof CharacteristicValue) {
+                die('wtf');
+//                $variant = ProductHelper::populateProductVariantModel($this, $variant, $key);
+            }
+//            $variant->sortOrder = $count++;
+            $value->setCharacteristic($this);
+
+
+            $this->_values[] = $value;
+        }
+    }
+
+
+    /**
+     * @inheritdoc
+     */
+    public function setEagerLoadedElements(string $handle, array $elements)
+    {
+        if ($handle == 'values') {
+            $this->setValues($elements);
+        } else {
+            parent::setEagerLoadedElements($handle, $elements);
+        }
+    }
+
+    /**
+     * Returns the product associated with this variant.
+     *
+     * @return CharacteristicValue[] The product associated with this variant, or null if it isn’t known
+     * @throws InvalidConfigException if the product ID is missing from the variant
+     */
+    public function getValues()
+    {
+        if (null === $this->_values) {
+            if ($this->id) {
+                $criteria['characteristicId'] = $this->id;
+                $query = Craft::configure(CharacteristicValue::find(), $criteria);
+                $this->setValues($query->all());
+            }
+        }
+
+        return $this->_values;
+    }
+
 
     /**
      * @inheritdoc
@@ -251,13 +309,6 @@ class Characteristic extends Element
         $html .= parent::getEditorHtml();
 
         return $html;
-    }
-
-    public function getValues($criteria = [])
-    {
-        $criteria['characteristicId'] = $this->id;
-        $query = Craft::configure(CharacteristicValue::find(), $criteria);
-        return $query;
     }
 
     // Events
