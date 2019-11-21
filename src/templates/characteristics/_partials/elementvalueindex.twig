@@ -1,0 +1,35 @@
+<table id="values" class="data fullwidth collapsible">
+    <thead>
+    <tr>
+        <th class="thin">{{ "ID" }}</th>
+        <th class="thin">{{ "Text" }}</th>
+        <th>{{ "Created On"|t }}</th>
+        <th>{{ "Updated On"|t }}</th>
+
+        <td class="thin"></td>
+        <td class="thin"></td>
+    </tr>
+    </thead>
+    <tbody>
+    {% for value in values %}
+        <tr data-id="{{ value.id }}" data-uid="{{ value.uid }}" data-name="{{ value.value }}">
+            <td>{{ value.id }}</td>
+            <td>{{ value.value }}</td>
+            <td>{{ value.dateCreated|datetime('short') }}</td>
+            <td>{{ value.dateUpdated|datetime('short') }}</td>
+            <td class="thin"><a class="move icon" title="{{ 'Reorder'|t('app') }}" role="button"></a></td>
+            <td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% js %}
+    new Craft.AdminTable({
+    tableSelector: '#values',
+    deleteAction: 'characteristic/characteristic-values/delete-value',
+    sortable: true,
+    reorderAction: 'characteristic/characteristic-values/reorder-value',
+    confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}”?"|t('characteristic') }}',
+    });
+{% endjs %}
