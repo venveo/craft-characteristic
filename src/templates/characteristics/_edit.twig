@@ -17,6 +17,8 @@
 {% endblock %}
 
 {% block actionButton %}
+    <a class="btn" href="{{ cpUrl('characteristics/' ~ groupHandle ~ '/' ~ characteristic.id ~ '/new') }}">Create Value</a>
+
     <div class="btngroup">
         <input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
 
