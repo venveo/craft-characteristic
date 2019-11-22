@@ -7,13 +7,13 @@
             <div class="input ltr">
                 <div class="select">
                     <select v-model="attribute">
-                        <option :disabled="option.disabled" :key="option.id" :value="option.handle"
-                                v-for="option in options">{{option.title}}
+                        <option :key="option.id" :value="handle"
+                                v-for="(option, handle) in options">{{option.title}}
                         </option>
                     </select>
                 </div>
             </div>
-            <div class="input ltr">
+            <div class="input ltr" v-if="currentCharacteristic">
                 <input class="text fullwidth" type="text" v-model="value">
             </div>
             <div class="actions">
@@ -31,7 +31,7 @@
         props: {
             options: Array,
             name: String,
-            data: Object
+            data: Object,
         },
         data() {
             return {
@@ -45,7 +45,15 @@
                 this.$emit('change', newVal);
             }
         },
-        mounted() {
+        computed: {
+            currentCharacteristic() {
+                if(this.data.characteristic)
+                {
+                    return this.data.characteristic;
+                }
+            }
+        },
+        beforeMount() {
             if (this.data.hasOwnProperty('characteristic')) {
                 this.attribute = this.data.characteristic.handle;
             }

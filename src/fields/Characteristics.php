@@ -171,6 +171,7 @@ class Characteristics extends Field
         $values = [];
         $characteristics = [];
         $characteristicQuery = CharacteristicElement::find();
+        $characteristicQuery->with(['values']);
         $characteristicQuery->id($characteristicIds);
         $characteristicQuery->indexBy('id');
         $characteristics = $characteristicQuery->all();
@@ -276,15 +277,29 @@ class Characteristics extends Field
      */
     protected function inputTemplateVariables($value = null, ElementInterface $element = null): array
     {
+        $formattedValues = [];
+        foreach($value as $characteristicItem) {
+            $characteristicItem['characteristic'] = [
+                'id' => $characteristicItem['characteristic']->id,
+                'handle' => $characteristicItem['characteristic']->handle,
+                'title' => $characteristicItem['characteristic']->title,
+                'values' => array_map(function(CharacteristicValue $cvalue) {
+                    return [
+                        'id' => $cvalue->id,
+                        'value' => $cvalue->value
+                    ];
+                }, $characteristicItem['characteristic']->values)
+            ];
+            $formattedValues[] = $characteristicItem;
+        }
         return [
             'jsClass' => $this->inputJsClass,
             'id' => Craft::$app->getView()->formatInputId($this->handle),
             'fieldId' => $this->id,
             'storageKey' => 'field.' . $this->id,
             'name' => $this->handle,
-            'elements' => $value,
             'source' => $this->source,
-            'value' => $value,
+            'value' => $formattedValues,
             'sourceElementId' => !empty($element->id) ? $element->id : null,
         ];
     }

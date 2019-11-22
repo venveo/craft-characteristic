@@ -14,6 +14,7 @@ use Craft;
 use craft\helpers\ElementHelper;
 use craft\web\Controller;
 use venveo\characteristic\elements\Characteristic;
+use venveo\characteristic\elements\CharacteristicValue;
 use venveo\characteristic\elements\db\CharacteristicQuery;
 
 /**
@@ -33,10 +34,28 @@ class FieldController extends Controller
             return $this->asErrorJson('Source not found');
         }
         $criteria = $source['criteria'];
+        $criteria['with'] = ['values'];
 
         /** @var CharacteristicQuery $query */
         $query = Craft::configure(Characteristic::find(), $criteria);
-        return $this->asJson($query->all());
+
+        $results = [];
+        /** @var Characteristic $characteristic */
+        foreach($query->all() as $characteristic) {
+            $results[$characteristic->handle] = [
+                'id' => $characteristic->id,
+                'handle' => $characteristic->handle,
+                'title' => $characteristic->title,
+                'values' => array_map(function(CharacteristicValue $value) {
+                    return [
+                        'id' => $value->id,
+                        'value' => $value->value
+                    ];
+                }, $characteristic->values)
+            ];
+        }
+
+        return $this->asJson($results);
     }
 
 }
