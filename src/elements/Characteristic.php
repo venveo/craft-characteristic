@@ -247,8 +247,7 @@ class Characteristic extends Element
         if (null === $this->_values) {
             if ($this->id) {
                 $criteria['characteristicId'] = $this->id;
-                $query = Craft::configure(CharacteristicValue::find(), $criteria);
-                $this->setValues($query->all());
+                return Craft::configure(CharacteristicValue::find(), $criteria);
             }
         }
 

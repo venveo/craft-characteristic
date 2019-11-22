@@ -23,3 +23,12 @@
     {% endfor %}
     </tbody>
 </table>
+{% js %}
+    new Craft.AdminTable({
+    tableSelector: '#values',
+    deleteAction: 'characteristic/characteristic-values/delete-value',
+    sortable: true,
+    reorderAction: 'characteristic/characteristic-values/reorder-value',
+    confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}”?"|t('characteristic') }}',
+    });
+{% endjs %}
