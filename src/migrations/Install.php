@@ -77,6 +77,7 @@ class Install extends Migration
             'characteristicId' => $this->integer()->notNull(),
             'sortOrder' => $this->smallInteger()->unsigned(),
             'value' => $this->string()->notNull(),
+            'deletedWithCharacteristic' => $this->boolean()->null(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -89,7 +90,7 @@ class Install extends Migration
             'characteristicId' => $this->integer()->notNull(),
             'valueId' => $this->integer()->notNull(),
             'fieldId' => $this->integer()->notNull(),
-            'deletedWithElement' => $this->boolean()->defaultValue(false),
+            'deletedWithElement' => $this->boolean()->null(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid()
