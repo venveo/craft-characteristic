@@ -14,11 +14,11 @@ use Craft;
 use craft\elements\Entry;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\UrlHelper;
-use craft\models\Section;
 use craft\web\Controller;
 use venveo\characteristic\assetbundles\characteristicelement\CharacteristicElement;
 use venveo\characteristic\Characteristic as Plugin;
 use venveo\characteristic\elements\Characteristic;
+use venveo\characteristic\models\CharacteristicGroup;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -68,7 +68,7 @@ class CharacteristicsController extends Controller
 
         /** @var Characteristic $characteristic */
         $characteristic = $variables['characteristic'];
-        /** @var Section $group */
+        /** @var CharacteristicGroup $group */
         $group = $variables['group'];
 
         // Body class
@@ -96,15 +96,15 @@ class CharacteristicsController extends Controller
 
         $tabs = [];
         if ($characteristicId) {
-            $tabs['overview'] =[
+            $tabs['overview'] = [
                 'label' => Craft::t('characteristic', 'Overview'),
                 'url' => '#overview',
             ];
         }
 
         $tabs['characteristicFields'] = [
-                'label' => Craft::t('characteristic', 'Content'),
-                'url' => '#fields',
+            'label' => Craft::t('characteristic', 'Content'),
+            'url' => '#fields',
         ];
 
         $variables['tabs'] = $tabs;
@@ -120,12 +120,12 @@ class CharacteristicsController extends Controller
      *
      * @param array &$variables
      * @return Response|null
-     * @throws NotFoundHttpException if the requested section or entry cannot be found
+     * @throws NotFoundHttpException if the requested group or characteristic cannot be found
      * @throws ForbiddenHttpException if the user is not permitted to edit content in the requested site
      */
     private function _prepEditCharacteristicVariables(array &$variables)
     {
-        // Get the section
+        // Get the characteristic
         // ---------------------------------------------------------------------
 
         if (!empty($variables['groupHandle'])) {
@@ -219,7 +219,7 @@ class CharacteristicsController extends Controller
             return $this->asJson($return);
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry saved.'));
+        Craft::$app->getSession()->setNotice(Craft::t('app', 'Characteristic saved.'));
 
         return $this->redirectToPostedUrl($characteristic);
     }

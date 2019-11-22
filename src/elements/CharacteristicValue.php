@@ -14,6 +14,7 @@ use Craft;
 use craft\base\Element;
 use craft\db\Query;
 use craft\elements\db\ElementQueryInterface;
+use craft\helpers\UrlHelper;
 use venveo\characteristic\Characteristic as Plugin;
 use venveo\characteristic\elements\db\CharacteristicValueQuery;
 use venveo\characteristic\helpers\DrilldownState;
@@ -235,7 +236,7 @@ class CharacteristicValue extends Element
      */
     public function getCpEditUrl()
     {
-        return null;
+        return UrlHelper::cpUrl('characteristics/' . $this->getCharacteristic()->getGroup()->handle . '/' . $this->getCharacteristic()->id . '/' . $this->id);
     }
 
     // Events

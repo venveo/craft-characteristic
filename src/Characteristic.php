@@ -95,7 +95,9 @@ class Characteristic extends Plugin
                 $event->rules['characteristics/<groupHandle:{handle}>'] = 'characteristic/characteristics/index';
                 $event->rules['characteristics/save-characteristic'] = 'characteristic/characteristics/save-characteristic';
                 $event->rules['characteristics/<groupHandle:{handle}>/new'] = 'characteristic/characteristics/edit-characteristic';
+
                 $event->rules['characteristics/<groupHandle:{handle}>/<characteristicId:\d+>'] = 'characteristic/characteristics/edit-characteristic';
+                $event->rules['characteristics/<groupHandle:{handle}>/<characteristicId:\d+>/<valueId:\d+>'] = 'characteristic/characteristic-values/edit-value';
             }
         );
 
