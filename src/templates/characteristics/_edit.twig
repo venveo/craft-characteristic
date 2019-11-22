@@ -64,7 +64,7 @@
                     {% set links = relatedElement.characteristicLinks(characteristic) %}
                     <tr>
                         <td>{{ relatedElement.id }}</td>
-                        <td>{{ relatedElement.title }}</td>
+                        <td><a target="_blank" href="{{ relatedElement.getCpEditUrl() }}">{{ relatedElement.title }}</td></td>
                         <td>{{ links[0].characteristicValue.value }}</td>
                     </tr>
                 {% endfor %}
