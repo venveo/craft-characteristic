@@ -14,7 +14,7 @@ class CharacteristicValueQuery extends ElementQuery
 
     // General parameters
     // -------------------------------------------------------------------------
-    public $text;
+    public $value;
     public $sortOrder;
     /**
      * @inheritdoc
@@ -30,9 +30,9 @@ class CharacteristicValueQuery extends ElementQuery
         return $this;
     }
 
-    public function text($value)
+    public function value($value)
     {
-        $this->text = $value;
+        $this->value = $value;
         return $this;
     }
 
@@ -48,15 +48,15 @@ class CharacteristicValueQuery extends ElementQuery
 
         $this->query->select([
             'characteristic_values.characteristicId',
-            'characteristic_values.text',
+            'characteristic_values.value',
             'characteristic_values.sortOrder',
         ]);
 
         if ($this->characteristicId) {
             $this->subQuery->andWhere(Db::parseParam('characteristic_values.characteristicId', $this->characteristicId));
         }
-        if ($this->text) {
-            $this->subQuery->andWhere(Db::parseParam('characteristic_values.text', $this->text));
+        if ($this->value) {
+            $this->subQuery->andWhere(Db::parseParam('characteristic_values.value', $this->value));
         }
 
         return parent::beforePrepare();

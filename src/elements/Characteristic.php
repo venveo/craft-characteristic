@@ -12,6 +12,7 @@ namespace venveo\characteristic\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\db\Query;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\Entry;
 use craft\helpers\UrlHelper;
@@ -31,18 +32,16 @@ class Characteristic extends Element
 {
     // Public Properties
     // =========================================================================
-
-    /**
-     * @var string
-     */
-    public $title = '';
-
     public $handle = '';
 
     public $groupId = null;
 
     // Static Methods
     // =========================================================================
+    /**
+     * @var \craft\base\ElementInterface[]|string|null
+     */
+    private $_values;
 
     /**
      * @inheritdoc
@@ -64,9 +63,17 @@ class Characteristic extends Element
     /**
      * @inheritdoc
      */
+    public static function refHandle()
+    {
+        return 'characteristic';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function hasContent(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -82,7 +89,7 @@ class Characteristic extends Element
      */
     public static function hasTitles(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -164,8 +171,89 @@ class Characteristic extends Element
      */
     public function getFieldLayout()
     {
-        return null;
+        return parent::getFieldLayout() ?? $this->getGroup()->getCharacteristicFieldLayout();
     }
+
+    /**
+     * @inheritdoc
+     */
+    public static function eagerLoadingMap(array $sourceElements, string $handle): array
+    {
+        if ($handle == 'values') {
+            // Get the source element IDs
+            $sourceElementIds = [];
+
+            foreach ($sourceElements as $sourceElement) {
+                $sourceElementIds[] = $sourceElement->id;
+            }
+
+            $map = (new Query())
+                ->select('id as target, characteristicId as source')
+                ->from('{{%characteristic_values}}')
+                ->where(['in', 'characteristicId', $sourceElementIds])
+                ->all();
+
+            return [
+                'elementType' => CharacteristicValue::class,
+                'map' => $map
+            ];
+        }
+
+        return parent::eagerLoadingMap($sourceElements, $handle);
+    }
+
+    public function setValues($values) {
+        $this->_values = [];
+        $count = 1;
+
+        if (empty($values)) {
+            return;
+        }
+
+        foreach ($values as $key => $value) {
+            if (!$value instanceof CharacteristicValue) {
+                die('wtf');
+//                $variant = ProductHelper::populateProductVariantModel($this, $variant, $key);
+            }
+//            $variant->sortOrder = $count++;
+            $value->setCharacteristic($this);
+
+
+            $this->_values[] = $value;
+        }
+    }
+
+
+    /**
+     * @inheritdoc
+     */
+    public function setEagerLoadedElements(string $handle, array $elements)
+    {
+        if ($handle == 'values') {
+            $this->setValues($elements);
+        } else {
+            parent::setEagerLoadedElements($handle, $elements);
+        }
+    }
+
+    /**
+     * Returns the product associated with this variant.
+     *
+     * @return CharacteristicValue[] The product associated with this variant, or null if it isn’t known
+     * @throws InvalidConfigException if the product ID is missing from the variant
+     */
+    public function getValues()
+    {
+        if (null === $this->_values) {
+            if ($this->id) {
+                $criteria['characteristicId'] = $this->id;
+                return Craft::configure(CharacteristicValue::find(), $criteria);
+            }
+        }
+
+        return $this->_values;
+    }
+
 
     /**
      * @inheritdoc
@@ -222,13 +310,6 @@ class Characteristic extends Element
         return $html;
     }
 
-    public function getValues($criteria = [])
-    {
-        $criteria['characteristicId'] = $this->id;
-        $query = Craft::configure(CharacteristicValue::find(), $criteria);
-        return $query;
-    }
-
     // Events
     // -------------------------------------------------------------------------
 // Events
@@ -266,7 +347,6 @@ class Characteristic extends Element
         }
 
         $record->groupId = $this->groupId;
-        $record->title = $this->title;
         $record->handle = $this->handle;
 
         $record->save(false);
@@ -283,5 +363,18 @@ class Characteristic extends Element
             return false;
         }
         return true;
+    }
+
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeValidate()
+    {
+        $group = $this->getGroup();
+
+        $this->fieldLayoutId = $group->characteristicFieldLayoutId;
+
+        return parent::beforeValidate();
     }
 }

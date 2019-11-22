@@ -12,7 +12,9 @@ namespace venveo\characteristic\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\db\Query;
 use craft\elements\db\ElementQueryInterface;
+use craft\helpers\UrlHelper;
 use venveo\characteristic\Characteristic as Plugin;
 use venveo\characteristic\elements\db\CharacteristicValueQuery;
 use venveo\characteristic\helpers\DrilldownState;
@@ -33,7 +35,7 @@ class CharacteristicValue extends Element
     /**
      * @var string
      */
-    public $text = '';
+    public $value = '';
 
     public $characteristicId = null;
 
@@ -41,6 +43,10 @@ class CharacteristicValue extends Element
 
     // Static Methods
     // =========================================================================
+    /**
+     * @var Characteristic
+     */
+    private $_characteristic;
 
     /**
      * @inheritdoc
@@ -57,6 +63,14 @@ class CharacteristicValue extends Element
     public static function pluralDisplayName(): string
     {
         return Craft::t('characteristic', 'Characteristic Values');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function refHandle()
+    {
+        return 'characteristicValue';
     }
 
     /**
@@ -129,20 +143,25 @@ class CharacteristicValue extends Element
         return true;
     }
 
+
     /**
      * @inheritdoc
      */
     public function getFieldLayout()
     {
-        // TODO: Get field layout id off of characteristic group
-        return null;
+        return parent::getFieldLayout() ?? $this->getCharacteristic()->getGroup()->getValueFieldLayout();
     }
 
     /**
-     * @inheritdoc
+     * @return Characteristic|null
+     * @throws InvalidConfigException
      */
     public function getCharacteristic()
     {
+        if ($this->_characteristic !== null) {
+            return $this->_characteristic;
+        }
+
         if ($this->characteristicId === null) {
             throw new InvalidConfigException('Characteristic value is missing its characteristic ID');
         }
@@ -151,7 +170,58 @@ class CharacteristicValue extends Element
             throw new InvalidConfigException('Invalid characteristic ID: ' . $this->characteristicId);
         }
 
-        return $characteristic;
+        return $this->_characteristic = $characteristic;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setEagerLoadedElements(string $handle, array $elements)
+    {
+        if ($handle == 'characteristic') {
+            $characteristic = $elements[0] ?? null;
+            $this->setCharacteristic($characteristic);
+        } else {
+            parent::setEagerLoadedElements($handle, $elements);
+        }
+    }
+
+    public function setCharacteristic(Characteristic $characteristic)
+    {
+
+        if ($characteristic->id) {
+            $this->characteristicId = $characteristic->id;
+        }
+
+        $this->_characteristic = $characteristic;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function eagerLoadingMap(array $sourceElements, string $handle): array
+    {
+        if ($handle == 'characteristic') {
+            // Get the source element IDs
+            $sourceElementIds = [];
+
+            foreach ($sourceElements as $sourceElement) {
+                $sourceElementIds[] = $sourceElement->id;
+            }
+
+            $map = (new Query())
+                ->select('id as source, characteristicId as target')
+                ->from('{{%characteristic_characteristics}}')
+                ->where(['in', 'id', $sourceElementIds])
+                ->all();
+
+            return [
+                'elementType' => Characteristic::class,
+                'map' => $map
+            ];
+        }
+
+        return parent::eagerLoadingMap($sourceElements, $handle);
     }
 
     public function applyToDrilldownState(DrilldownState $state)
@@ -166,7 +236,7 @@ class CharacteristicValue extends Element
      */
     public function getCpEditUrl()
     {
-        return null;
+        return UrlHelper::cpUrl('characteristics/' . $this->getCharacteristic()->getGroup()->handle . '/' . $this->getCharacteristic()->id . '/' . $this->id);
     }
 
     // Events
@@ -193,7 +263,7 @@ class CharacteristicValue extends Element
         }
 
         $record->characteristicId = $this->characteristicId;
-        $record->text = $this->text;
+        $record->value = $this->value;
         $record->sortOrder = $this->sortOrder;
 
         $record->save(false);
@@ -201,6 +271,17 @@ class CharacteristicValue extends Element
         parent::afterSave($isNew);
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function beforeValidate()
+    {
+        $group = $this->getCharacteristic()->getGroup();
+
+        $this->fieldLayoutId = $group->valueFieldLayoutId;
+
+        return parent::beforeValidate();
+    }
 
     /**
      * @inheritdoc

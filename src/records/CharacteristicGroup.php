@@ -11,7 +11,8 @@
 namespace venveo\characteristic\records;
 
 use craft\db\ActiveRecord;
-use craft\db\SoftDeleteTrait;
+use craft\records\FieldLayout;
+use yii\db\ActiveQueryInterface;
 
 /**
  * @author    Venveo
@@ -20,14 +21,13 @@ use craft\db\SoftDeleteTrait;
  * @property int $id [int(11)]
  * @property string $handle [varchar(255)]
  * @property string $name [varchar(255)]
+ * @property int $characteristicFieldLayoutId [int(11)]
+ * @property \yii\db\ActiveQueryInterface $valueFieldLayout
+ * @property \yii\db\ActiveQueryInterface $characteristicFieldLayout
+ * @property int $valueFieldLayoutId [int(11)]
  */
 class CharacteristicGroup extends ActiveRecord
 {
-    // Traits
-    // =========================================================================
-
-    use SoftDeleteTrait;
-
     // Public Static Methods
     // =========================================================================
 
@@ -38,4 +38,21 @@ class CharacteristicGroup extends ActiveRecord
     {
         return '{{%characteristic_groups}}';
     }
+
+    /**
+     * @return ActiveQueryInterface
+     */
+    public function getValueFieldLayout(): ActiveQueryInterface
+    {
+        return $this->hasOne(FieldLayout::class, ['id' => 'valueFieldLayoutId']);
+    }
+
+    /**
+     * @return ActiveQueryInterface
+     */
+    public function getCharacteristicFieldLayout(): ActiveQueryInterface
+    {
+        return $this->hasOne(FieldLayout::class, ['id' => 'characteristicFieldLayoutId']);
+    }
+
 }

@@ -14,11 +14,11 @@ use Craft;
 use craft\elements\Entry;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\UrlHelper;
-use craft\models\Section;
 use craft\web\Controller;
 use venveo\characteristic\assetbundles\characteristicelement\CharacteristicElement;
 use venveo\characteristic\Characteristic as Plugin;
 use venveo\characteristic\elements\Characteristic;
+use venveo\characteristic\models\CharacteristicGroup;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -68,26 +68,8 @@ class CharacteristicsController extends Controller
 
         /** @var Characteristic $characteristic */
         $characteristic = $variables['characteristic'];
-        /** @var Section $group */
+        /** @var CharacteristicGroup $group */
         $group = $variables['group'];
-
-        // Make sure they have permission to edit this entry
-//        $this->enforceEditEntryPermissions($characteristic);
-
-        $currentUser = Craft::$app->getUser()->getIdentity();
-
-//        try {
-//            if (($variables['author'] = $characteristic->getAuthor()) === null) {
-//                // Default to the current user
-//                $variables['author'] = $currentUser;
-//            }
-//        } catch (InvalidConfigException $e) {
-//            // The author doesn't exist anymore
-//            $variables['author'] = $currentUser;
-//        }
-
-        // Other variables
-        // ---------------------------------------------------------------------
 
         // Body class
         $variables['bodyClass'] = 'edit-characteristic';
@@ -112,6 +94,23 @@ class CharacteristicsController extends Controller
             'url' => UrlHelper::url('characteristics/' . $group->handle)
         ];
 
+        $tabs = [];
+        if ($characteristicId) {
+            $tabs['overview'] = [
+                'label' => Craft::t('characteristic', 'Overview'),
+                'url' => '#overview',
+            ];
+        }
+
+        $tabs['characteristicFields'] = [
+            'label' => Craft::t('characteristic', 'Content'),
+            'url' => '#fields',
+        ];
+
+        $variables['tabs'] = $tabs;
+        $variables['selectedTab'] = 'overview';
+
+
         // Render the template!
         return $this->renderTemplate('characteristic/characteristics/_edit', $variables);
     }
@@ -121,12 +120,12 @@ class CharacteristicsController extends Controller
      *
      * @param array &$variables
      * @return Response|null
-     * @throws NotFoundHttpException if the requested section or entry cannot be found
+     * @throws NotFoundHttpException if the requested group or characteristic cannot be found
      * @throws ForbiddenHttpException if the user is not permitted to edit content in the requested site
      */
     private function _prepEditCharacteristicVariables(array &$variables)
     {
-        // Get the section
+        // Get the characteristic
         // ---------------------------------------------------------------------
 
         if (!empty($variables['groupHandle'])) {
@@ -164,6 +163,7 @@ class CharacteristicsController extends Controller
      * @param bool $duplicate Whether the entry should be duplicated
      * @return Response|null
      * @throws ServerErrorHttpException if reasons
+     * @throws NotFoundHttpException
      */
     public function actionSaveCharacteristic(bool $duplicate = false)
     {
@@ -219,7 +219,7 @@ class CharacteristicsController extends Controller
             return $this->asJson($return);
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry saved.'));
+        Craft::$app->getSession()->setNotice(Craft::t('app', 'Characteristic saved.'));
 
         return $this->redirectToPostedUrl($characteristic);
     }
@@ -264,6 +264,7 @@ class CharacteristicsController extends Controller
 
         $characteristic->handle = $request->getBodyParam('handle', $characteristic->handle);
         $characteristic->title = $request->getBodyParam('title', $characteristic->title);
+        $characteristic->setFieldValuesFromRequest('fields');
     }
 
     /**
@@ -275,7 +276,7 @@ class CharacteristicsController extends Controller
      */
     public function actionDuplicateEntry()
     {
-        return $this->runAction('save-entry', ['duplicate' => true]);
+        return $this->runAction('save-characteristic', ['duplicate' => true]);
     }
 
     /**

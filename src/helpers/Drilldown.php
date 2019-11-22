@@ -31,6 +31,9 @@ class Drilldown extends Component
         parent::init();
 
         $group = Characteristic::$plugin->characteristicGroups->getGroupByHandle($this->group);
+        if (!$group) {
+            throw new \Exception('Characteristic group does not exist');
+        }
         $this->_group = $group;
 
         $state = Craft::$app->request->getParam('state');

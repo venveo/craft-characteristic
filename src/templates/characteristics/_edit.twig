@@ -2,7 +2,6 @@
 {% import "_includes/forms" as forms %}
 
 {% set fullPageForm = true %}
-{% do view.setIsDeltaRegistrationActive(true) %}
 
 {% set groupHandle = group.handle %}
 {% set isNewCharacteristic = characteristic.id ? false : true %}
@@ -42,58 +41,13 @@
 
     {{ hiddenInput('groupId', group.id) }}
     {% if characteristic.id %}{{ hiddenInput('characteristicId', characteristic.id) }}{% endif %}
-
-    <div id="fields">
-        {{ forms.textField({
-            label: "Title"|t('app'),
-            id: 'title',
-            name: 'title',
-            value: characteristic.title,
-            errors: characteristic.getErrors('title'),
-            first: true,
-            autofocus: true,
-            required: true,
-            maxlength: 255
-        }) }}
-
+    {% if characteristic.id %}
+    <div id="overview">
         {% if characteristic.id %}
             {% set values = characteristic.values.all() %}
             <h2>All Values</h2>
-            <table id="values" class="data fullwidth collapsible">
-                <thead>
-                <tr>
-                    <th class="thin">{{ "ID" }}</th>
-                    <th class="thin">{{ "Text" }}</th>
-                    <th>{{ "Created On"|t }}</th>
-                    <th>{{ "Updated On"|t }}</th>
 
-                    <td class="thin"></td>
-                    <td class="thin"></td>
-                </tr>
-                </thead>
-                <tbody>
-                {% for value in values %}
-                    <tr data-id="{{ value.id }}" data-uid="{{ value.uid }}" data-name="{{ value.text }}">
-                        <td>{{ value.id }}</td>
-                        <td>{{ value.text }}</td>
-                        <td>{{ value.dateCreated|datetime('short') }}</td>
-                        <td>{{ value.dateUpdated|datetime('short') }}</td>
-                        <td class="thin"><a class="move icon" title="{{ 'Reorder'|t('app') }}" role="button"></a></td>
-                        <td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-
-            {% js %}
-                new Craft.AdminTable({
-                tableSelector: '#values',
-                deleteAction: 'characteristic/characteristic-values/delete-value',
-                sortable: true,
-                reorderAction: 'characteristic/characteristic-values/reorder-value',
-                confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}”?"|t('characteristic') }}',
-                });
-            {% endjs %}
+            {% include 'characteristic/characteristics/_partials/elementvalueindex' %}
 
             {% set relatedElements = characteristic.relatedElements.all() %}
             <h2>Elements</h2>
@@ -111,14 +65,33 @@
                     <tr>
                         <td>{{ relatedElement.id }}</td>
                         <td>{{ relatedElement.title }}</td>
-                        <td>{{ links[0].characteristicValue.text }}</td>
+                        <td>{{ links[0].characteristicValue.value }}</td>
                     </tr>
                 {% endfor %}
                 </tbody>
             </table>
         {% endif %}
-
-
+    </div>
+    {% endif %}
+    <div id="fields" class="{% if characteristic.id %}hidden{% endif %}">
+        {% set tabs = characteristic.getFieldLayout().getTabs() %}
+        {{ forms.textField({
+            label: "Title"|t('app'),
+            id: 'title',
+            name: 'title',
+            value: characteristic.title,
+            errors: characteristic.getErrors('title'),
+            first: true,
+            autofocus: true,
+            required: true,
+            maxlength: 255
+        }) }}
+        {% if tabs|length %}
+        {% include "_includes/fields" with {
+            fields: tabs[0].getFields(),
+            element: characteristic,
+        } only %}
+        {% endif %}
     </div>
 {% endblock %}
 

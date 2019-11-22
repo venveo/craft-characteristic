@@ -1,0 +1,86 @@
+{% extends "_layouts/cp" %}
+{% import "_includes/forms" as forms %}
+
+{% set fullPageForm = true %}
+{% set characteristic = value.characteristic %}
+{% set group = characteristic.group %}
+{% set groupHandle = characteristic.group.handle %}
+{% set isNewValue = value.id ? false : true %}
+
+{% block header %}
+    <div class="flex flex-nowrap">
+        {{ block('pageTitle') }}
+        {{ block('contextMenu') }}
+    </div>
+    <div class="flex">
+        {{ block('actionButton') }}
+    </div>
+{% endblock %}
+
+{% block actionButton %}
+    <div class="btngroup">
+        <input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
+
+        <div class="btn submit menubtn"></div>
+        <div class="menu">
+            {% if not isNewValue %}
+                <hr>
+                <ul>
+                    <li><a class="formsubmit error" data-action="characteristic/characteristic-values/delete-value"
+                           data-confirm="{{ 'Are you sure you want to delete this characteristic value?'|t('app') }}"
+                           data-redirect="{{ 'characteristic#'|hash }}">{{ 'Delete'|t('app') }}</a></li>
+                </ul>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+
+
+{% block content %}
+    {{ actionInput('characteristic/characteristic-values/save-value') }}
+    {{ redirectInput('characteristics/'~groupHandle~'/'~characteristic.id) }}
+    {{ hiddenInput('characteristicId', characteristic.id) }}
+
+    {% if value.id %}
+        {{ hiddenInput('valueId', value.id) }}
+    {% endif %}
+
+    <div id="fields">
+        {% set tabs = value.getFieldLayout().getTabs() %}
+        {{ forms.textField({
+            label: "Value"|t('app'),
+            id: 'value',
+            name: 'value',
+            value: value.value,
+            errors: characteristic.getErrors('value'),
+            first: true,
+            autofocus: true,
+            required: true,
+            maxlength: 255
+        }) }}
+        {% if tabs|length %}
+            {% include "_includes/fields" with {
+                fields: tabs[0].getFields(),
+                element: value,
+            } only %}
+        {% endif %}
+    </div>
+
+{% endblock %}
+
+{% block details %}
+{#    <div id="settings" class="meta">#}
+{#    </div>#}
+    {% if value.id %}
+        <div class="meta read-only">
+            <div class="data">
+                <h5 class="heading">{{ "Date Created"|t('app') }}</h5>
+                <div class="value">{{ value.dateCreated|datetime('short') }}</div>
+            </div>
+            <div class="data">
+                <h5 class="heading">{{ "Date Updated"|t('app') }}</h5>
+                <div class="value">{{ value.dateUpdated|datetime('short') }}</div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

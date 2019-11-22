@@ -50,7 +50,7 @@
                 this.attribute = this.data.characteristic.handle;
             }
             if (this.data.hasOwnProperty('value')) {
-                this.value = this.data.value.text;
+                this.value = this.data.value.value;
             }
         }
     }

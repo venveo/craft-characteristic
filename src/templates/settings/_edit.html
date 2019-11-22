@@ -9,6 +9,7 @@
 
     {% if group.id %}{{ hiddenInput('groupId', group.id) }}{% endif %}
 
+    <div id="group-settings">
     {{ forms.textField({
         first: true,
         label: "Name"|t('app'),
@@ -33,6 +34,27 @@
         errors: group.getErrors('handle'),
         required: true
     }) }}
+    </div>
+
+    <div id="characteristic-fields" class="hidden">
+        {% namespace "characteristic-layout" %}
+        {% include "_includes/fieldlayoutdesigner" with {
+            fieldLayout: group.getCharacteristicFieldLayout(),
+            customizableTabs: false
+        } only %}
+        {% endnamespace %}
+
+    </div>
+
+    <div id="value-fields" class="hidden">
+        {% namespace "value-layout" %}
+            {% include "_includes/fieldlayoutdesigner" with {
+                fieldLayout: group.getValueFieldLayout(),
+                customizableTabs: false
+            } only %}
+        {% endnamespace %}
+
+    </div>
 {% endblock %}
 
 {% if brandNewGroup %}
