@@ -102,10 +102,12 @@ class CharacteristicsController extends Controller
             ];
         }
 
-        $tabs['characteristicFields'] = [
-            'label' => Craft::t('characteristic', 'Content'),
-            'url' => '#fields',
-        ];
+        if($characteristic->getFieldLayout()->getTabs()) {
+            $tabs['characteristicFields'] = [
+                'label' => Craft::t('characteristic', 'Content'),
+                'url' => '#fields',
+            ];
+        }
 
         $variables['tabs'] = $tabs;
         $variables['selectedTab'] = 'overview';
@@ -134,6 +136,9 @@ class CharacteristicsController extends Controller
             $variables['group'] = Plugin::$plugin->characteristicGroups->getGroupById($variables['groupId']);
         }
 
+        /** @var CharacteristicGroup $group */
+        $group = $variables['group'];
+
         if (empty($variables['group'])) {
             throw new NotFoundHttpException('Group not found');
         }
@@ -151,7 +156,9 @@ class CharacteristicsController extends Controller
                 }
             } else {
                 $variables['characteristic'] = new Characteristic();
-                $variables['characteristic']->groupId = $variables['group']->id;
+                $variables['characteristic']->groupId = $group->id;
+                $variables['characteristic']->required = $group->requiredByDefault;
+                $variables['characteristic']->allowCustomOptions = $group->allowCustomOptionsByDefault;
             }
         }
         return null;
@@ -264,6 +271,8 @@ class CharacteristicsController extends Controller
 
         $characteristic->handle = $request->getBodyParam('handle', $characteristic->handle);
         $characteristic->title = $request->getBodyParam('title', $characteristic->title);
+        $characteristic->allowCustomOptions = $request->getBodyParam('allowCustomOptions', $characteristic->allowCustomOptions);
+        $characteristic->required = $request->getBodyParam('required', $characteristic->required);
         $characteristic->setFieldValuesFromRequest('fields');
     }
 

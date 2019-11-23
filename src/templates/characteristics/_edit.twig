@@ -109,6 +109,18 @@
             placeholder: "Enter handle"|t('app'),
             errors: (characteristic.getErrors('handle')|merge(characteristic.getErrors('uri')))
         }) }}
+
+        {{ forms.lightswitchField({
+            name: 'allowCustomOptions',
+            label: 'Allow custom options'|t('characteristic'),
+            on: characteristic.allowCustomOptions,
+        }) }}
+
+        {{ forms.lightswitchField({
+            name: 'required',
+            label: 'Required'|t('characteristic'),
+            on: characteristic.required,
+        }) }}
     </div>
 
     {% if characteristic.id %}
