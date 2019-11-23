@@ -142,6 +142,8 @@ class CharacteristicGroups extends Component
                 'groups.name',
                 'groups.handle',
                 'groups.characteristicFieldLayoutId',
+                'groups.requiredByDefault',
+                'groups.allowCustomOptionsByDefault',
                 'groups.valueFieldLayoutId',
                 'groups.uid',
             ])
@@ -322,30 +324,7 @@ class CharacteristicGroups extends Component
 
         $projectConfig = Craft::$app->getProjectConfig();
 
-        $configData = [
-            'name' => $group->name,
-            'handle' => $group->handle
-        ];
-
-        $generateLayoutConfig = function(FieldLayout $fieldLayout): array {
-            $fieldLayoutConfig = $fieldLayout->getConfig();
-
-            if ($fieldLayoutConfig) {
-                if (empty($fieldLayout->id)) {
-                    $layoutUid = StringHelper::UUID();
-                    $fieldLayout->uid = $layoutUid;
-                } else {
-                    $layoutUid = Db::uidById('{{%fieldlayouts}}', $fieldLayout->id);
-                }
-
-                return [$layoutUid => $fieldLayoutConfig];
-            }
-
-            return [];
-        };
-
-        $configData['characteristicFieldLayouts'] = $generateLayoutConfig($group->getCharacteristicFieldLayout());
-        $configData['valueFieldLayouts'] = $generateLayoutConfig($group->getValueFieldLayout());
+        $configData = $group->getDataForProjectConfig();
 
         // Do everything that follows in a transaction so no DB changes will be
         // saved if an exception occurs that ends up preventing the project config
@@ -398,6 +377,8 @@ class CharacteristicGroups extends Component
             $groupRecord->uid = $groupUid;
             $groupRecord->name = $data['name'];
             $groupRecord->handle = $data['handle'];
+            $groupRecord->requiredByDefault = $data['requiredByDefault'];
+            $groupRecord->allowCustomOptionsByDefault = $data['allowCustomOptionsByDefault'];
 
             if (!empty($data['characteristicFieldLayouts']) && !empty($config = reset($data['characteristicFieldLayouts']))) {
                 // Save the characteristic field layout

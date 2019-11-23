@@ -34,6 +34,23 @@
         errors: group.getErrors('handle'),
         required: true
     }) }}
+
+    {{ forms.lightswitchField({
+        label: "Characteristics required by default"|t('charactersitic'),
+        instructions: "If enabled, all new characteristics will be required by default. This can be changed per-characteristic."|t('charactersitic'),
+        id: 'requiredByDefault',
+        name: 'requiredByDefault',
+        on: group.requiredByDefault
+    }) }}
+
+    {{ forms.lightswitchField({
+        label: "Allow custom characteristic options by default"|t('charactersitic'),
+        instructions: "If enabled, the field editor will be allowed free-form input on values by default. This can be changed per-characteristic."|t('charactersitic'),
+        id: 'allowCustomOptionsByDefault',
+        name: 'allowCustomOptionsByDefault',
+        on: group.allowCustomOptionsByDefault
+    }) }}
+
     </div>
 
     <div id="characteristic-fields" class="hidden">

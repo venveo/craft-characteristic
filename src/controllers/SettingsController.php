@@ -128,6 +128,8 @@ class SettingsController extends Controller
         $group->id = $request->getBodyParam('groupId');
         $group->name = $request->getBodyParam('name');
         $group->handle = $request->getBodyParam('handle');
+        $group->allowCustomOptionsByDefault = (bool)$request->getBodyParam('allowCustomOptionsByDefault');
+        $group->requiredByDefault = (bool)$request->getBodyParam('requiredByDefault');
 
         $characteristicFieldLayout = Craft::$app->getFields()->assembleLayoutFromPost('characteristic-layout');
         $characteristicFieldLayout->type = CharacteristicElement::class;

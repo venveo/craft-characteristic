@@ -19,6 +19,8 @@ use yii\db\ActiveQueryInterface;
  * @package   Characteristic
  * @since     1.0.0
  * @property int $id [int(11)]
+ * @property bool $allowCustomOptionsByDefault [tinyint(1)]
+ * @property bool $requiredByDefault [tinyint(1)]
  * @property string $handle [varchar(255)]
  * @property string $name [varchar(255)]
  * @property int $characteristicFieldLayoutId [int(11)]
