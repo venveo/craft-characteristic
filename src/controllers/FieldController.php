@@ -46,6 +46,8 @@ class FieldController extends Controller
                 'id' => $characteristic->id,
                 'handle' => $characteristic->handle,
                 'title' => $characteristic->title,
+                'required' => (bool)$characteristic->required,
+                'allowCustomOptions' => (bool)$characteristic->allowCustomOptions,
                 'values' => array_map(function(CharacteristicValue $value) {
                     return [
                         'id' => $value->id,
