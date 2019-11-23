@@ -216,10 +216,6 @@ class CharacteristicsController extends Controller
                 $return['cpEditUrl'] = $characteristic->getCpEditUrl();
             }
 
-            if (($author = $characteristic->getAuthor()) !== null) {
-                $return['authorUsername'] = $author->username;
-            }
-
             $return['dateCreated'] = DateTimeHelper::toIso8601($characteristic->dateCreated);
             $return['dateUpdated'] = DateTimeHelper::toIso8601($characteristic->dateUpdated);
 
