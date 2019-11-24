@@ -153,12 +153,52 @@ class Characteristic extends Element
         $attributes = [
             'title' => ['label' => Craft::t('app', 'Title')],
             'handle' => ['label' => Craft::t('app', 'Handle')],
+            'required' => ['label' => Craft::t('characteristic', 'Required')],
+            'allowCustomOptions' => ['label' => Craft::t('characteristic', 'Allow Custom Options')],
             'id' => ['label' => Craft::t('app', 'ID')],
             'uid' => ['label' => Craft::t('app', 'UID')],
             'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
             'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
         ];
         return $attributes;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function defineDefaultTableAttributes(string $source): array
+    {
+        return [
+            'title',
+            'required',
+            'allowCustomOptions',
+            'dateCreated',
+            'dateUpdated',
+        ];
+    }
+
+
+    /**
+     * @inheritdoc
+     */
+    protected function tableAttributeHtml(string $attribute): string
+    {
+        switch ($attribute) {
+            case 'allowCustomOptions':
+                if ($this->allowCustomOptions) {
+                    return '<div class="status enabled" title="' . Craft::t('app', 'Enabled') . '"></div>';
+                }
+
+                return '<div class="status" title="' . Craft::t('app', 'Not enabled') . '"></div>';
+            case 'required':
+                if ($this->required) {
+                    return '<div class="status enabled" title="' . Craft::t('app', 'Enabled') . '"></div>';
+                }
+
+                return '<div class="status" title="' . Craft::t('app', 'Not enabled') . '"></div>';
+        }
+
+        return parent::tableAttributeHtml($attribute);
     }
 
     /**

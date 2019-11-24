@@ -77,6 +77,7 @@
     {% endif %}
     <div id="fields" class="{% if characteristic.id %}hidden{% endif %}">
         {% set tabs = characteristic.getFieldLayout().getTabs() %}
+        {% if not characteristic.id %}
         {{ forms.textField({
             label: "Title"|t('app'),
             id: 'title',
@@ -88,6 +89,7 @@
             required: true,
             maxlength: 255
         }) }}
+        {% endif %}
         {% if tabs|length %}
         {% include "_includes/fields" with {
             fields: tabs[0].getFields(),
@@ -99,6 +101,19 @@
 
 {% block details %}
     <div id="settings" class="meta">
+        {% if characteristic.id %}
+        {{ forms.textField({
+            label: "Title"|t('app'),
+            id: 'title',
+            name: 'title',
+            value: characteristic.title,
+            errors: characteristic.getErrors('title'),
+            first: true,
+            autofocus: true,
+            required: true,
+            maxlength: 255
+        }) }}
+        {% endif %}
         {{ forms.textField({
             label: "Handle"|t('app'),
             id: 'handle',
