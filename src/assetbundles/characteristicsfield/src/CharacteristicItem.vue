@@ -13,6 +13,7 @@
                 </div>
                 <div v-else class="select">
                     <select v-model="value">
+                        <option value="" disabled="disabled" selected="selected">Select one</option>
                         <option v-for="option in currentCharacteristic.values" :key="option.value" :value="option.value">{{option.value}}</option>
                     </select>
                 </div>
@@ -38,7 +39,7 @@
         data() {
             return {
                 attribute: '',
-                value: null
+                value: ''
             }
         },
         methods: {},
@@ -60,9 +61,6 @@
         beforeMount() {
             if (this.link.hasOwnProperty('characteristic')) {
                 this.attribute = this.link.characteristic.handle;
-                if (this.link.characteristic.values.length) {
-                    this.value = this.link.characteristic.values[0].value;
-                }
             }
             if (this.link.hasOwnProperty('value')) {
                 this.value = this.link.value.value;
