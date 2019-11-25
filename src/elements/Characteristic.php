@@ -245,6 +245,7 @@ class Characteristic extends Element
                 ->select('id as target, characteristicId as source')
                 ->from('{{%characteristic_values}}')
                 ->where(['in', 'characteristicId', $sourceElementIds])
+                ->orderBy('sortOrder')
                 ->all();
 
             return [
