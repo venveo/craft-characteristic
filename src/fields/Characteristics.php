@@ -19,6 +19,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use Exception;
+use Throwable;
 use venveo\characteristic\assetbundles\characteristicsfield\CharacteristicsFieldAsset;
 use venveo\characteristic\Characteristic;
 use venveo\characteristic\elements\Characteristic as CharacteristicElement;
@@ -29,48 +30,22 @@ use venveo\characteristic\records\CharacteristicLink as CharacteristicLinkRecord
  * @author    Venveo
  * @package   Characteristic
  * @since     1.0.0
+ *
+ * @property mixed $settingsHtml
+ * @property array $sourceOptions
  */
 class Characteristics extends Field
 {
     // Public Properties
     // =========================================================================
 
-
-    /**
-     * @var string|string[]|null The source keys that this field can relate elements from (used if [[allowMultipleSources]] is set to true)
-     */
-    public $sources = '*';
-
     /**
      * @var string|null The source key that this field can relate elements from (used if [[allowMultipleSources]] is set to false)
      */
     public $source;
 
-    /**
-     * @var int|null The maximum number of relations this field can have (used if [[allowLimit]] is set to true)
-     */
-    public $limit;
-
-    /**
-     * @var bool Whether to allow the Limit setting
-     */
-    public $allowLimit = true;
-
-    /**
-     * @var string|null The JS class that should be initialized for the input
-     */
-    protected $inputJsClass;
-
     // Static Methods
     // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public function __construct(array $config = [])
-    {
-        parent::__construct($config);
-    }
 
     /**
      * @inheritdoc
@@ -100,19 +75,6 @@ class Characteristics extends Field
         return [self::TRANSLATION_METHOD_NONE];
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function init()
-    {
-        parent::init();
-
-        // Not possible to have no sources selected
-        if (!$this->sources) {
-            $this->sources = '*';
-        }
-    }
-
 
     /**
      * @inheritdoc
@@ -120,9 +82,7 @@ class Characteristics extends Field
     public function settingsAttributes(): array
     {
         $attributes = parent::settingsAttributes();
-        $attributes[] = 'sources';
         $attributes[] = 'source';
-        $attributes[] = 'limit';
 
         return $attributes;
     }
@@ -168,8 +128,7 @@ class Characteristics extends Field
             $valueIds[] = $result['valueId'];
             $characteristicIds[] = $result['characteristicId'];
         }
-        $values = [];
-        $characteristics = [];
+
         $characteristicQuery = CharacteristicElement::find();
         $characteristicQuery->with(['values']);
         $characteristicQuery->id($characteristicIds);
@@ -293,7 +252,6 @@ class Characteristics extends Field
             $formattedValues[] = $characteristicItem;
         }
         return [
-            'jsClass' => $this->inputJsClass,
             'id' => Craft::$app->getView()->formatInputId($this->handle),
             'fieldId' => $this->id,
             'storageKey' => 'field.' . $this->id,
@@ -343,26 +301,5 @@ class Characteristics extends Field
             Craft::dd($e);
         }
         parent::afterElementSave($element, $isNew);
-    }
-
-    /**
-     * Returns an array of the source keys the field should be able to select elements from.
-     *
-     * @param ElementInterface|null $element
-     * @return array|string
-     */
-    protected function inputSources(ElementInterface $element = null)
-    {
-        return $this->source;
-    }
-
-    /**
-     * Returns any additional criteria parameters limiting which elements the field should be able to select.
-     *
-     * @return array
-     */
-    protected function inputSelectionCriteria(): array
-    {
-        return [];
     }
 }
