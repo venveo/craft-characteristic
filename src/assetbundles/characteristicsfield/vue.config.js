@@ -1,9 +1,3 @@
-/*
- *  OAuth 2.0 Client plugin for Craft CMS 3
- *  @link      https://www.venveo.com
- *  @copyright Copyright (c) 2018-2019 Venveo
- */
-
 var fs = require('fs');
 const ManifestPlugin = require('webpack-manifest-plugin')
 

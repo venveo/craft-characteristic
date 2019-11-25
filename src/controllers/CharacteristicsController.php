@@ -102,13 +102,15 @@ class CharacteristicsController extends Controller
             ];
         }
 
-        $tabs['characteristicFields'] = [
-            'label' => Craft::t('characteristic', 'Content'),
-            'url' => '#fields',
-        ];
+        if($characteristic->getFieldLayout()->getTabs()) {
+            $tabs['characteristicFields'] = [
+                'label' => Craft::t('characteristic', 'Content'),
+                'url' => '#fields',
+            ];
+        }
 
         $variables['tabs'] = $tabs;
-        $variables['selectedTab'] = 'overview';
+        $variables['selectedTab'] = isset($characteristicId) ? 'overview' : 'characteristicFields';
 
 
         // Render the template!
@@ -134,6 +136,9 @@ class CharacteristicsController extends Controller
             $variables['group'] = Plugin::$plugin->characteristicGroups->getGroupById($variables['groupId']);
         }
 
+        /** @var CharacteristicGroup $group */
+        $group = $variables['group'];
+
         if (empty($variables['group'])) {
             throw new NotFoundHttpException('Group not found');
         }
@@ -151,9 +156,19 @@ class CharacteristicsController extends Controller
                 }
             } else {
                 $variables['characteristic'] = new Characteristic();
-                $variables['characteristic']->groupId = $variables['group']->id;
+                $variables['characteristic']->groupId = $group->id;
+                $variables['characteristic']->required = $group->requiredByDefault;
+                $variables['characteristic']->allowCustomOptions = $group->allowCustomOptionsByDefault;
             }
         }
+
+        // Set the base CP edit URL
+        $variables['baseCpEditUrl'] = "characteristics/{$group->handle}/{id}";
+
+        $variables['continueEditingUrl'] = $variables['baseCpEditUrl'];
+
+        // Set the "Save and add another" URL
+        $variables['nextCharacteristicUrl'] = "characteristics/{$group->handle}/new";
         return null;
     }
 
@@ -209,10 +224,6 @@ class CharacteristicsController extends Controller
                 $return['cpEditUrl'] = $characteristic->getCpEditUrl();
             }
 
-            if (($author = $characteristic->getAuthor()) !== null) {
-                $return['authorUsername'] = $author->username;
-            }
-
             $return['dateCreated'] = DateTimeHelper::toIso8601($characteristic->dateCreated);
             $return['dateUpdated'] = DateTimeHelper::toIso8601($characteristic->dateUpdated);
 
@@ -264,6 +275,8 @@ class CharacteristicsController extends Controller
 
         $characteristic->handle = $request->getBodyParam('handle', $characteristic->handle);
         $characteristic->title = $request->getBodyParam('title', $characteristic->title);
+        $characteristic->allowCustomOptions = $request->getBodyParam('allowCustomOptions', $characteristic->allowCustomOptions);
+        $characteristic->required = $request->getBodyParam('required', $characteristic->required);
         $characteristic->setFieldValuesFromRequest('fields');
     }
 

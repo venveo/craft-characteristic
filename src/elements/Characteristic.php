@@ -27,6 +27,9 @@ use yii\base\InvalidConfigException;
  * @author    Venveo
  * @package   Characteristic
  * @since     1.0.0
+ *
+ * @property \venveo\characteristic\elements\CharacteristicValue[] $values
+ * @property mixed $group
  */
 class Characteristic extends Element
 {
@@ -35,6 +38,16 @@ class Characteristic extends Element
     public $handle = '';
 
     public $groupId = null;
+
+    /**
+     * @var bool
+     */
+    public $allowCustomOptions = true;
+
+    /**
+     * @var bool
+     */
+    public $required = false;
 
     // Static Methods
     // =========================================================================
@@ -140,6 +153,8 @@ class Characteristic extends Element
         $attributes = [
             'title' => ['label' => Craft::t('app', 'Title')],
             'handle' => ['label' => Craft::t('app', 'Handle')],
+            'required' => ['label' => Craft::t('characteristic', 'Required')],
+            'allowCustomOptions' => ['label' => Craft::t('characteristic', 'Allow Custom Options')],
             'id' => ['label' => Craft::t('app', 'ID')],
             'uid' => ['label' => Craft::t('app', 'UID')],
             'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
@@ -151,10 +166,49 @@ class Characteristic extends Element
     /**
      * @inheritdoc
      */
+    protected static function defineDefaultTableAttributes(string $source): array
+    {
+        return [
+            'title',
+            'required',
+            'allowCustomOptions',
+            'dateCreated',
+            'dateUpdated',
+        ];
+    }
+
+
+    /**
+     * @inheritdoc
+     */
+    protected function tableAttributeHtml(string $attribute): string
+    {
+        switch ($attribute) {
+            case 'allowCustomOptions':
+                if ($this->allowCustomOptions) {
+                    return '<div class="status enabled" title="' . Craft::t('app', 'Enabled') . '"></div>';
+                }
+
+                return '<div class="status" title="' . Craft::t('app', 'Not enabled') . '"></div>';
+            case 'required':
+                if ($this->required) {
+                    return '<div class="status enabled" title="' . Craft::t('app', 'Enabled') . '"></div>';
+                }
+
+                return '<div class="status" title="' . Craft::t('app', 'Not enabled') . '"></div>';
+        }
+
+        return parent::tableAttributeHtml($attribute);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function rules()
     {
         $rules = parent::rules();
         $rules[] = [['groupId'], 'number', 'integerOnly' => true];
+        $rules[] = [['required', 'allowCustomOptions'], 'boolean'];
         return $rules;
     }
 
@@ -191,6 +245,7 @@ class Characteristic extends Element
                 ->select('id as target, characteristicId as source')
                 ->from('{{%characteristic_values}}')
                 ->where(['in', 'characteristicId', $sourceElementIds])
+                ->orderBy('sortOrder')
                 ->all();
 
             return [
@@ -202,9 +257,9 @@ class Characteristic extends Element
         return parent::eagerLoadingMap($sourceElements, $handle);
     }
 
-    public function setValues($values) {
+    public function setValues($values)
+    {
         $this->_values = [];
-        $count = 1;
 
         if (empty($values)) {
             return;
@@ -213,11 +268,8 @@ class Characteristic extends Element
         foreach ($values as $key => $value) {
             if (!$value instanceof CharacteristicValue) {
                 die('wtf');
-//                $variant = ProductHelper::populateProductVariantModel($this, $variant, $key);
             }
-//            $variant->sortOrder = $count++;
             $value->setCharacteristic($this);
-
 
             $this->_values[] = $value;
         }
@@ -240,7 +292,6 @@ class Characteristic extends Element
      * Returns the product associated with this variant.
      *
      * @return CharacteristicValue[] The product associated with this variant, or null if it isn’t known
-     * @throws InvalidConfigException if the product ID is missing from the variant
      */
     public function getValues()
     {
@@ -312,11 +363,10 @@ class Characteristic extends Element
 
     // Events
     // -------------------------------------------------------------------------
-// Events
-    // -------------------------------------------------------------------------
 
     /**
      * @param string $type
+     * @return ElementQueryInterface
      */
     public function getRelatedElements($type = Entry::class)
     {
@@ -324,6 +374,7 @@ class Characteristic extends Element
         $linkQuery->where(['characteristicId' => $this->id]);
         $ids = $linkQuery->select('elementId')->indexBy('elementId')->all();
         $criteria['id'] = array_keys($ids);
+        /** @var ElementQueryInterface $query */
         $query = Craft::configure($type::find(), $criteria);
         return $query;
     }
@@ -348,6 +399,8 @@ class Characteristic extends Element
 
         $record->groupId = $this->groupId;
         $record->handle = $this->handle;
+        $record->required = $this->required;
+        $record->allowCustomOptions = $this->allowCustomOptions;
 
         $record->save(false);
 

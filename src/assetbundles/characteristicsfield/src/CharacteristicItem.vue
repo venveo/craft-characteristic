@@ -4,24 +4,27 @@
         <input :name="name + '[value]'" :value="value" type="hidden"/>
 
         <div class="fields flex flex-nowrap">
+            <div class="input ltr characteristic__title">
+                <strong>{{currentCharacteristic.title}}</strong>
+            </div>
             <div class="input ltr">
-                <div class="select">
-                    <select v-model="attribute">
-                        <option :disabled="option.disabled" :key="option.id" :value="option.handle"
-                                v-for="option in options">{{option.title}}
-                        </option>
+                <div v-if="currentCharacteristic.allowCustomOptions">
+                    <input class="text fullwidth" type="text" v-model="value">
+                </div>
+                <div v-else class="select">
+                    <select v-model="value">
+                        <option value="" disabled="disabled" selected="selected">Select one</option>
+                        <option v-for="option in currentCharacteristic.values" :key="option.value" :value="option.value">{{option.value}}</option>
                     </select>
                 </div>
             </div>
-            <div class="input ltr">
-                <input class="text fullwidth" type="text" v-model="value">
             </div>
             <div class="actions">
-                <a @click="$emit('delete')" class="error icon delete" data-icon="remove" role="button"
+                <div v-if="link.isNew"><strong>new</strong></div>
+                <a v-if="!currentCharacteristic.required" @click="$emit('delete')" class="error icon delete" data-icon="remove" role="button"
                    title="Delete"></a>
             </div>
         </div>
-    </div>
 </template>
 <script>
     /* eslint-disable */
@@ -29,9 +32,9 @@
     export default {
         components: {},
         props: {
-            options: Array,
+            characteristics: Array,
             name: String,
-            data: Object
+            link: Object,
         },
         data() {
             return {
@@ -43,14 +46,24 @@
         watch: {
             attribute: function (newVal) {
                 this.$emit('change', newVal);
+            },
+            value: function(newVal) {
+                this.$emit('change', newVal);
             }
         },
-        mounted() {
-            if (this.data.hasOwnProperty('characteristic')) {
-                this.attribute = this.data.characteristic.handle;
+        computed: {
+            currentCharacteristic() {
+                if (this.link.hasOwnProperty('characteristic')) {
+                    return this.link.characteristic;
+                }
             }
-            if (this.data.hasOwnProperty('value')) {
-                this.value = this.data.value.value;
+        },
+        beforeMount() {
+            if (this.link.hasOwnProperty('characteristic')) {
+                this.attribute = this.link.characteristic.handle;
+            }
+            if (this.link.hasOwnProperty('value')) {
+                this.value = this.link.value.value;
             }
         }
     }
@@ -58,14 +71,24 @@
 
 <style lang="scss" scoped>
     .characteristic-item.matrixblock {
-        padding-top: 10px;
-
+        padding: 0;
+        padding-right: 10px;
+        .characteristic__title {
+            background-color: #cdd8e4;
+            padding: 10px 20px 10px 10px;
+            border-radius: 5px 0 0 5px;
+            border-right: 1px solid #cdd8e4;
+            min-width: 100px;
+            margin-bottom: 0;
+        }
         .fields {
             align-items: baseline;
         }
 
         .actions {
             margin-left: auto;
+            right: 10px;
+            top: 7px;
         }
 
         .actions > .delete {

@@ -23,11 +23,18 @@
 
         <div class="btn submit menubtn"></div>
         <div class="menu">
+            <ul>
+                <li><a class="formsubmit" data-redirect="{{ continueEditingUrl|hash }}">
+                        {{ forms.optionShortcutLabel('S') }}
+                        {{ "Save and continue editing"|t('app') }}
+                    </a></li>
+                <li><a class="formsubmit" data-redirect="{{ (nextValueUrl~'#')|hash }}">{{ "Save and add another"|t('app') }}</a></li>
+            </ul>
             {% if not isNewValue %}
                 <hr>
                 <ul>
                     <li><a class="formsubmit error" data-action="characteristic/characteristic-values/delete-value"
-                           data-confirm="{{ 'Are you sure you want to delete this characteristic value?'|t('app') }}"
+                           data-confirm="{{ 'Are you sure you want to delete this characteristic value?'|t('characteristic') }}"
                            data-redirect="{{ 'characteristic#'|hash }}">{{ 'Delete'|t('app') }}</a></li>
                 </ul>
             {% endif %}

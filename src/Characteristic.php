@@ -60,6 +60,7 @@ class Characteristic extends Plugin
     // =========================================================================
 
     public $hasCpSettings = true;
+    public $hasCpSection = true;
 
     /**
      * @var string
@@ -150,6 +151,14 @@ class Characteristic extends Plugin
     public function getSettingsResponse()
     {
         return Craft::$app->response->redirect(UrlHelper::cpUrl('settings/characteristics'));
+    }
+
+    public function getCpNavItem()
+    {
+        return [
+            'label' => 'Characteristics',
+            'url' => UrlHelper::cpUrl('characteristics'),
+        ];
     }
     // Protected Methods
     // =========================================================================

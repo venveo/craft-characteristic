@@ -18,30 +18,14 @@ class CharacteristicQuery extends ElementQuery
 {
     // Properties
     // =========================================================================
-
-    /**
-     * @var int|int[]|null The tag group ID(s) that the resulting tags must be in.
-     * ---
-     * ```php
-     * // fetch tags in the Topics group
-     * $tags = \craft\elements\Tag::find()
-     *     ->group('topics')
-     *     ->all();
-     * ```
-     * ```twig
-     * {# fetch tags in the Topics group #}
-     * {% set tags = craft.tags()
-     *     .group('topics')
-     *     .all() %}
-     * ```
-     * @used-by group()
-     * @used-by groupId()
-     */
     public $groupId;
 
-    // General parameters
-    // -------------------------------------------------------------------------
     public $handle;
+
+    public $required;
+
+    public $allowCustomOptions;
+
     /**
      * @inheritdoc
      */
@@ -173,7 +157,9 @@ class CharacteristicQuery extends ElementQuery
 
         $this->query->select([
             'characteristic_characteristics.groupId',
-            'characteristic_characteristics.handle'
+            'characteristic_characteristics.handle',
+            'characteristic_characteristics.allowCustomOptions',
+            'characteristic_characteristics.required',
         ]);
 
         if ($this->groupId) {
@@ -181,6 +167,12 @@ class CharacteristicQuery extends ElementQuery
         }
         if ($this->handle) {
             $this->subQuery->andWhere(Db::parseParam('characteristic_characteristics.handle', $this->handle));
+        }
+        if ($this->required !== null) {
+            $this->subQuery->andWhere(Db::parseParam('characteristic_characteristics.required', $this->required));
+        }
+        if ($this->allowCustomOptions !== null) {
+            $this->subQuery->andWhere(Db::parseParam('characteristic_characteristics.allowCustomOptions', $this->required));
         }
 
         return parent::beforePrepare();

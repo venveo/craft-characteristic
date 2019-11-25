@@ -12,6 +12,8 @@ namespace venveo\characteristic\models;
 
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
+use craft\helpers\Db;
+use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
@@ -49,12 +51,25 @@ class CharacteristicGroup extends Model
      */
     public $handle;
 
+    /** @var boolean */
+    public $allowCustomOptionsByDefault = true;
+
+    /** @var boolean */
+    public $requiredByDefault = false;
+
     /**
      * @var string|null Group's UID
      */
     public $uid;
 
+    /**
+     * @var int|null ID
+     */
     public $characteristicFieldLayoutId;
+
+    /**
+     * @var int|null ID
+     */
     public $valueFieldLayoutId;
 
     // Public Methods
@@ -81,6 +96,7 @@ class CharacteristicGroup extends Model
 
     /**
      * @return FieldLayout
+     * @throws \yii\base\InvalidConfigException
      */
     public function getCharacteristicFieldLayout(): FieldLayout
     {
@@ -91,6 +107,7 @@ class CharacteristicGroup extends Model
 
     /**
      * @return FieldLayout
+     * @throws \yii\base\InvalidConfigException
      */
     public function getValueFieldLayout(): FieldLayout
     {
@@ -106,10 +123,41 @@ class CharacteristicGroup extends Model
     {
         $rules = parent::rules();
         $rules[] = [['id', 'valueFieldLayoutId', 'characteristicFieldLayoutId'], 'number', 'integerOnly' => true];
+        $rules[] = [['allowCustomOptionsByDefault', 'requiredByDefault'], 'boolean'];
         $rules[] = [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']];
         $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => CharacteristicGroupRecord::class];
         $rules[] = [['name', 'handle'], 'required'];
         $rules[] = [['name', 'handle'], 'string', 'max' => 255];
         return $rules;
+    }
+
+    public function getDataForProjectConfig()
+    {
+
+        $generateLayoutConfig = function(FieldLayout $fieldLayout): array {
+            $fieldLayoutConfig = $fieldLayout->getConfig();
+
+            if ($fieldLayoutConfig) {
+                if (empty($fieldLayout->id)) {
+                    $layoutUid = StringHelper::UUID();
+                    $fieldLayout->uid = $layoutUid;
+                } else {
+                    $layoutUid = Db::uidById('{{%fieldlayouts}}', $fieldLayout->id);
+                }
+
+                return [$layoutUid => $fieldLayoutConfig];
+            }
+
+            return [];
+        };
+
+        return [
+            'name' => $this->name,
+            'handle' => $this->handle,
+            'allowCustomOptionsByDefault' => $this->allowCustomOptionsByDefault,
+            'requiredByDefault' => $this->requiredByDefault,
+            'characteristicFieldLayouts' => $generateLayoutConfig($this->getCharacteristicFieldLayout()),
+            'valueFieldLayouts' => $generateLayoutConfig($this->getValueFieldLayout()),
+        ];
     }
 }

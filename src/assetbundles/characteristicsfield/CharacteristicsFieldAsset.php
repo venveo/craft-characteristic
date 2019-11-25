@@ -67,8 +67,8 @@ class CharacteristicsFieldAsset extends AssetBundle
 
         $config = [
             'devServer' => [
-                'manifestPath' => 'https://192.168.99.28:8082/',
-                'publicPath' => 'https://192.168.99.28:8082/',
+                'manifestPath' => 'https://192.168.99.28:3000/',
+                'publicPath' => 'https://192.168.99.28:3000/',
             ],
             'server' => [
                 'manifestPath' => __DIR__ . '/dist/',
@@ -86,7 +86,7 @@ class CharacteristicsFieldAsset extends AssetBundle
             // $this->getModule($config, 'app.css'),
         ];
         $this->js = [
-            'https://localhost:8082/app.js',
+            'https://localhost:3000/app.js',
             // $this->getModule($config, 'chunk-vendors.js'),
 //             $this->getModule($config, 'app.js'),
         ];

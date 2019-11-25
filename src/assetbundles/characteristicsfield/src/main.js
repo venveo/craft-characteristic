@@ -4,6 +4,8 @@
 import Vue from 'vue'
 import CharacteristicBuilder from './CharacteristicBuilder'
 
+Vue.config.devtools = true;
+
 Craft.VueCharacteristicsField = Garnish.Base.extend(
     {
         settings: {
@@ -41,8 +43,6 @@ Craft.VueCharacteristicsField = Garnish.Base.extend(
 
     },
     {
-        defaults: {
-            test: 'one'
-        }
+        defaults: {}
     }
 );

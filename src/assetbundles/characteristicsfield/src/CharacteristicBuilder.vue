@@ -1,17 +1,22 @@
 <template>
     <div>
         <input :name="settings.name" type="hidden"/>
-        <characteristic-item :consumedOptions="consumedOptions"
-                             :data="characteristic"
-                             :key="characteristic.id"
-                             :name="settings.name + '['+characteristic.id+']'"
-                             :options="characteristicAttributes"
-                             v-for="(characteristic) in characteristics"
+        <characteristic-item
+                             v-for="link in links"
+                             :link="link"
+                             :key="link.id"
+                             :name="settings.name + '['+link.id+']'"
+                             :characteristics="characteristics"
                              v-on:change="handleChange"
-                             v-on:delete="() => handleDelete(characteristic)"
+                             v-on:delete="() => handleDelete(link)"
         />
-        <div class="buttons last">
-            <div @click="handleAdd" class="btn add icon">Add Characteristic</div>
+        <div class="buttons last add-button" v-if="availableCharacteristics.length !== 0">
+            <div class="select">
+            <select v-model="selectedCharacteristic">
+                <option v-for="(characteristic, index) in availableCharacteristics" :value="index">{{characteristic.title}}</option>
+            </select>
+            </div>
+            <div @click="handleAdd" class="btn add icon">Add Selected</div>
         </div>
     </div>
 </template>
@@ -31,39 +36,78 @@
         data() {
             return {
                 characteristics: [],
-                characteristicAttributes: [],
-                consumedOptions: [],
-                loading: true
+                loading: true,
+                links: [],
+                selectedCharacteristic: null
             }
         },
         methods: {
             handleAdd(e) {
                 e.preventDefault();
-                this.characteristics.push({
-                    id: 'new' + this.characteristics.length + 1
+                this.links.push({
+                    id: 'new' + this.links.length + 1,
+                    characteristic: this.availableCharacteristics[this.selectedCharacteristic]
                 });
                 if (window.draftEditor) {
                     window.draftEditor.checkForm();
                 }
             },
             handleDelete(e) {
-                const result = this.characteristics.filter(characteristic => characteristic.id != e.id);
-                this.characteristics = result;
+                const result = this.links.filter(link => link.id != e.id);
+                this.links = result;
                 if (window.draftEditor) {
                     window.draftEditor.checkForm();
                 }
             },
             handleChange(e) {
-                console.log(e);
+                if (window.draftEditor) {
+                    window.draftEditor.checkForm();
+                }
             }
         },
-        computed: {},
-        watch: {},
+        computed: {
+            availableCharacteristics() {
+                let availableCharacteristics = this.characteristics.filter((characteristic) => {
+                    const item = this.links.find(link => link.characteristic.id === characteristic.id);
+                    return !!!item;
+                });
+                if (availableCharacteristics.length) {
+                    this.selectedCharacteristic = 0;
+                }
+                return availableCharacteristics;
+            }
+        },
+        watch: {
+            characteristics: function (newVal) {
+                const requiredCharacteristics = newVal.filter(characteristic => characteristic.required == true);
+                for (var requiredCharacteristic of requiredCharacteristics) {
+                    let data = {
+                        id: 'new' + this.links.length + 1,
+                        characteristic: requiredCharacteristic,
+                        isNew: true
+                    };
+
+                    const foundValue = this.settings.value.find((val) => {
+                        return val.characteristic.id == requiredCharacteristic.id;
+                    });
+                    if (foundValue) {
+                        data.value = foundValue.value;
+                        data.isNew = false;
+                    }
+
+                    this.links.push(data)
+
+                    if (window.draftEditor) {
+                        window.draftEditor.checkForm();
+                    }
+                }
+            }
+        },
         mounted() {
-            this.characteristics = this.settings.value;
+            // this.characteristics = this.settings.value;
             this.loading = true;
             api.getCharacteristicsForSource(this.settings.source).then((result) => {
-                this.characteristicAttributes = result.data;
+                this.characteristics = result.data;
             }).finally(() => {
                 this.loading = false;
             })
@@ -72,5 +116,9 @@
 </script>
 
 <style lang="scss">
-
+    .add-button {
+        .select {
+            margin-right: 20px;
+        }
+    }
 </style>

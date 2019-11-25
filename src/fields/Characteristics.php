@@ -16,9 +16,11 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use Exception;
+use Throwable;
 use venveo\characteristic\assetbundles\characteristicsfield\CharacteristicsFieldAsset;
 use venveo\characteristic\Characteristic;
 use venveo\characteristic\elements\Characteristic as CharacteristicElement;
@@ -29,48 +31,22 @@ use venveo\characteristic\records\CharacteristicLink as CharacteristicLinkRecord
  * @author    Venveo
  * @package   Characteristic
  * @since     1.0.0
+ *
+ * @property mixed $settingsHtml
+ * @property array $sourceOptions
  */
 class Characteristics extends Field
 {
     // Public Properties
     // =========================================================================
 
-
-    /**
-     * @var string|string[]|null The source keys that this field can relate elements from (used if [[allowMultipleSources]] is set to true)
-     */
-    public $sources = '*';
-
     /**
      * @var string|null The source key that this field can relate elements from (used if [[allowMultipleSources]] is set to false)
      */
     public $source;
 
-    /**
-     * @var int|null The maximum number of relations this field can have (used if [[allowLimit]] is set to true)
-     */
-    public $limit;
-
-    /**
-     * @var bool Whether to allow the Limit setting
-     */
-    public $allowLimit = true;
-
-    /**
-     * @var string|null The JS class that should be initialized for the input
-     */
-    protected $inputJsClass;
-
     // Static Methods
     // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public function __construct(array $config = [])
-    {
-        parent::__construct($config);
-    }
 
     /**
      * @inheritdoc
@@ -100,19 +76,6 @@ class Characteristics extends Field
         return [self::TRANSLATION_METHOD_NONE];
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function init()
-    {
-        parent::init();
-
-        // Not possible to have no sources selected
-        if (!$this->sources) {
-            $this->sources = '*';
-        }
-    }
-
 
     /**
      * @inheritdoc
@@ -120,9 +83,7 @@ class Characteristics extends Field
     public function settingsAttributes(): array
     {
         $attributes = parent::settingsAttributes();
-        $attributes[] = 'sources';
         $attributes[] = 'source';
-        $attributes[] = 'limit';
 
         return $attributes;
     }
@@ -168,9 +129,9 @@ class Characteristics extends Field
             $valueIds[] = $result['valueId'];
             $characteristicIds[] = $result['characteristicId'];
         }
-        $values = [];
-        $characteristics = [];
+
         $characteristicQuery = CharacteristicElement::find();
+        $characteristicQuery->with(['values']);
         $characteristicQuery->id($characteristicIds);
         $characteristicQuery->indexBy('id');
         $characteristics = $characteristicQuery->all();
@@ -276,15 +237,28 @@ class Characteristics extends Field
      */
     protected function inputTemplateVariables($value = null, ElementInterface $element = null): array
     {
+        $formattedValues = [];
+        foreach ($value as $characteristicItem) {
+            $characteristicItem['characteristic'] = [
+                'id' => $characteristicItem['characteristic']->id,
+                'handle' => $characteristicItem['characteristic']->handle,
+                'title' => $characteristicItem['characteristic']->title,
+                'values' => array_map(function (CharacteristicValue $cvalue) {
+                    return [
+                        'id' => $cvalue->id,
+                        'value' => $cvalue->value
+                    ];
+                }, $characteristicItem['characteristic']->values)
+            ];
+            $formattedValues[] = $characteristicItem;
+        }
         return [
-            'jsClass' => $this->inputJsClass,
             'id' => Craft::$app->getView()->formatInputId($this->handle),
             'fieldId' => $this->id,
             'storageKey' => 'field.' . $this->id,
             'name' => $this->handle,
-            'elements' => $value,
             'source' => $this->source,
-            'value' => $value,
+            'value' => $formattedValues,
             'sourceElementId' => !empty($element->id) ? $element->id : null,
         ];
     }
@@ -302,13 +276,17 @@ class Characteristics extends Field
         if (!is_iterable($attributes)) {
             return parent::afterElementSave($element, $isNew);
         }
+
+        $source = ElementHelper::findSource(\venveo\characteristic\elements\Characteristic::class, $this->source, 'index');
+        $groupId = $source['criteria']['groupId'];
+
         try {
             $linksToResave = [];
             foreach ($attributes as $attribute) {
                 if (isset($attribute['characteristic']) && $attribute['characteristic'] instanceof CharacteristicElement) {
                     $characteristic = $attribute['characteristic'];
                 } else {
-                    $characteristic = Characteristic::$plugin->characteristics->getCharacteristicByHandle($this->groupId, $attribute['attribute']);
+                    $characteristic = Characteristic::$plugin->characteristics->getCharacteristicByHandle($groupId, $attribute['attribute']);
                 }
                 if (isset($attribute['value']) && $attribute['value'] instanceof CharacteristicValue) {
                     $value = $attribute['value'];
@@ -328,26 +306,5 @@ class Characteristics extends Field
             Craft::dd($e);
         }
         parent::afterElementSave($element, $isNew);
-    }
-
-    /**
-     * Returns an array of the source keys the field should be able to select elements from.
-     *
-     * @param ElementInterface|null $element
-     * @return array|string
-     */
-    protected function inputSources(ElementInterface $element = null)
-    {
-        return $this->source;
-    }
-
-    /**
-     * Returns any additional criteria parameters limiting which elements the field should be able to select.
-     *
-     * @return array
-     */
-    protected function inputSelectionCriteria(): array
-    {
-        return [];
     }
 }
