@@ -16,6 +16,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use Exception;
@@ -237,12 +238,12 @@ class Characteristics extends Field
     protected function inputTemplateVariables($value = null, ElementInterface $element = null): array
     {
         $formattedValues = [];
-        foreach($value as $characteristicItem) {
+        foreach ($value as $characteristicItem) {
             $characteristicItem['characteristic'] = [
                 'id' => $characteristicItem['characteristic']->id,
                 'handle' => $characteristicItem['characteristic']->handle,
                 'title' => $characteristicItem['characteristic']->title,
-                'values' => array_map(function(CharacteristicValue $cvalue) {
+                'values' => array_map(function (CharacteristicValue $cvalue) {
                     return [
                         'id' => $cvalue->id,
                         'value' => $cvalue->value
@@ -275,13 +276,17 @@ class Characteristics extends Field
         if (!is_iterable($attributes)) {
             return parent::afterElementSave($element, $isNew);
         }
+
+        $source = ElementHelper::findSource(\venveo\characteristic\elements\Characteristic::class, $this->source, 'index');
+        $groupId = $source['criteria']['groupId'];
+
         try {
             $linksToResave = [];
             foreach ($attributes as $attribute) {
                 if (isset($attribute['characteristic']) && $attribute['characteristic'] instanceof CharacteristicElement) {
                     $characteristic = $attribute['characteristic'];
                 } else {
-                    $characteristic = Characteristic::$plugin->characteristics->getCharacteristicByHandle($this->groupId, $attribute['attribute']);
+                    $characteristic = Characteristic::$plugin->characteristics->getCharacteristicByHandle($groupId, $attribute['attribute']);
                 }
                 if (isset($attribute['value']) && $attribute['value'] instanceof CharacteristicValue) {
                     $value = $attribute['value'];
