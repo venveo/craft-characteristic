@@ -4,27 +4,26 @@
         <input :name="name + '[value]'" :value="value" type="hidden"/>
 
         <div class="fields flex flex-nowrap">
+            <div class="input ltr characteristic__title">
+                <strong>{{currentCharacteristic.title}}</strong>
+            </div>
             <div class="input ltr">
-                <div class="select" v-if="!currentCharacteristic.required">
-                    <select v-model="attribute">
-                        <option :key="option.id" :value="handle"
-                                v-for="(option, handle) in characteristics">{{option.title}}
-                        </option>
+                <div v-if="currentCharacteristic.allowCustomOptions">
+                    <input class="text fullwidth" type="text" v-model="value">
+                </div>
+                <div v-else class="select">
+                    <select v-model="value">
+                        <option v-for="option in currentCharacteristic.values" :key="option.value" :value="option.value">{{option.value}}</option>
                     </select>
                 </div>
-                <div v-else>
-                    {{currentCharacteristic.title}}
-                </div>
             </div>
-            <div class="input ltr" v-if="currentCharacteristic">
-                <input class="text fullwidth" type="text" v-model="value">
             </div>
-            <div class="actions" v-if="!currentCharacteristic.required">
-                <a @click="$emit('delete')" class="error icon delete" data-icon="remove" role="button"
+            <div class="actions">
+                <div v-if="link.isNew"><strong>new</strong></div>
+                <a v-if="!currentCharacteristic.required" @click="$emit('delete')" class="error icon delete" data-icon="remove" role="button"
                    title="Delete"></a>
             </div>
         </div>
-    </div>
 </template>
 <script>
     /* eslint-disable */
@@ -39,12 +38,15 @@
         data() {
             return {
                 attribute: '',
-                value: ''
+                value: null
             }
         },
         methods: {},
         watch: {
             attribute: function (newVal) {
+                this.$emit('change', newVal);
+            },
+            value: function(newVal) {
                 this.$emit('change', newVal);
             }
         },
@@ -58,6 +60,9 @@
         beforeMount() {
             if (this.link.hasOwnProperty('characteristic')) {
                 this.attribute = this.link.characteristic.handle;
+                if (this.link.characteristic.values.length) {
+                    this.value = this.link.characteristic.values[0].value;
+                }
             }
             if (this.link.hasOwnProperty('value')) {
                 this.value = this.link.value.value;
@@ -68,14 +73,24 @@
 
 <style lang="scss" scoped>
     .characteristic-item.matrixblock {
-        padding-top: 10px;
-
+        padding: 0;
+        padding-right: 10px;
+        .characteristic__title {
+            background-color: #cdd8e4;
+            padding: 10px 20px 10px 10px;
+            border-radius: 5px 0 0 5px;
+            border-right: 1px solid #cdd8e4;
+            min-width: 100px;
+            margin-bottom: 0;
+        }
         .fields {
             align-items: baseline;
         }
 
         .actions {
             margin-left: auto;
+            right: 10px;
+            top: 7px;
         }
 
         .actions > .delete {

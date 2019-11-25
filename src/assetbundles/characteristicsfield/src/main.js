@@ -43,8 +43,6 @@ Craft.VueCharacteristicsField = Garnish.Base.extend(
 
     },
     {
-        defaults: {
-            test: 'one'
-        }
+        defaults: {}
     }
 );

@@ -6,12 +6,17 @@
                              :link="link"
                              :key="link.id"
                              :name="settings.name + '['+link.id+']'"
-                             :characteristics="availableCharacteristics"
+                             :characteristics="characteristics"
                              v-on:change="handleChange"
                              v-on:delete="() => handleDelete(link)"
         />
-        <div class="buttons last" v-if="availableCharacteristics.length !== 0">
-            <div @click="handleAdd" class="btn add icon">Add Characteristic</div>
+        <div class="buttons last add-button" v-if="availableCharacteristics.length !== 0">
+            <div class="select">
+            <select v-model="selectedCharacteristic">
+                <option v-for="(characteristic, index) in availableCharacteristics" :value="index">{{characteristic.title}}</option>
+            </select>
+            </div>
+            <div @click="handleAdd" class="btn add icon">Add Selected</div>
         </div>
     </div>
 </template>
@@ -32,7 +37,8 @@
             return {
                 characteristics: [],
                 loading: true,
-                links: []
+                links: [],
+                selectedCharacteristic: null
             }
         },
         methods: {
@@ -40,41 +46,34 @@
                 e.preventDefault();
                 this.links.push({
                     id: 'new' + this.links.length + 1,
-                    characteristic: this.availableCharacteristics[0]
+                    characteristic: this.availableCharacteristics[this.selectedCharacteristic]
                 });
-                // if (window.draftEditor) {
-                //     window.draftEditor.checkForm();
-                // }
+                if (window.draftEditor) {
+                    window.draftEditor.checkForm();
+                }
             },
             handleDelete(e) {
                 const result = this.links.filter(link => link.id != e.id);
                 this.links = result;
-                // if (window.draftEditor) {
-                //     window.draftEditor.checkForm();
-                // }
+                if (window.draftEditor) {
+                    window.draftEditor.checkForm();
+                }
             },
             handleChange(e) {
-                console.log(e);
+                if (window.draftEditor) {
+                    window.draftEditor.checkForm();
+                }
             }
         },
         computed: {
-            // links: function() {
-            //     if (this.loading !== false) {
-            //         return [];
-            //     }
-            //     const result = this.characteristics.filter(characteristic => characteristic.required == true);
-            //     let formatted = result.map((characteristic) => {
-            //         return {
-            //             characteristic: characteristic
-            //         }
-            //     });
-            //     return formatted;
-            // }
             availableCharacteristics() {
                 let availableCharacteristics = this.characteristics.filter((characteristic) => {
                     const item = this.links.find(link => link.characteristic.id === characteristic.id);
                     return !!!item;
                 });
+                if (availableCharacteristics.length) {
+                    this.selectedCharacteristic = 0;
+                }
                 return availableCharacteristics;
             }
         },
@@ -82,10 +81,25 @@
             characteristics: function (newVal) {
                 const requiredCharacteristics = newVal.filter(characteristic => characteristic.required == true);
                 for (var requiredCharacteristic of requiredCharacteristics) {
-                    this.links.push({
+                    let data = {
                         id: 'new' + this.links.length + 1,
-                        characteristic: requiredCharacteristic
-                    })
+                        characteristic: requiredCharacteristic,
+                        isNew: true
+                    };
+
+                    const foundValue = this.settings.value.find((val) => {
+                        return val.characteristic.id == requiredCharacteristic.id;
+                    });
+                    if (foundValue) {
+                        data.value = foundValue.value;
+                        data.isNew = false;
+                    }
+
+                    this.links.push(data)
+
+                    if (window.draftEditor) {
+                        window.draftEditor.checkForm();
+                    }
                 }
             }
         },
@@ -102,5 +116,9 @@
 </script>
 
 <style lang="scss">
-
+    .add-button {
+        .select {
+            margin-right: 20px;
+        }
+    }
 </style>
