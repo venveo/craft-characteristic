@@ -5,18 +5,21 @@
 
         <div class="fields flex flex-nowrap">
             <div class="input ltr">
-                <div class="select">
+                <div class="select" v-if="!currentCharacteristic.required">
                     <select v-model="attribute">
                         <option :key="option.id" :value="handle"
-                                v-for="(option, handle) in options">{{option.title}}
+                                v-for="(option, handle) in characteristics">{{option.title}}
                         </option>
                     </select>
+                </div>
+                <div v-else>
+                    {{currentCharacteristic.title}}
                 </div>
             </div>
             <div class="input ltr" v-if="currentCharacteristic">
                 <input class="text fullwidth" type="text" v-model="value">
             </div>
-            <div class="actions">
+            <div class="actions" v-if="!currentCharacteristic.required">
                 <a @click="$emit('delete')" class="error icon delete" data-icon="remove" role="button"
                    title="Delete"></a>
             </div>
@@ -29,9 +32,9 @@
     export default {
         components: {},
         props: {
-            options: Array,
+            characteristics: Array,
             name: String,
-            data: Object,
+            link: Object,
         },
         data() {
             return {
@@ -47,18 +50,17 @@
         },
         computed: {
             currentCharacteristic() {
-                if(this.data.characteristic)
-                {
-                    return this.data.characteristic;
+                if (this.link.hasOwnProperty('characteristic')) {
+                    return this.link.characteristic;
                 }
             }
         },
         beforeMount() {
-            if (this.data.hasOwnProperty('characteristic')) {
-                this.attribute = this.data.characteristic.handle;
+            if (this.link.hasOwnProperty('characteristic')) {
+                this.attribute = this.link.characteristic.handle;
             }
-            if (this.data.hasOwnProperty('value')) {
-                this.value = this.data.value.value;
+            if (this.link.hasOwnProperty('value')) {
+                this.value = this.link.value.value;
             }
         }
     }

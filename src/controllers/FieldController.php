@@ -42,7 +42,7 @@ class FieldController extends Controller
         $results = [];
         /** @var Characteristic $characteristic */
         foreach($query->all() as $characteristic) {
-            $results[$characteristic->handle] = [
+            $results[] = [
                 'id' => $characteristic->id,
                 'handle' => $characteristic->handle,
                 'title' => $characteristic->title,

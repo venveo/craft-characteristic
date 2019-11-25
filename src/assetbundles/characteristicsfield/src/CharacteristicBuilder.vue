@@ -1,16 +1,16 @@
 <template>
     <div>
         <input :name="settings.name" type="hidden"/>
-        <characteristic-item :consumedOptions="consumedOptions"
-                             :data="characteristic"
-                             :key="characteristic.id"
-                             :name="settings.name + '['+characteristic.id+']'"
-                             :options="characteristicAttributes"
-                             v-for="(characteristic) in characteristics"
+        <characteristic-item
+                             v-for="link in links"
+                             :link="link"
+                             :key="link.id"
+                             :name="settings.name + '['+link.id+']'"
+                             :characteristics="availableCharacteristics"
                              v-on:change="handleChange"
-                             v-on:delete="() => handleDelete(characteristic)"
+                             v-on:delete="() => handleDelete(link)"
         />
-        <div class="buttons last">
+        <div class="buttons last" v-if="availableCharacteristics.length !== 0">
             <div @click="handleAdd" class="btn add icon">Add Characteristic</div>
         </div>
     </div>
@@ -31,39 +31,69 @@
         data() {
             return {
                 characteristics: [],
-                characteristicAttributes: [],
-                consumedOptions: [],
-                loading: true
+                loading: true,
+                links: []
             }
         },
         methods: {
             handleAdd(e) {
                 e.preventDefault();
-                this.characteristics.push({
-                    id: 'new' + this.characteristics.length + 1
+                this.links.push({
+                    id: 'new' + this.links.length + 1,
+                    characteristic: this.availableCharacteristics[0]
                 });
-                if (window.draftEditor) {
-                    window.draftEditor.checkForm();
-                }
+                // if (window.draftEditor) {
+                //     window.draftEditor.checkForm();
+                // }
             },
             handleDelete(e) {
-                const result = this.characteristics.filter(characteristic => characteristic.id != e.id);
-                this.characteristics = result;
-                if (window.draftEditor) {
-                    window.draftEditor.checkForm();
-                }
+                const result = this.links.filter(link => link.id != e.id);
+                this.links = result;
+                // if (window.draftEditor) {
+                //     window.draftEditor.checkForm();
+                // }
             },
             handleChange(e) {
                 console.log(e);
             }
         },
-        computed: {},
-        watch: {},
+        computed: {
+            // links: function() {
+            //     if (this.loading !== false) {
+            //         return [];
+            //     }
+            //     const result = this.characteristics.filter(characteristic => characteristic.required == true);
+            //     let formatted = result.map((characteristic) => {
+            //         return {
+            //             characteristic: characteristic
+            //         }
+            //     });
+            //     return formatted;
+            // }
+            availableCharacteristics() {
+                let availableCharacteristics = this.characteristics.filter((characteristic) => {
+                    const item = this.links.find(link => link.characteristic.id === characteristic.id);
+                    return !!!item;
+                });
+                return availableCharacteristics;
+            }
+        },
+        watch: {
+            characteristics: function (newVal) {
+                const requiredCharacteristics = newVal.filter(characteristic => characteristic.required == true);
+                for (var requiredCharacteristic of requiredCharacteristics) {
+                    this.links.push({
+                        id: 'new' + this.links.length + 1,
+                        characteristic: requiredCharacteristic
+                    })
+                }
+            }
+        },
         mounted() {
-            this.characteristics = this.settings.value;
+            // this.characteristics = this.settings.value;
             this.loading = true;
             api.getCharacteristicsForSource(this.settings.source).then((result) => {
-                this.characteristicAttributes = result.data;
+                this.characteristics = result.data;
             }).finally(() => {
                 this.loading = false;
             })
