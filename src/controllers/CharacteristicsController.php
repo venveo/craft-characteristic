@@ -161,6 +161,14 @@ class CharacteristicsController extends Controller
                 $variables['characteristic']->allowCustomOptions = $group->allowCustomOptionsByDefault;
             }
         }
+
+        // Set the base CP edit URL
+        $variables['baseCpEditUrl'] = "characteristics/{$group->handle}/{id}";
+
+        $variables['continueEditingUrl'] = $variables['baseCpEditUrl'];
+
+        // Set the "Save and add another" URL
+        $variables['nextCharacteristicUrl'] = "characteristics/{$group->handle}/new";
         return null;
     }
 
