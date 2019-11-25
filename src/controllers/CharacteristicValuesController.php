@@ -156,6 +156,14 @@ class CharacteristicValuesController extends Controller
                 $variables['value']->characteristicId = $variables['characteristic']->id;
             }
         }
+
+        // Set the base CP edit URL
+        $variables['baseCpEditUrl'] = "characteristics/{$variables['characteristic']->group->handle}/{$variables['characteristic']->id}/{id}";
+
+        $variables['continueEditingUrl'] = $variables['baseCpEditUrl'];
+
+        // Set the "Save and add another" URL
+        $variables['nextValueUrl'] = "characteristics/{$variables['characteristic']->group->handle}/{$variables['characteristic']->id}/new";
         return null;
     }
 
