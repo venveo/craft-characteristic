@@ -110,7 +110,7 @@ class CharacteristicsController extends Controller
         }
 
         $variables['tabs'] = $tabs;
-        $variables['selectedTab'] = 'overview';
+        $variables['selectedTab'] = isset($characteristicId) ? 'overview' : 'characteristicFields';
 
 
         // Render the template!
