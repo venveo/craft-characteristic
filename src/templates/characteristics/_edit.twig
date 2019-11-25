@@ -17,7 +17,9 @@
 {% endblock %}
 
 {% block actionButton %}
+    {% if not isNewCharacteristic %}
     <a class="btn" href="{{ cpUrl('characteristics/' ~ groupHandle ~ '/' ~ characteristic.id ~ '/new') }}">Create Value</a>
+    {% endif %}
 
     <div class="btngroup">
         <input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
