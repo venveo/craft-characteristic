@@ -72,6 +72,11 @@ class CharacteristicGroup extends Model
      */
     public $valueFieldLayoutId;
 
+    /**
+     * @var int|null Structure ID
+     */
+    public $structureId;
+
     // Public Methods
     // =========================================================================
 
@@ -122,7 +127,7 @@ class CharacteristicGroup extends Model
     public function rules()
     {
         $rules = parent::rules();
-        $rules[] = [['id', 'valueFieldLayoutId', 'characteristicFieldLayoutId'], 'number', 'integerOnly' => true];
+        $rules[] = [['id', 'valueFieldLayoutId', 'structureId', 'characteristicFieldLayoutId'], 'number', 'integerOnly' => true];
         $rules[] = [['allowCustomOptionsByDefault', 'requiredByDefault'], 'boolean'];
         $rules[] = [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']];
         $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => CharacteristicGroupRecord::class];

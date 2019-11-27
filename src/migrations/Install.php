@@ -50,6 +50,7 @@ class Install extends Migration
         $this->createTable('{{%characteristic_groups}}',
             [
                 'id' => $this->primaryKey(),
+                'structureId' => $this->integer()->notNull(),
                 'handle' => $this->string()->notNull(),
                 'name' => $this->string()->notNull(),
                 'characteristicFieldLayoutId' => $this->integer()->null(),
@@ -128,6 +129,7 @@ class Install extends Migration
     {
         $this->addForeignKey(null, '{{%characteristic_groups}}', ['characteristicFieldLayoutId'], Table::FIELDLAYOUTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%characteristic_groups}}', ['valueFieldLayoutId'], Table::FIELDLAYOUTS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, '{{%characteristic_groups}}', ['structureId'], Table::STRUCTURES, ['id'], 'CASCADE', null);
 
         $this->addForeignKey(null, '{{%characteristic_characteristics}}', ['id'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%characteristic_characteristics}}', ['groupId'], '{{%characteristic_groups}}', ['id'], 'CASCADE', null);
