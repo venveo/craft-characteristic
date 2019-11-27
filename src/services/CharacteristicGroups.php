@@ -13,6 +13,7 @@ namespace venveo\characteristic\services;
 use Craft;
 use craft\base\Component;
 use craft\db\Query;
+use craft\db\Table;
 use craft\errors\SectionNotFoundException;
 use craft\events\ConfigEvent;
 use craft\helpers\ArrayHelper;
@@ -21,6 +22,7 @@ use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
 use craft\models\Section;
+use craft\models\Structure;
 use Throwable;
 use venveo\characteristic\elements\Characteristic;
 use venveo\characteristic\elements\CharacteristicValue;
@@ -132,22 +134,11 @@ class CharacteristicGroups extends Component
     /**
      * Returns a Query object prepped for retrieving groups.
      *
-     * @return Query
+     * @return \yii\db\ActiveQuery
      */
-    private function _createGroupQuery(): Query
+    private function _createGroupQuery(): \yii\db\ActiveQuery
     {
-        $query = (new Query())
-            ->select([
-                'groups.id',
-                'groups.name',
-                'groups.handle',
-                'groups.characteristicFieldLayoutId',
-                'groups.requiredByDefault',
-                'groups.allowCustomOptionsByDefault',
-                'groups.valueFieldLayoutId',
-                'groups.uid',
-            ])
-            ->from(['{{%characteristic_groups}} groups']);
+        $query = CharacteristicGroupRecord::find()->with(['structure']);
 
         return $query;
     }
@@ -313,10 +304,13 @@ class CharacteristicGroups extends Component
             return false;
         }
 
+        $structureUid = null;
         if ($isNewGroup) {
             $group->uid = StringHelper::UUID();
+            $structureUid = StringHelper::UUID();
         } else if (!$group->uid) {
             $group->uid = Db::uidById(CharacteristicGroupRecord::tableName(), $group->id);
+            $structureUid = Db::uidById(Table::STRUCTURES, $group->structureId);
         }
 
         // Assemble the section config
@@ -324,7 +318,7 @@ class CharacteristicGroups extends Component
 
         $projectConfig = Craft::$app->getProjectConfig();
 
-        $configData = $group->getDataForProjectConfig();
+        $configData = $group->getDataForProjectConfig($structureUid);
 
         // Do everything that follows in a transaction so no DB changes will be
         // saved if an exception occurs that ends up preventing the project config
@@ -369,6 +363,9 @@ class CharacteristicGroups extends Component
         $transaction = $db->beginTransaction();
 
         try {
+            $structureData = $data['structure'];
+            $structureUid = $structureData['uid'];
+
             // Basic data
             $groupRecord = $this->_getGroupRecord($groupUid);
             $isNewGroup = $groupRecord->getIsNewRecord();
@@ -380,6 +377,15 @@ class CharacteristicGroups extends Component
             $groupRecord->requiredByDefault = $data['requiredByDefault'];
             $groupRecord->allowCustomOptionsByDefault = $data['allowCustomOptionsByDefault'];
 
+            // Structure
+            $structuresService = Craft::$app->getStructures();
+            $structure = $structuresService->getStructureByUid($structureUid, true) ?? new Structure(['uid' => $structureUid]);
+            $structure->maxLevels = 1;
+            $structuresService->saveStructure($structure);
+
+            $groupRecord->structureId = $structure->id;
+
+             // Field layouts
             if (!empty($data['characteristicFieldLayouts']) && !empty($config = reset($data['characteristicFieldLayouts']))) {
                 // Save the characteristic field layout
                 $layout = FieldLayout::createFromConfig($config);
@@ -555,6 +561,7 @@ class CharacteristicGroups extends Component
                 Craft::$app->getElements()->deleteElement($characteristic);
             }
 
+            // Delete the field layouts
             $characteristicFieldLayoutId = $group->characteristicFieldLayoutId;
             $valueFieldLayoutId = $group->valueFieldLayoutId;
 
@@ -564,6 +571,10 @@ class CharacteristicGroups extends Component
             if ($valueFieldLayoutId) {
                 Craft::$app->getFields()->deleteLayoutById($valueFieldLayoutId);
             }
+
+            // Delete the structure
+            Craft::$app->getStructures()->deleteStructureById($group->structureId);
+
 
             $groupRecord->delete();
             $transaction->commit();

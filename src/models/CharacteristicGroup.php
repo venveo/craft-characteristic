@@ -77,6 +77,10 @@ class CharacteristicGroup extends Model
      */
     public $structureId;
 
+    public $dateCreated;
+
+    public $dateUpdated;
+
     // Public Methods
     // =========================================================================
 
@@ -136,7 +140,7 @@ class CharacteristicGroup extends Model
         return $rules;
     }
 
-    public function getDataForProjectConfig()
+    public function getDataForProjectConfig($structureUid = null)
     {
 
         $generateLayoutConfig = function(FieldLayout $fieldLayout): array {
@@ -156,7 +160,7 @@ class CharacteristicGroup extends Model
             return [];
         };
 
-        return [
+        $data = [
             'name' => $this->name,
             'handle' => $this->handle,
             'allowCustomOptionsByDefault' => $this->allowCustomOptionsByDefault,
@@ -164,5 +168,12 @@ class CharacteristicGroup extends Model
             'characteristicFieldLayouts' => $generateLayoutConfig($this->getCharacteristicFieldLayout()),
             'valueFieldLayouts' => $generateLayoutConfig($this->getValueFieldLayout()),
         ];
+        if ($structureUid) {
+            $data['structure'] = [
+                'uid' => $structureUid
+            ];
+        }
+
+        return $data;
     }
 }
