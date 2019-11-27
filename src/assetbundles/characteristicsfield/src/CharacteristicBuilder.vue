@@ -2,19 +2,21 @@
     <div>
         <input :name="settings.name" type="hidden"/>
         <characteristic-item
-                             v-for="link in links"
-                             :link="link"
-                             :key="link.id"
-                             :name="settings.name + '['+link.id+']'"
-                             :characteristics="characteristics"
-                             v-on:change="handleChange"
-                             v-on:delete="() => handleDelete(link)"
+                v-for="link in links"
+                :link="link"
+                :key="link.id"
+                :name="settings.name + '['+link.id+']'"
+                :characteristics="characteristics"
+                v-on:change="handleChange"
+                v-on:delete="() => handleDelete(link)"
         />
         <div class="buttons last add-button" v-if="availableCharacteristics.length !== 0">
             <div class="select">
-            <select v-model="selectedCharacteristic">
-                <option v-for="(characteristic, index) in availableCharacteristics" :value="index">{{characteristic.title}}</option>
-            </select>
+                <select v-model="selectedCharacteristic">
+                    <option v-for="(characteristic, index) in availableCharacteristics" :value="index">
+                        {{characteristic.title}}
+                    </option>
+                </select>
             </div>
             <div @click="handleAdd" class="btn add icon">Add Selected</div>
         </div>
@@ -84,21 +86,22 @@
                 for (let characteristic of newVal) {
                     const existingValue = savedLinks.filter(link => link.characteristic.id == characteristic.id);
                     let data = {};
-                    if(existingValue) {
+                    if (existingValue && existingValue[0]) {
                         data = {
                             id: existingValue[0].id,
                             characteristic: characteristic,
                             isNew: false,
                             value: existingValue[0].value
                         };
-                    } else {
+                        this.links.push(data);
+                    } else if (characteristic.required) {
                         data = {
                             id: 'new' + this.links.length + 1,
                             characteristic: characteristic,
                             isNew: true
                         };
+                        this.links.push(data);
                     }
-                    this.links.push(data);
 
                     if (window.draftEditor) {
                         window.draftEditor.checkForm();
@@ -123,6 +126,7 @@
         .select > select {
             border-radius: 5px 0 0 5px;
         }
+
         .btn {
             border-radius: 0 5px 5px 0;
         }
