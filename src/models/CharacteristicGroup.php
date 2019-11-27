@@ -72,6 +72,15 @@ class CharacteristicGroup extends Model
      */
     public $valueFieldLayoutId;
 
+    /**
+     * @var int|null Structure ID
+     */
+    public $structureId;
+
+    public $dateCreated;
+
+    public $dateUpdated;
+
     // Public Methods
     // =========================================================================
 
@@ -122,7 +131,7 @@ class CharacteristicGroup extends Model
     public function rules()
     {
         $rules = parent::rules();
-        $rules[] = [['id', 'valueFieldLayoutId', 'characteristicFieldLayoutId'], 'number', 'integerOnly' => true];
+        $rules[] = [['id', 'valueFieldLayoutId', 'structureId', 'characteristicFieldLayoutId'], 'number', 'integerOnly' => true];
         $rules[] = [['allowCustomOptionsByDefault', 'requiredByDefault'], 'boolean'];
         $rules[] = [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']];
         $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => CharacteristicGroupRecord::class];
@@ -131,7 +140,7 @@ class CharacteristicGroup extends Model
         return $rules;
     }
 
-    public function getDataForProjectConfig()
+    public function getDataForProjectConfig($structureUid = null)
     {
 
         $generateLayoutConfig = function(FieldLayout $fieldLayout): array {
@@ -151,7 +160,7 @@ class CharacteristicGroup extends Model
             return [];
         };
 
-        return [
+        $data = [
             'name' => $this->name,
             'handle' => $this->handle,
             'allowCustomOptionsByDefault' => $this->allowCustomOptionsByDefault,
@@ -159,5 +168,12 @@ class CharacteristicGroup extends Model
             'characteristicFieldLayouts' => $generateLayoutConfig($this->getCharacteristicFieldLayout()),
             'valueFieldLayouts' => $generateLayoutConfig($this->getValueFieldLayout()),
         ];
+        if ($structureUid) {
+            $data['structure'] = [
+                'uid' => $structureUid
+            ];
+        }
+
+        return $data;
     }
 }

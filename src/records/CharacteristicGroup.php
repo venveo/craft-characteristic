@@ -12,6 +12,7 @@ namespace venveo\characteristic\records;
 
 use craft\db\ActiveRecord;
 use craft\records\FieldLayout;
+use craft\records\Structure;
 use yii\db\ActiveQueryInterface;
 
 /**
@@ -27,6 +28,7 @@ use yii\db\ActiveQueryInterface;
  * @property \yii\db\ActiveQueryInterface $valueFieldLayout
  * @property \yii\db\ActiveQueryInterface $characteristicFieldLayout
  * @property int $valueFieldLayoutId [int(11)]
+ * @property int $structureId [int(11)]
  */
 class CharacteristicGroup extends ActiveRecord
 {
@@ -39,6 +41,16 @@ class CharacteristicGroup extends ActiveRecord
     public static function tableName()
     {
         return '{{%characteristic_groups}}';
+    }
+
+    /**
+     * Returns the group’s structure.
+     *
+     * @return ActiveQueryInterface The relational query object.
+     */
+    public function getStructure(): ActiveQueryInterface
+    {
+        return $this->hasOne(Structure::class, ['id' => 'structureId']);
     }
 
     /**
@@ -55,6 +67,17 @@ class CharacteristicGroup extends ActiveRecord
     public function getCharacteristicFieldLayout(): ActiveQueryInterface
     {
         return $this->hasOne(FieldLayout::class, ['id' => 'characteristicFieldLayoutId']);
+    }
+
+
+    /**
+     * Returns the group’s characteristics.
+     *
+     * @return ActiveQueryInterface The relational query object.
+     */
+    public function getCharacteristics(): ActiveQueryInterface
+    {
+        return $this->hasMany(Characteristic::class, ['groupId' => 'id']);
     }
 
 }
