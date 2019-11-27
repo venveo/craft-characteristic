@@ -79,23 +79,26 @@
         },
         watch: {
             characteristics: function (newVal) {
-                const requiredCharacteristics = newVal.filter(characteristic => characteristic.required == true);
-                for (var requiredCharacteristic of requiredCharacteristics) {
-                    let data = {
-                        id: 'new' + this.links.length + 1,
-                        characteristic: requiredCharacteristic,
-                        isNew: true
-                    };
-
-                    const foundValue = this.settings.value.find((val) => {
-                        return val.characteristic.id == requiredCharacteristic.id;
-                    });
-                    if (foundValue) {
-                        data.value = foundValue.value;
-                        data.isNew = false;
+                const savedLinks = this.settings.value;
+                // const requiredCharacteristics = newVal.filter(characteristic => characteristic.required == true);
+                for (let characteristic of newVal) {
+                    const existingValue = savedLinks.filter(link => link.characteristic.id == characteristic.id);
+                    let data = {};
+                    if(existingValue) {
+                        data = {
+                            id: existingValue[0].id,
+                            characteristic: characteristic,
+                            isNew: false,
+                            value: existingValue[0].value
+                        };
+                    } else {
+                        data = {
+                            id: 'new' + this.links.length + 1,
+                            characteristic: characteristic,
+                            isNew: true
+                        };
                     }
-
-                    this.links.push(data)
+                    this.links.push(data);
 
                     if (window.draftEditor) {
                         window.draftEditor.checkForm();
