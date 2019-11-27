@@ -117,8 +117,11 @@
 
 <style lang="scss">
     .add-button {
-        .select {
-            margin-right: 20px;
+        .select > select {
+            border-radius: 5px 0 0 5px;
+        }
+        .btn {
+            border-radius: 0 5px 5px 0;
         }
     }
 </style>
