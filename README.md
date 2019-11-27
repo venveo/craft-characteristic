@@ -25,7 +25,7 @@ others? If we create a new group, we have to now write more code.
 Characteristic solves this by creating two new element types, sorted
 into groups. The "Characteristic" element can be applied like a tag,
 once applied, a "Characteristic Value" can be applied. This value is
-free-form and new elements will be created as new non-distinct values
+free-form and new elements will be created as new distinct values
 are created ***PER-CHARACTERISTIC***. 
 
 For example, as a developer, I would create a Characteristic Group
@@ -35,6 +35,7 @@ can define their characteristics like any other element:
 - "Price Level"
 - "Seating Outdoors"
 - "Which dish looks most delicious?"
+- "How many vodka-tonics before I get banned?"
 
 Through the use of a custom field, I can now apply these characteristics
 as needed with values, as needed. Notice the last option above: it asks 
