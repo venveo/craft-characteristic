@@ -13,6 +13,7 @@ namespace venveo\characteristic\elements;
 use Craft;
 use craft\base\Element;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\Entry;
 use craft\helpers\UrlHelper;
@@ -40,6 +41,11 @@ class Characteristic extends Element
     public $groupId = null;
 
     /**
+     * @var int|null New parent ID
+     */
+    public $newParentId;
+
+    /**
      * @var bool
      */
     public $allowCustomOptions = true;
@@ -48,6 +54,12 @@ class Characteristic extends Element
      * @var bool
      */
     public $required = false;
+
+    /**
+     * @var bool|null
+     * @see _hasNewParent()
+     */
+    private $_hasNewParent;
 
     // Static Methods
     // =========================================================================
@@ -136,7 +148,9 @@ class Characteristic extends Element
                 'data' => ['handle' => $group->handle],
                 'criteria' => [
                     'groupId' => $group->id
-                ]
+                ],
+                'structureId' => $group->structureId,
+                'structureEditable' => Craft::$app->getRequest()->getIsConsoleRequest() ? true : Craft::$app->getUser()->checkPermission('editCharacteristics:' . $group->uid),
             ];
         }
         return $sources;
@@ -404,6 +418,15 @@ class Characteristic extends Element
 
         $record->save(false);
 
+        // Has the parent changed?
+        if ($this->_hasNewParent()) {
+            if (!$this->newParentId) {
+                Craft::$app->getStructures()->appendToRoot($this->structureId, $this);
+            } else {
+                Craft::$app->getStructures()->append($this->structureId, $this, $this->getParent());
+            }
+        }
+
         parent::afterSave($isNew);
     }
 
@@ -429,5 +452,99 @@ class Characteristic extends Element
         $this->fieldLayoutId = $group->characteristicFieldLayoutId;
 
         return parent::beforeValidate();
+    }
+
+
+    /**
+     * @inheritdoc
+     * @throws Exception if reasons
+     */
+    public function beforeSave(bool $isNew): bool
+    {
+        // Set the structure ID for Element::attributes() and afterSave()
+        $this->structureId = $this->getGroup()->structureId;
+
+        if ($this->_hasNewParent()) {
+            if ($this->newParentId) {
+                $parentCategory = \venveo\characteristic\Characteristic::$plugin->characteristics->getCharacteristicById($this->newParentId);
+
+                if (!$parentCategory) {
+                    throw new Exception('Invalid characteristic ID: ' . $this->newParentId);
+                }
+            } else {
+                $parentCategory = null;
+            }
+
+            $this->setParent($parentCategory);
+        }
+
+        return parent::beforeSave($isNew);
+    }
+
+
+    /**
+     * @inheritdoc
+     */
+    public function afterMoveInStructure(int $structureId)
+    {
+        parent::afterMoveInStructure($structureId);
+    }
+
+    // Private Methods
+    // =========================================================================
+
+    /**
+     * Returns whether the category has been assigned a new parent entry.
+     *
+     * @return bool
+     * @see beforeSave()
+     * @see afterSave()
+     */
+    private function _hasNewParent(): bool
+    {
+        if ($this->_hasNewParent !== null) {
+            return $this->_hasNewParent;
+        }
+
+        return $this->_hasNewParent = $this->_checkForNewParent();
+    }
+
+    /**
+     * Checks if an category was submitted with a new parent category selected.
+     *
+     * @return bool
+     */
+    private function _checkForNewParent(): bool
+    {
+        // Is it a brand new category?
+        if ($this->id === null) {
+            return true;
+        }
+
+        // Was a new parent ID actually submitted?
+        if ($this->newParentId === null) {
+            return false;
+        }
+
+        // Is it set to the top level now, but it hadn't been before?
+        if (!$this->newParentId && $this->level != 1) {
+            return true;
+        }
+
+        // Is it set to be under a parent now, but didn't have one before?
+        if ($this->newParentId && $this->level == 1) {
+            return true;
+        }
+
+        // Is the newParentId set to a different category ID than its previous parent?
+        $oldParentQuery = self::find();
+        $oldParentQuery->ancestorOf($this);
+        $oldParentQuery->ancestorDist(1);
+        $oldParentQuery->siteId($this->siteId);
+        $oldParentQuery->anyStatus();
+        $oldParentQuery->select('elements.id');
+        $oldParentId = $oldParentQuery->scalar();
+
+        return $this->newParentId != $oldParentId;
     }
 }

@@ -8,6 +8,7 @@
 namespace venveo\characteristic\elements\db;
 
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\db\ElementQuery;
 use craft\helpers\Db;
 use craft\models\TagGroup;
@@ -47,34 +48,18 @@ class CharacteristicQuery extends ElementQuery
     }
 
     /**
-     * Narrows the query results based on the tag groups the tags belong to.
-     *
-     * Possible values include:
-     *
-     * | Value | Fetches {elements}…
-     * | - | -
-     * | `'foo'` | in a group with a handle of `foo`.
-     * | `'not foo'` | not in a group with a handle of `foo`.
-     * | `['foo', 'bar']` | in a group with a handle of `foo` or `bar`.
-     * | `['not', 'foo', 'bar']` | not in a group with a handle of `foo` or `bar`.
-     * | a [[TagGroup|TagGroup]] object | in a group represented by the object.
-     *
-     * ---
-     *
-     * ```twig
-     * {# Fetch {elements} in the Foo group #}
-     * {% set {elements-var} = {twig-method}
-     *     .group('foo')
-     *     .all() %}
-     * ```
-     *
-     * ```php
-     * // Fetch {elements} in the Foo group
-     * ${elements-var} = {php-method}
-     *     ->group('foo')
-     *     ->all();
-     * ```
-     *
+     * @inheritdoc
+     */
+    public function init()
+    {
+        if ($this->withStructure === null) {
+            $this->withStructure = true;
+        }
+
+        parent::init();
+    }
+
+    /**
      * @param string|string[]|TagGroup|null $value The property value
      * @return static self reference
      * @uses $groupId
@@ -83,6 +68,7 @@ class CharacteristicQuery extends ElementQuery
     {
         if ($value instanceof CharacteristicGroup) {
             $this->groupId = $value->id;
+            $this->structureId = ($value->structureId ?: false);
         } else if ($value !== null) {
             $this->groupId = (new Query())
                 ->select(['id'])
@@ -148,11 +134,6 @@ class CharacteristicQuery extends ElementQuery
      */
     protected function beforePrepare(): bool
     {
-        // See if 'group' was set to an invalid handle
-        if ($this->groupId === []) {
-            return false;
-        }
-
         $this->joinElementTable('characteristic_characteristics');
 
         $this->query->select([
@@ -162,9 +143,8 @@ class CharacteristicQuery extends ElementQuery
             'characteristic_characteristics.required',
         ]);
 
-        if ($this->groupId) {
-            $this->subQuery->andWhere(Db::parseParam('characteristic_characteristics.groupId', $this->groupId));
-        }
+        $this->_applyGroupIdParam();
+
         if ($this->handle) {
             $this->subQuery->andWhere(Db::parseParam('characteristic_characteristics.handle', $this->handle));
         }
@@ -176,5 +156,25 @@ class CharacteristicQuery extends ElementQuery
         }
 
         return parent::beforePrepare();
+    }
+
+    /**
+     * Applies the 'groupId' param to the query being prepared.
+     */
+    private function _applyGroupIdParam()
+    {
+        if ($this->groupId) {
+            // Should we set the structureId param?
+            if ($this->structureId === null && (!is_array($this->groupId) || count($this->groupId) === 1)) {
+                $structureId = (new Query())
+                    ->select(['structureId'])
+                    ->from([Table::CATEGORYGROUPS])
+                    ->where(Db::parseParam('id', $this->groupId))
+                    ->scalar();
+                $this->structureId = (int)$structureId ?: false;
+            }
+
+            $this->subQuery->andWhere(Db::parseParam('characteristic_characteristics.groupId', $this->groupId));
+        }
     }
 }
