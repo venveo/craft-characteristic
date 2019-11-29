@@ -23,6 +23,12 @@ class Drilldown extends Component
     /** @var ElementQueryInterface $query */
     public $query = null;
 
+    /**
+     * @var bool $respectStructure
+     * If true, we'll show characteristics in the order explicitly as it appears int he structure
+     */
+    public $respectStructure = false;
+
     private $_group;
 
     private $_currentCharacteristic = null;
@@ -75,14 +81,19 @@ class Drilldown extends Component
         $ids = $this->query->ids();
         $linksQuery = CharacteristicLink::find()
             ->alias('link')
-            ->leftJoin('{{%elements}} elements1', '[[elements1.id]] = [[link.characteristicId]]')
-            ->leftJoin('{{%elements}} elements2', '[[elements2.id]] = [[link.valueId]]')
-            ->addSelect(['COUNT(characteristicId) as score', 'characteristicId'])
-            ->where(['in', 'elementId', $ids])
-            ->groupBy('characteristicId')
-            // TODO: Not sure if this makes sense...
-            ->orderBy('score ASC')
-            ->indexBy('characteristicId');
+            ->innerJoin('{{%elements}} elements1', '[[elements1.id]] = [[link.characteristicId]]')
+            ->innerJoin('{{%elements}} elements2', '[[elements2.id]] = [[link.valueId]]')
+            ->innerJoin('{{%structureelements}} structure', '[[structure.elementId]] = [[elements1.id]]')
+            ->addSelect(['COUNT(characteristicId) as score', 'characteristicId', 'structure.lft lft'])
+            ->where(['in', 'link.elementId', $ids])
+            ->groupBy(['characteristicId', 'lft']);
+        if ($this->respectStructure) {
+            $linksQuery->orderBy('lft ASC');
+        } else {
+            $linksQuery->orderBy('score ASC, lft ASC');
+        }
+
+        $linksQuery->indexBy('characteristicId');
 
         $skipIds = array_keys($this->state->satisfiedAttributes);
         $linksQuery->andWhere(['NOT IN', 'characteristicId', $skipIds]);
