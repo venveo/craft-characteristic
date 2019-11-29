@@ -28,7 +28,8 @@
                         {{ forms.optionShortcutLabel('S') }}
                         {{ "Save and continue editing"|t('app') }}
                     </a></li>
-                <li><a class="formsubmit" data-redirect="{{ (nextValueUrl~'#')|hash }}">{{ "Save and add another"|t('app') }}</a></li>
+                <li><a class="formsubmit"
+                       data-redirect="{{ (nextValueUrl~'#')|hash }}">{{ "Save and add another"|t('app') }}</a></li>
             </ul>
             {% if not isNewValue %}
                 <hr>
@@ -76,8 +77,8 @@
 {% endblock %}
 
 {% block details %}
-{#    <div id="settings" class="meta">#}
-{#    </div>#}
+    {#    <div id="settings" class="meta">#}
+    {#    </div>#}
     {% if value.id %}
         <div class="meta read-only">
             <div class="data">

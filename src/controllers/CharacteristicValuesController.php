@@ -94,39 +94,6 @@ class CharacteristicValuesController extends Controller
         return $this->renderTemplate('characteristic/characteristics/_edit-value', $variables);
     }
 
-    /**
-     * @return mixed
-     */
-    public function actionReorderValue(): Response
-    {
-        $this->requirePostRequest();
-        $this->requireAcceptsJson();
-
-        $valueIds = Json::decode(Craft::$app->getRequest()->getRequiredBodyParam('ids'));
-        if (!is_array($valueIds)) {
-            throw new Exception('Expected array of ids');
-        }
-        Plugin::$plugin->characteristicValues->reorderValues($valueIds);
-        return $this->asJson(['success' => true]);
-    }
-
-    /**
-     * Deletes an entry type.
-     *
-     * @return Response
-     */
-    public function actionDeleteValue(): Response
-    {
-        $this->requirePostRequest();
-        $this->requireAcceptsJson();
-
-        $valueId = Craft::$app->getRequest()->getRequiredBodyParam('id');
-
-        Plugin::$plugin->characteristicValues->deleteValueById($valueId);
-
-        return $this->asJson(['success' => true]);
-    }
-
     private function _prepEditCharacteristicValueVariables(array &$variables)
     {
         // Get the value
@@ -165,6 +132,39 @@ class CharacteristicValuesController extends Controller
         // Set the "Save and add another" URL
         $variables['nextValueUrl'] = "characteristics/{$variables['characteristic']->group->handle}/{$variables['characteristic']->id}/new";
         return null;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function actionReorderValue(): Response
+    {
+        $this->requirePostRequest();
+        $this->requireAcceptsJson();
+
+        $valueIds = Json::decode(Craft::$app->getRequest()->getRequiredBodyParam('ids'));
+        if (!is_array($valueIds)) {
+            throw new Exception('Expected array of ids');
+        }
+        Plugin::$plugin->characteristicValues->reorderValues($valueIds);
+        return $this->asJson(['success' => true]);
+    }
+
+    /**
+     * Deletes an entry type.
+     *
+     * @return Response
+     */
+    public function actionDeleteValue(): Response
+    {
+        $this->requirePostRequest();
+        $this->requireAcceptsJson();
+
+        $valueId = Craft::$app->getRequest()->getRequiredBodyParam('id');
+
+        Plugin::$plugin->characteristicValues->deleteValueById($valueId);
+
+        return $this->asJson(['success' => true]);
     }
 
     /**

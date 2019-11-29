@@ -117,13 +117,41 @@ class CharacteristicValue extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineSources(string $context = null): array
+    public static function eagerLoadingMap(array $sourceElements, string $handle): array
     {
-        return [];
+        if ($handle == 'characteristic') {
+            // Get the source element IDs
+            $sourceElementIds = [];
+
+            foreach ($sourceElements as $sourceElement) {
+                $sourceElementIds[] = $sourceElement->id;
+            }
+
+            $map = (new Query())
+                ->select('id as source, characteristicId as target')
+                ->from('{{%characteristic_characteristics}}')
+                ->where(['in', 'id', $sourceElementIds])
+                ->all();
+
+            return [
+                'elementType' => Characteristic::class,
+                'map' => $map
+            ];
+        }
+
+        return parent::eagerLoadingMap($sourceElements, $handle);
     }
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    protected static function defineSources(string $context = null): array
+    {
+        return [];
+    }
 
     /**
      * @inheritdoc
@@ -142,7 +170,6 @@ class CharacteristicValue extends Element
     {
         return true;
     }
-
 
     /**
      * @inheritdoc
@@ -173,19 +200,6 @@ class CharacteristicValue extends Element
         return $this->_characteristic = $characteristic;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setEagerLoadedElements(string $handle, array $elements)
-    {
-        if ($handle == 'characteristic') {
-            $characteristic = $elements[0] ?? null;
-            $this->setCharacteristic($characteristic);
-        } else {
-            parent::setEagerLoadedElements($handle, $elements);
-        }
-    }
-
     public function setCharacteristic(Characteristic $characteristic)
     {
 
@@ -199,29 +213,14 @@ class CharacteristicValue extends Element
     /**
      * @inheritdoc
      */
-    public static function eagerLoadingMap(array $sourceElements, string $handle): array
+    public function setEagerLoadedElements(string $handle, array $elements)
     {
         if ($handle == 'characteristic') {
-            // Get the source element IDs
-            $sourceElementIds = [];
-
-            foreach ($sourceElements as $sourceElement) {
-                $sourceElementIds[] = $sourceElement->id;
-            }
-
-            $map = (new Query())
-                ->select('id as source, characteristicId as target')
-                ->from('{{%characteristic_characteristics}}')
-                ->where(['in', 'id', $sourceElementIds])
-                ->all();
-
-            return [
-                'elementType' => Characteristic::class,
-                'map' => $map
-            ];
+            $characteristic = $elements[0] ?? null;
+            $this->setCharacteristic($characteristic);
+        } else {
+            parent::setEagerLoadedElements($handle, $elements);
         }
-
-        return parent::eagerLoadingMap($sourceElements, $handle);
     }
 
     public function applyToDrilldownState(DrilldownState $state)

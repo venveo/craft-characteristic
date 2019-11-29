@@ -48,18 +48,6 @@ class CharacteristicQuery extends ElementQuery
     }
 
     /**
-     * @inheritdoc
-     */
-    public function init()
-    {
-        if ($this->withStructure === null) {
-            $this->withStructure = true;
-        }
-
-        parent::init();
-    }
-
-    /**
      * @param string|string[]|TagGroup|null $value The property value
      * @return static self reference
      * @uses $groupId
@@ -80,6 +68,18 @@ class CharacteristicQuery extends ElementQuery
         }
 
         return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        if ($this->withStructure === null) {
+            $this->withStructure = true;
+        }
+
+        parent::init();
     }
 
     /**

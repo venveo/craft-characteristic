@@ -277,7 +277,7 @@ class Characteristics extends Field
             return parent::afterElementSave($element, $isNew);
         }
 
-        $source = ElementHelper::findSource(\venveo\characteristic\elements\Characteristic::class, $this->source, 'index');
+        $source = ElementHelper::findSource(CharacteristicElement::class, $this->source, 'index');
         $groupId = $source['criteria']['groupId'];
 
         try {

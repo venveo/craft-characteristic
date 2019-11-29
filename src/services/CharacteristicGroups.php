@@ -12,7 +12,6 @@ namespace venveo\characteristic\services;
 
 use Craft;
 use craft\base\Component;
-use craft\db\Query;
 use craft\db\Table;
 use craft\errors\SectionNotFoundException;
 use craft\events\ConfigEvent;
@@ -29,6 +28,7 @@ use venveo\characteristic\elements\CharacteristicValue;
 use venveo\characteristic\events\CharacteristicGroupEvent;
 use venveo\characteristic\models\CharacteristicGroup;
 use venveo\characteristic\records\CharacteristicGroup as CharacteristicGroupRecord;
+use yii\db\ActiveQuery;
 
 /**
  * @author    Venveo
@@ -134,9 +134,9 @@ class CharacteristicGroups extends Component
     /**
      * Returns a Query object prepped for retrieving groups.
      *
-     * @return \yii\db\ActiveQuery
+     * @return ActiveQuery
      */
-    private function _createGroupQuery(): \yii\db\ActiveQuery
+    private function _createGroupQuery(): ActiveQuery
     {
         $query = CharacteristicGroupRecord::find()->with(['structure']);
 
@@ -385,7 +385,7 @@ class CharacteristicGroups extends Component
 
             $groupRecord->structureId = $structure->id;
 
-             // Field layouts
+            // Field layouts
             if (!empty($data['characteristicFieldLayouts']) && !empty($config = reset($data['characteristicFieldLayouts']))) {
                 // Save the characteristic field layout
                 $layout = FieldLayout::createFromConfig($config);
@@ -557,7 +557,7 @@ class CharacteristicGroups extends Component
                 ->limit(null)
                 ->all();
 
-            foreach($characteristics as $characteristic) {
+            foreach ($characteristics as $characteristic) {
                 Craft::$app->getElements()->deleteElement($characteristic);
             }
 

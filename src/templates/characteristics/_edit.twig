@@ -18,7 +18,8 @@
 
 {% block actionButton %}
     {% if not isNewCharacteristic %}
-    <a class="btn" href="{{ cpUrl('characteristics/' ~ groupHandle ~ '/' ~ characteristic.id ~ '/new') }}">Create Value</a>
+        <a class="btn" href="{{ cpUrl('characteristics/' ~ groupHandle ~ '/' ~ characteristic.id ~ '/new') }}">Create
+            Value</a>
     {% endif %}
 
     <div class="btngroup">
@@ -31,14 +32,17 @@
                         {{ forms.optionShortcutLabel('S') }}
                         {{ "Save and continue editing"|t('app') }}
                     </a></li>
-                <li><a class="formsubmit" data-redirect="{{ (nextCharacteristicUrl~'#')|hash }}">{{ "Save and add another"|t('app') }}</a></li>
+                <li><a class="formsubmit"
+                       data-redirect="{{ (nextCharacteristicUrl~'#')|hash }}">{{ "Save and add another"|t('app') }}</a>
+                </li>
             </ul>
             {% if not isNewCharacteristic %}
                 <hr>
                 <ul>
                     <li><a class="formsubmit error" data-action="characteristic/characteristics/delete-characteristic"
                            data-confirm="{{ 'Are you sure you want to delete this characteristic?'|t('app') }}"
-                           data-redirect="{{ ('characteristics/' ~ groupHandle)|hash }}">{{ 'Delete'|t('app') }}</a></li>
+                           data-redirect="{{ ('characteristics/' ~ groupHandle)|hash }}">{{ 'Delete'|t('app') }}</a>
+                    </li>
                 </ul>
             {% endif %}
         </div>
@@ -53,57 +57,59 @@
     {{ hiddenInput('groupId', group.id) }}
     {% if characteristic.id %}{{ hiddenInput('characteristicId', characteristic.id) }}{% endif %}
     {% if characteristic.id %}
-    <div id="overview">
-        {% if characteristic.id %}
-            {% set values = characteristic.values.all() %}
-            <h2>All Values</h2>
+        <div id="overview">
+            {% if characteristic.id %}
+                {% set values = characteristic.values.all() %}
+                <h2>All Values</h2>
 
-            {% include 'characteristic/characteristics/_partials/elementvalueindex' %}
+                {% include 'characteristic/characteristics/_partials/elementvalueindex' %}
 
-            {% set relatedElements = characteristic.relatedElements.all() %}
-            <h2>Elements</h2>
-            <table class="data fullwidth collapsible">
-                <thead>
-                <tr>
-                    <th class="thin">{{ "ID" }}</th>
-                    <th>{{ "Title" }}</th>
-                    <th>{{ "Value" }}</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for relatedElement in relatedElements %}
-                    {% set links = relatedElement.characteristicLinks(characteristic) %}
+                {% set relatedElements = characteristic.relatedElements.all() %}
+                <h2>Elements</h2>
+                <table class="data fullwidth collapsible">
+                    <thead>
                     <tr>
-                        <td>{{ relatedElement.id }}</td>
-                        <td><a target="_blank" href="{{ relatedElement.getCpEditUrl() }}">{{ relatedElement.title }}</td></td>
-                        <td>{{ links[0].characteristicValue.value }}</td>
+                        <th class="thin">{{ "ID" }}</th>
+                        <th>{{ "Title" }}</th>
+                        <th>{{ "Value" }}</th>
                     </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        {% endif %}
-    </div>
+                    </thead>
+                    <tbody>
+                    {% for relatedElement in relatedElements %}
+                        {% set links = relatedElement.characteristicLinks(characteristic) %}
+                        <tr>
+                            <td>{{ relatedElement.id }}</td>
+                            <td><a target="_blank" href="{{ relatedElement.getCpEditUrl() }}">{{ relatedElement.title }}
+                            </td>
+                            </td>
+                            <td>{{ links[0].characteristicValue.value }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
+        </div>
     {% endif %}
     <div id="fields" class="{% if characteristic.id %}hidden{% endif %}">
         {% set tabs = characteristic.getFieldLayout().getTabs() %}
         {% if not characteristic.id %}
-        {{ forms.textField({
-            label: "Title"|t('app'),
-            id: 'title',
-            name: 'title',
-            value: characteristic.title,
-            errors: characteristic.getErrors('title'),
-            first: true,
-            autofocus: true,
-            required: true,
-            maxlength: 255
-        }) }}
+            {{ forms.textField({
+                label: "Title"|t('app'),
+                id: 'title',
+                name: 'title',
+                value: characteristic.title,
+                errors: characteristic.getErrors('title'),
+                first: true,
+                autofocus: true,
+                required: true,
+                maxlength: 255
+            }) }}
         {% endif %}
         {% if tabs|length %}
-        {% include "_includes/fields" with {
-            fields: tabs[0].getFields(),
-            element: characteristic,
-        } only %}
+            {% include "_includes/fields" with {
+                fields: tabs[0].getFields(),
+                element: characteristic,
+            } only %}
         {% endif %}
     </div>
 {% endblock %}
@@ -111,17 +117,17 @@
 {% block details %}
     <div id="settings" class="meta">
         {% if characteristic.id %}
-        {{ forms.textField({
-            label: "Title"|t('app'),
-            id: 'title',
-            name: 'title',
-            value: characteristic.title,
-            errors: characteristic.getErrors('title'),
-            first: true,
-            autofocus: true,
-            required: true,
-            maxlength: 255
-        }) }}
+            {{ forms.textField({
+                label: "Title"|t('app'),
+                id: 'title',
+                name: 'title',
+                value: characteristic.title,
+                errors: characteristic.getErrors('title'),
+                first: true,
+                autofocus: true,
+                required: true,
+                maxlength: 255
+            }) }}
         {% endif %}
         {{ forms.textField({
             label: "Handle"|t('app'),

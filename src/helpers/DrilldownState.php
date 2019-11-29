@@ -29,7 +29,8 @@ class DrilldownState extends Component
         return $this;
     }
 
-    public function setCharacteristicSatisfied(Characteristic $characteristic) {
+    public function setCharacteristicSatisfied(Characteristic $characteristic)
+    {
         $this->satisfiedAttributes[$characteristic->id] = true;
         return $this;
     }

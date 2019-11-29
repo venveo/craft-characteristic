@@ -5,6 +5,7 @@ namespace venveo\characteristic\helpers;
 use Craft;
 use craft\base\Component;
 use craft\elements\db\ElementQueryInterface;
+use Exception;
 use venveo\characteristic\Characteristic;
 use venveo\characteristic\elements\Characteristic as CharacteristicElement;
 use venveo\characteristic\elements\CharacteristicValue as CharacteristicValueElement;
@@ -32,7 +33,7 @@ class Drilldown extends Component
 
         $group = Characteristic::$plugin->characteristicGroups->getGroupByHandle($this->group);
         if (!$group) {
-            throw new \Exception('Characteristic group does not exist');
+            throw new Exception('Characteristic group does not exist');
         }
         $this->_group = $group;
 
@@ -78,7 +79,6 @@ class Drilldown extends Component
             ->leftJoin('{{%elements}} elements2', '[[elements2.id]] = [[link.valueId]]')
             ->addSelect(['COUNT(characteristicId) as score', 'characteristicId'])
             ->where(['in', 'elementId', $ids])
-
             ->groupBy('characteristicId')
             // TODO: Not sure if this makes sense...
             ->orderBy('score ASC')
@@ -86,7 +86,7 @@ class Drilldown extends Component
 
         $skipIds = array_keys($this->state->satisfiedAttributes);
         $linksQuery->andWhere(['NOT IN', 'characteristicId', $skipIds]);
-        $linksQuery->andWhere([ 'elements1.dateDeleted' => null, 'elements2.dateDeleted' => null]);
+        $linksQuery->andWhere(['elements1.dateDeleted' => null, 'elements2.dateDeleted' => null]);
 
         $links = array_keys($linksQuery->asArray()->all());
 
@@ -105,7 +105,8 @@ class Drilldown extends Component
         return $this->state;
     }
 
-    public function getSkipUrl() {
+    public function getSkipUrl()
+    {
         $localState = clone $this->state;
         return $localState->setCharacteristicSatisfied($this->getCurrentCharacteristic())->getUrl();
     }

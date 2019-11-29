@@ -11,13 +11,16 @@
 namespace venveo\characteristic\controllers;
 
 use Craft;
+use craft\errors\MissingComponentException;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\UrlHelper;
 use craft\web\Controller;
+use Throwable;
 use venveo\characteristic\assetbundles\characteristicelement\CharacteristicElement;
 use venveo\characteristic\Characteristic as Plugin;
 use venveo\characteristic\elements\Characteristic;
 use venveo\characteristic\models\CharacteristicGroup;
+use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -101,7 +104,7 @@ class CharacteristicsController extends Controller
             ];
         }
 
-        if($characteristic->getFieldLayout()->getTabs()) {
+        if ($characteristic->getFieldLayout()->getTabs()) {
             $tabs['characteristicFields'] = [
                 'label' => Craft::t('characteristic', 'Content'),
                 'url' => '#fields',
@@ -293,9 +296,9 @@ class CharacteristicsController extends Controller
      *
      * @return Response|null
      * @throws NotFoundHttpException if the requested characteristic cannot be found
-     * @throws \Throwable
-     * @throws \craft\errors\MissingComponentException
-     * @throws \yii\web\BadRequestHttpException
+     * @throws Throwable
+     * @throws MissingComponentException
+     * @throws BadRequestHttpException
      */
     public function actionDeleteCharacteristic()
     {
