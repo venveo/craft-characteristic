@@ -11,7 +11,6 @@
 namespace venveo\characteristic\controllers;
 
 use Craft;
-use craft\elements\Entry;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\UrlHelper;
 use craft\web\Controller;
@@ -45,11 +44,11 @@ class CharacteristicsController extends Controller
 
 
     /**
-     * Called when a user beings up an entry for editing before being displayed.
+     * Called when a user beings up a characteristic for editing before being displayed.
      *
      * @param string $groupHandle
      * @param int|null $characteristicId
-     * @param Characteristic $characteristic The entry being edited, if there were any validation errors.
+     * @param Characteristic $characteristic The characteristic being edited, if there were any validation errors.
      * @return Response
      * @throws ForbiddenHttpException
      * @throws NotFoundHttpException if the requested site handle is invalid
@@ -118,7 +117,7 @@ class CharacteristicsController extends Controller
     }
 
     /**
-     * Preps entry edit variables.
+     * Preps characteristic edit variables.
      *
      * @param array &$variables
      * @return Response|null
@@ -173,9 +172,9 @@ class CharacteristicsController extends Controller
     }
 
     /**
-     * Saves an entry.
+     * Saves a characteristic.
      *
-     * @param bool $duplicate Whether the entry should be duplicated
+     * @param bool $duplicate Whether the characteristic should be duplicated
      * @return Response|null
      * @throws ServerErrorHttpException if reasons
      * @throws NotFoundHttpException
@@ -188,10 +187,8 @@ class CharacteristicsController extends Controller
         $request = Craft::$app->getRequest();
 
         // Permission enforcement
-//        $this->enforceEditEntryPermissions($entry, $duplicate);
         $currentUser = Craft::$app->getUser()->getIdentity();
 
-        // Populate the entry with post data
         $this->_populateCharacteristicModel($characteristic);
 
 
@@ -204,7 +201,6 @@ class CharacteristicsController extends Controller
 
             Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save characteristic.'));
 
-            // Send the entry back to the template
             Craft::$app->getUrlManager()->setRouteParams([
                 'characteristic' => $characteristic
             ]);
@@ -236,10 +232,10 @@ class CharacteristicsController extends Controller
     }
 
     /**
-     * Fetches or creates an Entry.
+     * Fetches or creates an characteristic.
      *
-     * @return Entry
-     * @throws NotFoundHttpException if the requested entry cannot be found
+     * @return Characteristic
+     * @throws NotFoundHttpException if the requested characteristic cannot be found
      */
     private function _getCharacteristicModel(): Characteristic
     {
@@ -265,9 +261,9 @@ class CharacteristicsController extends Controller
     // =========================================================================
 
     /**
-     * Populates an Entry with post data.
+     * Populates an characteristic with post data.
      *
-     * @param Entry $characteristic
+     * @param Characteristic $characteristic
      */
     private function _populateCharacteristicModel(Characteristic $characteristic)
     {
@@ -281,47 +277,49 @@ class CharacteristicsController extends Controller
     }
 
     /**
-     * Duplicates an entry.
+     * Duplicates an characteristic.
      *
      * @return Response|null
      * @throws ServerErrorHttpException if reasons
      * @since 3.2.3
      */
-    public function actionDuplicateEntry()
+    public function actionDuplicateCharacteristic()
     {
         return $this->runAction('save-characteristic', ['duplicate' => true]);
     }
 
     /**
-     * Deletes an entry.
+     * Deletes a characteristic.
      *
      * @return Response|null
-     * @throws NotFoundHttpException if the requested entry cannot be found
+     * @throws NotFoundHttpException if the requested characteristic cannot be found
+     * @throws \Throwable
+     * @throws \craft\errors\MissingComponentException
+     * @throws \yii\web\BadRequestHttpException
      */
     public function actionDeleteCharacteristic()
     {
         $this->requirePostRequest();
 
         $request = Craft::$app->getRequest();
-        $entryId = $request->getRequiredBodyParam('characteristicId');
-        $entry = Plugin::$plugin->characteristics->getCharacteristicById($entryId);
+        $characteristicId = $request->getRequiredBodyParam('characteristicId');
+        $characteristic = Plugin::$plugin->characteristics->getCharacteristicById($characteristicId);
 
-        if (!$entry) {
+        if (!$characteristic) {
             throw new NotFoundHttpException('Characteristic not found');
         }
 
         $currentUser = Craft::$app->getUser()->getIdentity();
 
-        if (!Craft::$app->getElements()->deleteElement($entry)) {
+        if (!Craft::$app->getElements()->deleteElement($characteristic)) {
             if ($request->getAcceptsJson()) {
                 return $this->asJson(['success' => false]);
             }
 
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t delete entry.'));
+            Craft::$app->getSession()->setError(Craft::t('characteristic', 'Couldn’t delete characteristic.'));
 
-            // Send the entry back to the template
             Craft::$app->getUrlManager()->setRouteParams([
-                'entry' => $entry
+                'characteristic' => $characteristic
             ]);
 
             return null;
@@ -331,8 +329,8 @@ class CharacteristicsController extends Controller
             return $this->asJson(['success' => true]);
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry deleted.'));
+        Craft::$app->getSession()->setNotice(Craft::t('characteristic', 'Characteristic deleted.'));
 
-        return $this->redirectToPostedUrl($entry);
+        return $this->redirectToPostedUrl($characteristic);
     }
 }

@@ -38,7 +38,7 @@
                 <ul>
                     <li><a class="formsubmit error" data-action="characteristic/characteristics/delete-characteristic"
                            data-confirm="{{ 'Are you sure you want to delete this characteristic?'|t('app') }}"
-                           data-redirect="{{ 'characteristic#'|hash }}">{{ 'Delete'|t('app') }}</a></li>
+                           data-redirect="{{ ('characteristics/' ~ groupHandle)|hash }}">{{ 'Delete'|t('app') }}</a></li>
                 </ul>
             {% endif %}
         </div>
