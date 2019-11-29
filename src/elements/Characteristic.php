@@ -441,6 +441,28 @@ class Characteristic extends Element
         return true;
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function afterDelete()
+    {
+        // Update the answer records record
+        Craft::$app->getDb()->createCommand()
+            ->update('{{%characteristic_values}}', [
+                'deletedWithCharacteristic' => true,
+            ], ['characteristicId' => $this->id], [], false)
+            ->execute();
+
+        $values =  $this->getValues();
+        if ($values instanceof ElementQueryInterface) {
+            $values = $values->all();
+        }
+        foreach($values as $value) {
+            Craft::$app->elements->deleteElement($value);
+        }
+
+        parent::afterDelete();
+    }
 
     /**
      * @inheritdoc
