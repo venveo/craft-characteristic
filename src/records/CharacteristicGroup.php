@@ -25,8 +25,8 @@ use yii\db\ActiveQueryInterface;
  * @property string $handle [varchar(255)]
  * @property string $name [varchar(255)]
  * @property int $characteristicFieldLayoutId [int(11)]
- * @property \yii\db\ActiveQueryInterface $valueFieldLayout
- * @property \yii\db\ActiveQueryInterface $characteristicFieldLayout
+ * @property ActiveQueryInterface $valueFieldLayout
+ * @property ActiveQueryInterface $characteristicFieldLayout
  * @property int $valueFieldLayoutId [int(11)]
  * @property int $structureId [int(11)]
  */

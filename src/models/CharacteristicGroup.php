@@ -20,6 +20,7 @@ use craft\validators\UniqueValidator;
 use venveo\characteristic\elements\Characteristic;
 use venveo\characteristic\elements\CharacteristicValue;
 use venveo\characteristic\records\CharacteristicGroup as CharacteristicGroupRecord;
+use yii\base\InvalidConfigException;
 
 /**
  * @author    Venveo
@@ -27,8 +28,8 @@ use venveo\characteristic\records\CharacteristicGroup as CharacteristicGroupReco
  * @since     1.0.0
  *
  *
- * @property \craft\models\FieldLayout $characteristicFieldLayout
- * @property \craft\models\FieldLayout $valueFieldLayout
+ * @property FieldLayout $characteristicFieldLayout
+ * @property FieldLayout $valueFieldLayout
  */
 class CharacteristicGroup extends Model
 {
@@ -104,28 +105,6 @@ class CharacteristicGroup extends Model
     }
 
     /**
-     * @return FieldLayout
-     * @throws \yii\base\InvalidConfigException
-     */
-    public function getCharacteristicFieldLayout(): FieldLayout
-    {
-        /** @var FieldLayoutBehavior $behavior */
-        $behavior = $this->getBehavior('characteristicFieldLayout');
-        return $behavior->getFieldLayout();
-    }
-
-    /**
-     * @return FieldLayout
-     * @throws \yii\base\InvalidConfigException
-     */
-    public function getValueFieldLayout(): FieldLayout
-    {
-        /** @var FieldLayoutBehavior $behavior */
-        $behavior = $this->getBehavior('valueFieldLayout');
-        return $behavior->getFieldLayout();
-    }
-
-    /**
      * @inheritdoc
      */
     public function rules()
@@ -143,7 +122,7 @@ class CharacteristicGroup extends Model
     public function getDataForProjectConfig($structureUid = null)
     {
 
-        $generateLayoutConfig = function(FieldLayout $fieldLayout): array {
+        $generateLayoutConfig = function (FieldLayout $fieldLayout): array {
             $fieldLayoutConfig = $fieldLayout->getConfig();
 
             if ($fieldLayoutConfig) {
@@ -175,5 +154,27 @@ class CharacteristicGroup extends Model
         }
 
         return $data;
+    }
+
+    /**
+     * @return FieldLayout
+     * @throws InvalidConfigException
+     */
+    public function getCharacteristicFieldLayout(): FieldLayout
+    {
+        /** @var FieldLayoutBehavior $behavior */
+        $behavior = $this->getBehavior('characteristicFieldLayout');
+        return $behavior->getFieldLayout();
+    }
+
+    /**
+     * @return FieldLayout
+     * @throws InvalidConfigException
+     */
+    public function getValueFieldLayout(): FieldLayout
+    {
+        /** @var FieldLayoutBehavior $behavior */
+        $behavior = $this->getBehavior('valueFieldLayout');
+        return $behavior->getFieldLayout();
     }
 }

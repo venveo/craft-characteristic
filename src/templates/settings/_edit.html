@@ -10,55 +10,55 @@
     {% if group.id %}{{ hiddenInput('groupId', group.id) }}{% endif %}
 
     <div id="group-settings">
-    {{ forms.textField({
-        first: true,
-        label: "Name"|t('app'),
-        instructions: "What this group will be called in the CP."|t('characteristic'),
-        id: 'name',
-        name: 'name',
-        value: group.name,
-        errors: group.getErrors('name'),
-        autofocus: true,
-        required: true,
-    }) }}
+        {{ forms.textField({
+            first: true,
+            label: "Name"|t('app'),
+            instructions: "What this group will be called in the CP."|t('characteristic'),
+            id: 'name',
+            name: 'name',
+            value: group.name,
+            errors: group.getErrors('name'),
+            autofocus: true,
+            required: true,
+        }) }}
 
-    {{ forms.textField({
-        label: "Handle"|t('app'),
-        instructions: "How you’ll refer to this group in the templates."|t('app'),
-        id: 'handle',
-        name: 'handle',
-        class: 'code',
-        autocorrect: false,
-        autocapitalize: false,
-        value: group.handle,
-        errors: group.getErrors('handle'),
-        required: true
-    }) }}
+        {{ forms.textField({
+            label: "Handle"|t('app'),
+            instructions: "How you’ll refer to this group in the templates."|t('app'),
+            id: 'handle',
+            name: 'handle',
+            class: 'code',
+            autocorrect: false,
+            autocapitalize: false,
+            value: group.handle,
+            errors: group.getErrors('handle'),
+            required: true
+        }) }}
 
-    {{ forms.lightswitchField({
-        label: "Characteristics required by default"|t('charactersitic'),
-        instructions: "If enabled, all new characteristics will be required by default. This can be changed per-characteristic."|t('charactersitic'),
-        id: 'requiredByDefault',
-        name: 'requiredByDefault',
-        on: group.requiredByDefault
-    }) }}
+        {{ forms.lightswitchField({
+            label: "Characteristics required by default"|t('charactersitic'),
+            instructions: "If enabled, all new characteristics will be required by default. This can be changed per-characteristic."|t('charactersitic'),
+            id: 'requiredByDefault',
+            name: 'requiredByDefault',
+            on: group.requiredByDefault
+        }) }}
 
-    {{ forms.lightswitchField({
-        label: "Allow custom characteristic options by default"|t('charactersitic'),
-        instructions: "If enabled, the field editor will be allowed free-form input on values by default. This can be changed per-characteristic."|t('charactersitic'),
-        id: 'allowCustomOptionsByDefault',
-        name: 'allowCustomOptionsByDefault',
-        on: group.allowCustomOptionsByDefault
-    }) }}
+        {{ forms.lightswitchField({
+            label: "Allow custom characteristic options by default"|t('charactersitic'),
+            instructions: "If enabled, the field editor will be allowed free-form input on values by default. This can be changed per-characteristic."|t('charactersitic'),
+            id: 'allowCustomOptionsByDefault',
+            name: 'allowCustomOptionsByDefault',
+            on: group.allowCustomOptionsByDefault
+        }) }}
 
     </div>
 
     <div id="characteristic-fields" class="hidden">
         {% namespace "characteristic-layout" %}
-        {% include "_includes/fieldlayoutdesigner" with {
-            fieldLayout: group.getCharacteristicFieldLayout(),
-            customizableTabs: false
-        } only %}
+            {% include "_includes/fieldlayoutdesigner" with {
+                fieldLayout: group.getCharacteristicFieldLayout(),
+                customizableTabs: false
+            } only %}
         {% endnamespace %}
 
     </div>

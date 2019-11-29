@@ -2,18 +2,18 @@
     <div>
         <input :name="settings.name" type="hidden"/>
         <characteristic-item
-                v-for="link in links"
-                :link="link"
-                :key="link.id"
-                :name="settings.name + '['+link.id+']'"
                 :characteristics="characteristics"
+                :key="link.id"
+                :link="link"
+                :name="settings.name + '['+link.id+']'"
+                v-for="link in links"
                 v-on:change="handleChange"
                 v-on:delete="() => handleDelete(link)"
         />
         <div class="buttons last add-button" v-if="availableCharacteristics.length !== 0">
             <div class="select">
                 <select v-model="selectedCharacteristic">
-                    <option v-for="(characteristic, index) in availableCharacteristics" :value="index">
+                    <option :value="index" v-for="(characteristic, index) in availableCharacteristics">
                         {{characteristic.title}}
                     </option>
                 </select>

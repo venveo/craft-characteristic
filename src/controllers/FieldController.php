@@ -41,14 +41,14 @@ class FieldController extends Controller
 
         $results = [];
         /** @var Characteristic $characteristic */
-        foreach($query->all() as $characteristic) {
+        foreach ($query->all() as $characteristic) {
             $results[] = [
                 'id' => $characteristic->id,
                 'handle' => $characteristic->handle,
                 'title' => $characteristic->title,
                 'required' => (bool)$characteristic->required,
                 'allowCustomOptions' => (bool)$characteristic->allowCustomOptions,
-                'values' => array_map(function(CharacteristicValue $value) {
+                'values' => array_map(function (CharacteristicValue $value) {
                     return [
                         'id' => $value->id,
                         'value' => $value->value

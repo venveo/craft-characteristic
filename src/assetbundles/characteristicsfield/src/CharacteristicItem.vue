@@ -11,20 +11,23 @@
                 <div v-if="currentCharacteristic.allowCustomOptions">
                     <input class="text fullwidth" type="text" v-model="value">
                 </div>
-                <div v-else class="select">
+                <div class="select" v-else>
                     <select v-model="value">
-                        <option value="" disabled="disabled" selected="selected">Select one</option>
-                        <option v-for="option in currentCharacteristic.values" :key="option.value" :value="option.value">{{option.value}}</option>
+                        <option disabled="disabled" selected="selected" value="">Select one</option>
+                        <option :key="option.value" :value="option.value"
+                                v-for="option in currentCharacteristic.values">{{option.value}}
+                        </option>
                     </select>
                 </div>
             </div>
-            </div>
-            <div class="actions">
-                <div v-if="link.isNew"><strong>new</strong></div>
-                <a v-if="!currentCharacteristic.required" @click="$emit('delete')" class="error icon delete" data-icon="remove" role="button"
-                   title="Delete"></a>
-            </div>
         </div>
+        <div class="actions">
+            <div v-if="link.isNew"><strong>new</strong></div>
+            <a @click="$emit('delete')" class="error icon delete" data-icon="remove"
+               role="button" title="Delete"
+               v-if="!currentCharacteristic.required"></a>
+        </div>
+    </div>
 </template>
 <script>
     /* eslint-disable */
@@ -47,7 +50,7 @@
             attribute: function (newVal) {
                 this.$emit('change', newVal);
             },
-            value: function(newVal) {
+            value: function (newVal) {
                 this.$emit('change', newVal);
             }
         },
@@ -73,6 +76,7 @@
     .characteristic-item.matrixblock {
         padding: 0;
         padding-right: 10px;
+
         .characteristic__title {
             background-color: #cdd8e4;
             padding: 10px 20px 10px 10px;
@@ -81,6 +85,7 @@
             min-width: 100px;
             margin-bottom: 0;
         }
+
         .fields {
             align-items: baseline;
         }

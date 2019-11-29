@@ -18,7 +18,8 @@
             <td>{{ value.value }}</td>
             <td>{{ value.dateCreated|datetime('short') }}</td>
             <td>{{ value.dateUpdated|datetime('short') }}</td>
-            <td class="thin"><a class="edit icon" href="{{ value.getCpEditUrl() }}" title="{{ 'Edit'|t('app') }}" role="button"></a></td>
+            <td class="thin"><a class="edit icon" href="{{ value.getCpEditUrl() }}" title="{{ 'Edit'|t('app') }}"
+                                role="button"></a></td>
             <td class="thin"><a class="move icon" title="{{ 'Reorder'|t('app') }}" role="button"></a></td>
             <td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
         </tr>

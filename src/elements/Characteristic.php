@@ -12,8 +12,8 @@ namespace venveo\characteristic\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\base\ElementInterface;
 use craft\db\Query;
-use craft\db\Table;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\Entry;
 use craft\helpers\UrlHelper;
@@ -29,7 +29,7 @@ use yii\base\InvalidConfigException;
  * @package   Characteristic
  * @since     1.0.0
  *
- * @property \venveo\characteristic\elements\CharacteristicValue[] $values
+ * @property CharacteristicValue[] $values
  * @property mixed $group
  */
 class Characteristic extends Element
@@ -64,7 +64,7 @@ class Characteristic extends Element
     // Static Methods
     // =========================================================================
     /**
-     * @var \craft\base\ElementInterface[]|string|null
+     * @var ElementInterface[]|string|null
      */
     private $_values;
 
@@ -127,11 +127,31 @@ class Characteristic extends Element
 
     /**
      * @inheritdoc
-     * @return CharacteristicQuery
      */
-    public static function find(): ElementQueryInterface
+    public static function eagerLoadingMap(array $sourceElements, string $handle): array
     {
-        return new CharacteristicQuery(static::class);
+        if ($handle == 'values') {
+            // Get the source element IDs
+            $sourceElementIds = [];
+
+            foreach ($sourceElements as $sourceElement) {
+                $sourceElementIds[] = $sourceElement->id;
+            }
+
+            $map = (new Query())
+                ->select('id as target, characteristicId as source')
+                ->from('{{%characteristic_values}}')
+                ->where(['in', 'characteristicId', $sourceElementIds])
+                ->orderBy('sortOrder')
+                ->all();
+
+            return [
+                'elementType' => CharacteristicValue::class,
+                'map' => $map
+            ];
+        }
+
+        return parent::eagerLoadingMap($sourceElements, $handle);
     }
 
     /**
@@ -191,30 +211,6 @@ class Characteristic extends Element
         ];
     }
 
-
-    /**
-     * @inheritdoc
-     */
-    protected function tableAttributeHtml(string $attribute): string
-    {
-        switch ($attribute) {
-            case 'allowCustomOptions':
-                if ($this->allowCustomOptions) {
-                    return '<div class="status enabled" title="' . Craft::t('app', 'Enabled') . '"></div>';
-                }
-
-                return '<div class="status" title="' . Craft::t('app', 'Not enabled') . '"></div>';
-            case 'required':
-                if ($this->required) {
-                    return '<div class="status enabled" title="' . Craft::t('app', 'Enabled') . '"></div>';
-                }
-
-                return '<div class="status" title="' . Craft::t('app', 'Not enabled') . '"></div>';
-        }
-
-        return parent::tableAttributeHtml($attribute);
-    }
-
     /**
      * @inheritdoc
      */
@@ -245,50 +241,18 @@ class Characteristic extends Element
     /**
      * @inheritdoc
      */
-    public static function eagerLoadingMap(array $sourceElements, string $handle): array
+    public function getGroup()
     {
-        if ($handle == 'values') {
-            // Get the source element IDs
-            $sourceElementIds = [];
-
-            foreach ($sourceElements as $sourceElement) {
-                $sourceElementIds[] = $sourceElement->id;
-            }
-
-            $map = (new Query())
-                ->select('id as target, characteristicId as source')
-                ->from('{{%characteristic_values}}')
-                ->where(['in', 'characteristicId', $sourceElementIds])
-                ->orderBy('sortOrder')
-                ->all();
-
-            return [
-                'elementType' => CharacteristicValue::class,
-                'map' => $map
-            ];
+        if ($this->groupId === null) {
+            throw new InvalidConfigException('Group is missing its group ID');
         }
 
-        return parent::eagerLoadingMap($sourceElements, $handle);
+        if (($group = Plugin::$plugin->characteristicGroups->getGroupById($this->groupId)) === null) {
+            throw new InvalidConfigException('Invalid characteristic group ID: ' . $this->groupId);
+        }
+
+        return $group;
     }
-
-    public function setValues($values)
-    {
-        $this->_values = [];
-
-        if (empty($values)) {
-            return;
-        }
-
-        foreach ($values as $key => $value) {
-            if (!$value instanceof CharacteristicValue) {
-                die('wtf');
-            }
-            $value->setCharacteristic($this);
-
-            $this->_values[] = $value;
-        }
-    }
-
 
     /**
      * @inheritdoc
@@ -303,24 +267,6 @@ class Characteristic extends Element
     }
 
     /**
-     * Returns the product associated with this variant.
-     *
-     * @return CharacteristicValue[] The product associated with this variant, or null if it isn’t known
-     */
-    public function getValues()
-    {
-        if (null === $this->_values) {
-            if ($this->id) {
-                $criteria['characteristicId'] = $this->id;
-                return Craft::configure(CharacteristicValue::find(), $criteria);
-            }
-        }
-
-        return $this->_values;
-    }
-
-
-    /**
      * @inheritdoc
      */
     public function getCpEditUrl()
@@ -330,25 +276,6 @@ class Characteristic extends Element
         $url = UrlHelper::cpUrl('characteristics/' . $group->handle . '/' . $this->id);
 
         return $url;
-    }
-
-    // Indexes, etc.
-    // -------------------------------------------------------------------------
-
-    /**
-     * @inheritdoc
-     */
-    public function getGroup()
-    {
-        if ($this->groupId === null) {
-            throw new InvalidConfigException('Group is missing its group ID');
-        }
-
-        if (($group = Plugin::$plugin->characteristicGroups->getGroupById($this->groupId)) === null) {
-            throw new InvalidConfigException('Invalid characteristic group ID: ' . $this->groupId);
-        }
-
-        return $group;
     }
 
     /**
@@ -374,9 +301,6 @@ class Characteristic extends Element
 
         return $html;
     }
-
-    // Events
-    // -------------------------------------------------------------------------
 
     /**
      * @param string $type
@@ -430,90 +354,8 @@ class Characteristic extends Element
         parent::afterSave($isNew);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function beforeDelete(): bool
-    {
-        if (!parent::beforeDelete()) {
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function afterDelete()
-    {
-        // Update the answer records record
-        Craft::$app->getDb()->createCommand()
-            ->update('{{%characteristic_values}}', [
-                'deletedWithCharacteristic' => true,
-            ], ['characteristicId' => $this->id], [], false)
-            ->execute();
-
-        $values =  $this->getValues();
-        if ($values instanceof ElementQueryInterface) {
-            $values = $values->all();
-        }
-        foreach($values as $value) {
-            Craft::$app->elements->deleteElement($value);
-        }
-
-        parent::afterDelete();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function beforeValidate()
-    {
-        $group = $this->getGroup();
-
-        $this->fieldLayoutId = $group->characteristicFieldLayoutId;
-
-        return parent::beforeValidate();
-    }
-
-
-    /**
-     * @inheritdoc
-     * @throws Exception if reasons
-     */
-    public function beforeSave(bool $isNew): bool
-    {
-        // Set the structure ID for Element::attributes() and afterSave()
-        $this->structureId = $this->getGroup()->structureId;
-
-        if ($this->_hasNewParent()) {
-            if ($this->newParentId) {
-                $parentCategory = \venveo\characteristic\Characteristic::$plugin->characteristics->getCharacteristicById($this->newParentId);
-
-                if (!$parentCategory) {
-                    throw new Exception('Invalid characteristic ID: ' . $this->newParentId);
-                }
-            } else {
-                $parentCategory = null;
-            }
-
-            $this->setParent($parentCategory);
-        }
-
-        return parent::beforeSave($isNew);
-    }
-
-
-    /**
-     * @inheritdoc
-     */
-    public function afterMoveInStructure(int $structureId)
-    {
-        parent::afterMoveInStructure($structureId);
-    }
-
-    // Private Methods
-    // =========================================================================
+    // Indexes, etc.
+    // -------------------------------------------------------------------------
 
     /**
      * Returns whether the category has been assigned a new parent entry.
@@ -568,5 +410,158 @@ class Characteristic extends Element
         $oldParentId = $oldParentQuery->scalar();
 
         return $this->newParentId != $oldParentId;
+    }
+
+    // Events
+    // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     * @return CharacteristicQuery
+     */
+    public static function find(): ElementQueryInterface
+    {
+        return new CharacteristicQuery(static::class);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeDelete(): bool
+    {
+        if (!parent::beforeDelete()) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterDelete()
+    {
+        // Update the answer records record
+        Craft::$app->getDb()->createCommand()
+            ->update('{{%characteristic_values}}', [
+                'deletedWithCharacteristic' => true,
+            ], ['characteristicId' => $this->id], [], false)
+            ->execute();
+
+        $values = $this->getValues();
+        if ($values instanceof ElementQueryInterface) {
+            $values = $values->all();
+        }
+        foreach ($values as $value) {
+            Craft::$app->elements->deleteElement($value);
+        }
+
+        parent::afterDelete();
+    }
+
+    /**
+     * Returns the product associated with this variant.
+     *
+     * @return CharacteristicValue[] The product associated with this variant, or null if it isn’t known
+     */
+    public function getValues()
+    {
+        if (null === $this->_values) {
+            if ($this->id) {
+                $criteria['characteristicId'] = $this->id;
+                return Craft::configure(CharacteristicValue::find(), $criteria);
+            }
+        }
+
+        return $this->_values;
+    }
+
+    public function setValues($values)
+    {
+        $this->_values = [];
+
+        if (empty($values)) {
+            return;
+        }
+
+        foreach ($values as $key => $value) {
+            if (!$value instanceof CharacteristicValue) {
+                die('wtf');
+            }
+            $value->setCharacteristic($this);
+
+            $this->_values[] = $value;
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeValidate()
+    {
+        $group = $this->getGroup();
+
+        $this->fieldLayoutId = $group->characteristicFieldLayoutId;
+
+        return parent::beforeValidate();
+    }
+
+    /**
+     * @inheritdoc
+     * @throws Exception if reasons
+     */
+    public function beforeSave(bool $isNew): bool
+    {
+        // Set the structure ID for Element::attributes() and afterSave()
+        $this->structureId = $this->getGroup()->structureId;
+
+        if ($this->_hasNewParent()) {
+            if ($this->newParentId) {
+                $parentCategory = Plugin::$plugin->characteristics->getCharacteristicById($this->newParentId);
+
+                if (!$parentCategory) {
+                    throw new Exception('Invalid characteristic ID: ' . $this->newParentId);
+                }
+            } else {
+                $parentCategory = null;
+            }
+
+            $this->setParent($parentCategory);
+        }
+
+        return parent::beforeSave($isNew);
+    }
+
+    // Private Methods
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function afterMoveInStructure(int $structureId)
+    {
+        parent::afterMoveInStructure($structureId);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function tableAttributeHtml(string $attribute): string
+    {
+        switch ($attribute) {
+            case 'allowCustomOptions':
+                if ($this->allowCustomOptions) {
+                    return '<div class="status enabled" title="' . Craft::t('app', 'Enabled') . '"></div>';
+                }
+
+                return '<div class="status" title="' . Craft::t('app', 'Not enabled') . '"></div>';
+            case 'required':
+                if ($this->required) {
+                    return '<div class="status enabled" title="' . Craft::t('app', 'Enabled') . '"></div>';
+                }
+
+                return '<div class="status" title="' . Craft::t('app', 'Not enabled') . '"></div>';
+        }
+
+        return parent::tableAttributeHtml($attribute);
     }
 }
