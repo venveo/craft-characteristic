@@ -107,6 +107,11 @@ To install the plugin, follow these instructions.
 {% endfor %}
 ```
 
+### The characteristic query
+Consider you have a characteristic group, `productAttributes`
+
+
+
 ## Characteristic Roadmap
 
 Some things to do, and ideas for potential features:

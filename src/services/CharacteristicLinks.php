@@ -10,7 +10,9 @@
 
 namespace venveo\characteristic\services;
 
+use Craft;
 use craft\base\Component;
+use craft\db\Table;
 use venveo\characteristic\records\CharacteristicLink;
 
 /**
@@ -39,6 +41,7 @@ class CharacteristicLinks extends Component
         foreach ($results as $result) {
             $result->delete();
         }
+        $relationData = [];
         foreach ($data as $datum) {
             $link = new CharacteristicLink();
             $link->characteristicId = $datum['characteristic']->id;
@@ -46,6 +49,32 @@ class CharacteristicLinks extends Component
             $link->elementId = $element->id;
             $link->fieldId = $field->id;
             $link->save();
+
+            $relationData[] = [
+                $field->id,
+                $element->id,
+                $element->siteId,
+                $datum['characteristic']->id
+            ];
+            $relationData[] = [
+                $field->id,
+                $element->id,
+                $element->siteId,
+                $datum['value']->id
+            ];
+        }
+
+        // Delete the relations and re-save them
+        Craft::$app->getDb()->createCommand()
+            ->delete(Table::RELATIONS, ['fieldId' => $field->id, 'sourceId' => $element->id, 'sourceSiteId' => $element->siteId])->execute();
+
+        if (!empty($relationData)) {
+            Craft::$app->getDb()->createCommand()
+                ->batchInsert(
+                    Table::RELATIONS,
+                    ['fieldId', 'sourceId', 'sourceSiteId', 'targetId'],
+                    $relationData)
+                ->execute();
         }
     }
 }
