@@ -76,33 +76,6 @@ class CharacteristicQuery extends ElementQuery
     }
 
     /**
-     * Narrows the query results based on the tag groups the tags belong to, per the groups’ IDs.
-     *
-     * Possible values include:
-     *
-     * | Value | Fetches {elements}…
-     * | - | -
-     * | `1` | in a group with an ID of 1.
-     * | `'not 1'` | not in a group with an ID of 1.
-     * | `[1, 2]` | in a group with an ID of 1 or 2.
-     * | `['not', 1, 2]` | not in a group with an ID of 1 or 2.
-     *
-     * ---
-     *
-     * ```twig
-     * {# Fetch {elements} in the group with an ID of 1 #}
-     * {% set {elements-var} = {twig-method}
-     *     .groupId(1)
-     *     .all() %}
-     * ```
-     *
-     * ```php
-     * // Fetch {elements} in the group with an ID of 1
-     * ${elements-var} = {php-method}
-     *     ->groupId(1)
-     *     ->all();
-     * ```
-     *
      * @param int|int[]|null $value The property value
      * @return static self reference
      * @uses $groupId
@@ -116,6 +89,12 @@ class CharacteristicQuery extends ElementQuery
     public function handle($value)
     {
         $this->handle = $value;
+        return $this;
+    }
+
+    public function required($value)
+    {
+        $this->required = $value;
         return $this;
     }
 
@@ -140,7 +119,11 @@ class CharacteristicQuery extends ElementQuery
         $this->_applyGroupIdParam();
 
         if ($this->handle) {
-            $this->subQuery->andWhere(Db::parseParam('characteristic_characteristics.handle', $this->handle));
+            if (is_array($this->handle)) {
+                $this->subQuery->andWhere('in', Db::parseParam('characteristic_characteristics.handle', $this->handle));
+            } else {
+                $this->subQuery->andWhere(Db::parseParam('characteristic_characteristics.handle', $this->handle));
+            }
         }
         if ($this->required !== null) {
             $this->subQuery->andWhere(Db::parseParam('characteristic_characteristics.required', $this->required));

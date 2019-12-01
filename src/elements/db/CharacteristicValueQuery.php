@@ -4,6 +4,7 @@ namespace venveo\characteristic\elements\db;
 
 use craft\elements\db\ElementQuery;
 use craft\helpers\Db;
+use venveo\characteristic\elements\Characteristic;
 
 class CharacteristicValueQuery extends ElementQuery
 {
@@ -29,6 +30,12 @@ class CharacteristicValueQuery extends ElementQuery
     public function characteristicId($value)
     {
         $this->characteristicId = $value;
+        return $this;
+    }
+
+    public function characteristic($value)
+    {
+        $this->characteristicId = $value instanceof Characteristic ? $value->id : $value;
         return $this;
     }
 
