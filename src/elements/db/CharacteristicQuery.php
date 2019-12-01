@@ -1,14 +1,7 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace venveo\characteristic\elements\db;
 
 use craft\db\Query;
-use craft\db\Table;
 use craft\elements\db\ElementQuery;
 use craft\helpers\Db;
 use craft\models\TagGroup;
@@ -168,7 +161,7 @@ class CharacteristicQuery extends ElementQuery
             if ($this->structureId === null && (!is_array($this->groupId) || count($this->groupId) === 1)) {
                 $structureId = (new Query())
                     ->select(['structureId'])
-                    ->from([Table::CATEGORYGROUPS])
+                    ->from('{{%characteristic_groups}}')
                     ->where(Db::parseParam('id', $this->groupId))
                     ->scalar();
                 $this->structureId = (int)$structureId ?: false;
