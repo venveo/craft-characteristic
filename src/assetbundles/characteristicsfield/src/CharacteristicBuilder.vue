@@ -2,13 +2,13 @@
     <div>
         <input :name="settings.name" type="hidden"/>
         <characteristic-item
-                :characteristics="characteristics"
-                :key="link.id"
-                :link="link"
-                :name="settings.name + '['+link.id+']'"
-                v-for="link in links"
+                :characteristic="linkSet.characteristic"
+                :key="linkSet.index"
+                :linkSet="linkSet"
+                :name="settings.name + '['+linkSet.index+']'"
+                v-for="linkSet in linkSets"
                 v-on:change="handleChange"
-                v-on:delete="() => handleDelete(link)"
+                v-on:delete="() => handleDelete(linkSet)"
         />
         <div class="buttons last add-button" v-if="availableCharacteristics.length !== 0">
             <div class="select">
@@ -39,24 +39,26 @@
             return {
                 characteristics: [],
                 loading: true,
-                links: [],
+                linkSets: [],
                 selectedCharacteristic: null
             }
         },
         methods: {
             handleAdd(e) {
                 e.preventDefault();
-                this.links.push({
-                    id: 'new' + this.links.length + 1,
-                    characteristic: this.availableCharacteristics[this.selectedCharacteristic]
-                });
+                this.linkSets.push([{
+                    index: 'new' + this.linkSets.length + 1,
+                    characteristic: this.availableCharacteristics[this.selectedCharacteristic],
+                    links: [],
+                    isNew: true
+                }]);
                 if (window.draftEditor) {
                     window.draftEditor.checkForm();
                 }
             },
             handleDelete(e) {
-                const result = this.links.filter(link => link.id != e.id);
-                this.links = result;
+                const result = this.linkSets.filter(linkSet => linkSet.index != e.index);
+                this.linkSets = result;
                 if (window.draftEditor) {
                     window.draftEditor.checkForm();
                 }
@@ -70,7 +72,7 @@
         computed: {
             availableCharacteristics() {
                 let availableCharacteristics = this.characteristics.filter((characteristic) => {
-                    const item = this.links.find(link => link.characteristic.id === characteristic.id);
+                    const item = this.linkSets.find(linkSet => linkSet.characteristic.id === characteristic.id);
                     return !!!item;
                 });
                 if (availableCharacteristics.length) {
@@ -80,27 +82,31 @@
             }
         },
         watch: {
+            /**
+             * After characteristics have loaded, we need to parse them
+             */
             characteristics: function (newVal) {
                 const savedLinks = this.settings.value;
-                // const requiredCharacteristics = newVal.filter(characteristic => characteristic.required == true);
+                const requiredCharacteristics = newVal.filter(characteristic => characteristic.required == true);
                 for (let characteristic of newVal) {
-                    const existingValue = savedLinks.filter(link => link.characteristic.id == characteristic.id);
+                    const existingValue = savedLinks.filter(linkSet => linkSet.characteristic.id == characteristic.id);
                     let data = {};
                     if (existingValue && existingValue[0]) {
                         data = {
-                            id: existingValue[0].id,
+                            index: existingValue[0].index,
                             characteristic: characteristic,
                             isNew: false,
-                            value: existingValue[0].value
+                            links: existingValue[0].values
                         };
-                        this.links.push(data);
+                        this.linkSets.push(data);
                     } else if (characteristic.required) {
                         data = {
-                            id: 'new' + this.links.length + 1,
+                            index: 'new' + this.linkSet.length + 1,
                             characteristic: characteristic,
-                            isNew: true
+                            isNew: true,
+                            links: []
                         };
-                        this.links.push(data);
+                        this.linkSets.push(data);
                     }
 
                     if (window.draftEditor) {
@@ -109,6 +115,9 @@
                 }
             }
         },
+        /**
+         * Load in our characteristics and their value options
+         */
         mounted() {
             // this.characteristics = this.settings.value;
             this.loading = true;

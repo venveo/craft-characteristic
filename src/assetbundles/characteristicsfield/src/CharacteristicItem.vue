@@ -1,31 +1,32 @@
 <template>
     <div class="characteristic-item matrixblock">
         <input :name="name + '[attribute]'" :value="attribute" type="hidden"/>
-        <input :name="name + '[value]'" :value="value" type="hidden"/>
+        <input v-for="(value, index) in values" :name="name + '[value]['+index+']'" :key="index" :value="value" type="hidden" />
 
         <div class="fields flex flex-nowrap">
             <div class="input ltr characteristic__title">
-                <strong>{{currentCharacteristic.title}}</strong>
+                <strong>{{characteristic.title}}</strong>
             </div>
-            <div class="input ltr">
-                <div v-if="currentCharacteristic.allowCustomOptions">
-                    <input class="text fullwidth" type="text" v-model="value">
+            <div class="input ltr flex">
+                <div v-if="characteristic.allowCustomOptions" class="flex">
+                    <input class="text" type="text" v-for="(value, index) in values" v-model="values[index]">
                 </div>
                 <div class="select" v-else>
-                    <select v-model="value">
+                    <select v-for="(value, index) in values" v-model="values[index]" >
                         <option disabled="disabled" selected="selected" value="">Select one</option>
                         <option :key="option.value" :value="option.value"
-                                v-for="option in currentCharacteristic.values">{{option.value}}
+                                v-for="option in characteristic.values">{{option.value}}
                         </option>
                     </select>
                 </div>
+                <span><a href="#" @click="handleAddValue">Add Value</a></span>
             </div>
         </div>
         <div class="actions">
-            <div v-if="link.isNew"><strong>new</strong></div>
+            <div v-if="linkSet.isNew"><strong>new</strong></div>
             <a @click="$emit('delete')" class="error icon delete" data-icon="remove"
                role="button" title="Delete"
-               v-if="!currentCharacteristic.required"></a>
+               v-if="!characteristic.required"></a>
         </div>
     </div>
 </template>
@@ -35,39 +36,42 @@
     export default {
         components: {},
         props: {
-            characteristics: Array,
+            characteristic: Object,
             name: String,
-            link: Object,
+            linkSet: Array,
         },
         data() {
             return {
                 attribute: '',
-                value: ''
+                values: []
             }
         },
-        methods: {},
+        methods: {
+            handleAddValue(e) {
+                e.preventDefault();
+                this.values.push('');
+            }
+        },
         watch: {
             attribute: function (newVal) {
                 this.$emit('change', newVal);
             },
-            value: function (newVal) {
+            values: function (newVal) {
                 this.$emit('change', newVal);
             }
         },
         computed: {
-            currentCharacteristic() {
-                if (this.link.hasOwnProperty('characteristic')) {
-                    return this.link.characteristic;
-                }
-            }
         },
         beforeMount() {
-            if (this.link.hasOwnProperty('characteristic')) {
-                this.attribute = this.link.characteristic.handle;
+            this.attribute = this.characteristic.handle;
+            if (this.linkSet.hasOwnProperty('links')) {
+                for(let link of this.linkSet.links) {
+                    this.values.push(link.value);
+                }
             }
-            if (this.link.hasOwnProperty('value')) {
-                this.value = this.link.value.value;
-            }
+            // if (this.link.hasOwnProperty('values')) {
+            //     this.value = this.link.value.value;
+            // }
         }
     }
 </script>

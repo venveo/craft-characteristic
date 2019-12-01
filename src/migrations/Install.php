@@ -96,6 +96,7 @@ class Install extends Migration
             'characteristicId' => $this->integer()->notNull(),
             'valueId' => $this->integer()->notNull(),
             'fieldId' => $this->integer()->notNull(),
+            'sortOrder' => $this->integer()->notNull(),
             'deletedWithElement' => $this->boolean()->null(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
@@ -121,6 +122,7 @@ class Install extends Migration
         $this->createIndex(null, '{{%characteristic_values}}', ['value', 'characteristicId'], true);
 
         $this->createIndex(null, '{{%characteristic_links}}', ['deletedWithElement'], false);
+        $this->createIndex(null, '{{%characteristic_links}}', ['sortOrder'], false);
     }
 
     /**

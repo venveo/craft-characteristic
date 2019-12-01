@@ -43,25 +43,28 @@ class CharacteristicLinks extends Component
         }
         $relationData = [];
         foreach ($data as $datum) {
-            $link = new CharacteristicLink();
-            $link->characteristicId = $datum['characteristic']->id;
-            $link->valueId = $datum['value']->id;
-            $link->elementId = $element->id;
-            $link->fieldId = $field->id;
-            $link->save();
-
             $relationData[] = [
                 $field->id,
                 $element->id,
                 $element->siteId,
                 $datum['characteristic']->id
             ];
-            $relationData[] = [
-                $field->id,
-                $element->id,
-                $element->siteId,
-                $datum['value']->id
-            ];
+            foreach($datum['values'] as $index => $value) {
+                $link = new CharacteristicLink();
+                $link->characteristicId = $datum['characteristic']->id;
+                $link->valueId = $value->id;
+                $link->sortOrder = $index;
+                $link->elementId = $element->id;
+                $link->fieldId = $field->id;
+                $link->save();
+
+                $relationData[] = [
+                    $field->id,
+                    $element->id,
+                    $element->siteId,
+                    $link->valueId = $value->id
+                ];
+            }
         }
 
         // Delete the relations and re-save them

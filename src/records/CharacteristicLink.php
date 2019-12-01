@@ -24,6 +24,7 @@ use craft\db\ActiveRecord;
  * @property int $valueId [int(11)]
  * @property int $fieldId [int(11)]
  * @property bool $deletedWithElement [tinyint(1)]
+ * @property int $sortOrder [int(11)]
  */
 class CharacteristicLink extends ActiveRecord
 {

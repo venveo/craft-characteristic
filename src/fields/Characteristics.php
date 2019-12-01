@@ -88,7 +88,9 @@ class Characteristics extends Field
         return $attributes;
     }
 
-
+    /**
+     * @inheritDoc
+     */
     public function normalizeValue($value, ElementInterface $element = null)
     {
         if (is_array($value)) {
@@ -106,7 +108,7 @@ class Characteristics extends Field
         } else {
             // Ensure we get links that don't have deleted elements
             $recordQuery = CharacteristicLinkRecord::find()
-                ->addSelect(['link.id', 'link.characteristicId', 'link.valueId'])
+                ->addSelect(['link.characteristicId', 'link.valueId', 'link.sortOrder'])
                 ->alias('link')
                 ->leftJoin('{{%elements}} elements1', '[[elements1.id]] = [[link.characteristicId]]')
                 ->leftJoin('{{%elements}} elements2', '[[elements2.id]] = [[link.valueId]]');
@@ -122,6 +124,7 @@ class Characteristics extends Field
 
     protected function prepareDataForInput($results)
     {
+        // First we'll look up all the values and characteristic elements we need
         $valueIds = [];
         $characteristicIds = [];
         /** @var CharacteristicLinkRecord $result */
@@ -138,18 +141,21 @@ class Characteristics extends Field
 
         $valueQuery = CharacteristicValue::find();
         $valueQuery->id($valueIds);
+        $valueQuery->orderBy('sortOrder ASC');
         $valueQuery->indexBy('id');
         $values = $valueQuery->all();
 
         $inputData = [];
 
         /** @var CharacteristicLinkRecord $result */
-        foreach ($results as $result) {
-            $inputData[] = [
-                'id' => $result['id'],
-                'characteristic' => $characteristics[$result['characteristicId']],
-                'value' => $values[$result['valueId']]
-            ];
+        foreach ($results as $index => $result) {
+            if(!isset($inputData[$result['characteristicId']])) {
+                $inputData[$result['characteristicId']] = [];
+                $inputData[$result['characteristicId']]['index'] = $index;
+                $inputData[$result['characteristicId']]['characteristic'] = $characteristics[$result['characteristicId']];
+                $inputData[$result['characteristicId']]['values'] = [];
+            }
+            $inputData[$result['characteristicId']]['values'][] = $values[$result['valueId']];
         }
 
         return $inputData;
@@ -288,17 +294,19 @@ class Characteristics extends Field
                 } else {
                     $characteristic = Characteristic::$plugin->characteristics->getCharacteristicByHandle($groupId, $attribute['attribute']);
                 }
-                if (isset($attribute['value']) && $attribute['value'] instanceof CharacteristicValue) {
-                    $value = $attribute['value'];
-                } else {
-                    $value = Characteristic::$plugin->characteristicValues->getOrCreateValueElement($characteristic, $attribute['value']);
+                if (!$characteristic) {
+                    continue;
                 }
-                if ($characteristic) {
-                    $linksToResave[] = [
-                        'characteristic' => $characteristic,
-                        'value' => $value
-                    ];
+
+                $values = [];
+                foreach($attribute['value'] as $value) {
+                    $value = Characteristic::$plugin->characteristicValues->getOrCreateValueElement($characteristic, $value);
+                    $values[] = $value;
                 }
+                $linksToResave[] = [
+                    'characteristic' => $characteristic,
+                    'values' => $values
+                ];
             }
 
             Characteristic::$plugin->characteristicLinks->resaveLinks($linksToResave, $element, $this);
