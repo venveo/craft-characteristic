@@ -18,6 +18,12 @@ use craft\db\ActiveRecord;
  * @since     1.0.0
  *
  * @property mixed $characteristicValue
+ * @property int $id [int(11)]
+ * @property int $elementId [int(11)]
+ * @property int $characteristicId [int(11)]
+ * @property int $valueId [int(11)]
+ * @property int $fieldId [int(11)]
+ * @property bool $deletedWithElement [tinyint(1)]
  */
 class CharacteristicLink extends ActiveRecord
 {

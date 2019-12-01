@@ -34,8 +34,13 @@ class CharacteristicValues extends Component
     // -------------------------------------------------------------------------
 
     /**
-     * @param $characteristic
+     * Creates a value for a characteristic or returns an existing one
+     * @param Characteristic $characteristic
      * @param $value
+     * @return array|\craft\base\ElementInterface|CharacteristicValue|null
+     * @throws Throwable
+     * @throws \craft\errors\ElementNotFoundException
+     * @throws \yii\base\Exception
      */
     public function getOrCreateValueElement(Characteristic $characteristic, $value)
     {
@@ -55,9 +60,8 @@ class CharacteristicValues extends Component
     /**
      * Reorders entry types.
      *
-     * @param array $entryTypeIds
+     * @param array $valueIds
      * @return bool Whether the entry types were reordered successfully
-     * @throws Throwable if reasons
      */
     public function reorderValues(array $valueIds): bool
     {
