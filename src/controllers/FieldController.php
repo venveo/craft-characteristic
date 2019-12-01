@@ -50,8 +50,7 @@ class FieldController extends Controller
                 'title' => $characteristic->title,
                 'required' => (bool)$characteristic->required,
                 'allowCustomOptions' => (bool)$characteristic->allowCustomOptions,
-                'maxValues' => 2,
-                'minValues' => 1,
+                'maxValues' => (int)$characteristic->maxValues,
                 'values' => array_map(function (CharacteristicValue $value) {
                     return [
                         'id' => $value->id,

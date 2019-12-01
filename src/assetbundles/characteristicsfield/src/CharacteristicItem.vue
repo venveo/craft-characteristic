@@ -19,7 +19,7 @@
                         </option>
                     </select>
                 </div>
-                <span><button class="btn small add icon" @click="handleAddValue">Add Value</button></span>
+                <span v-if="canAddValue"><button class="btn small add icon" @click="handleAddValue">Add Value</button></span>
             </div>
         </div>
         <div class="actions">
@@ -61,6 +61,9 @@
             }
         },
         computed: {
+            canAddValue() {
+                return (this.values.length < this.characteristic.maxValues) || !this.characteristic.maxValues;
+            }
         },
         beforeMount() {
             this.attribute = this.characteristic.handle;
@@ -69,9 +72,6 @@
                     this.values.push(link.value);
                 }
             }
-            // if (this.link.hasOwnProperty('values')) {
-            //     this.value = this.link.value.value;
-            // }
         }
     }
 </script>

@@ -68,6 +68,7 @@ class Install extends Migration
             'groupId' => $this->integer()->notNull(),
             'handle' => $this->string(),
             'allowCustomOptions' => $this->boolean(),
+            'maxValues' => $this->integer()->null(),
             'required' => $this->boolean()->null(),
             'deletedWithGroup' => $this->boolean()->null(),
             'dateCreated' => $this->dateTime()->notNull(),

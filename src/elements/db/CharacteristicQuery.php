@@ -23,7 +23,7 @@ class CharacteristicQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected $defaultOrderBy = ['title' => SORT_ASC];
+    protected $defaultOrderBy = ['lft' => SORT_ASC];
 
     // Public Methods
     // =========================================================================
@@ -133,6 +133,7 @@ class CharacteristicQuery extends ElementQuery
             'characteristic_characteristics.groupId',
             'characteristic_characteristics.handle',
             'characteristic_characteristics.allowCustomOptions',
+            'characteristic_characteristics.maxValues',
             'characteristic_characteristics.required',
         ]);
 

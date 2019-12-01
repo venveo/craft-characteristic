@@ -289,11 +289,17 @@ class Characteristics extends Field
         try {
             $linksToResave = [];
             foreach ($attributes as $attribute) {
+                // If a characteristic was added without a value set, don't try to add it
+                if (!isset($attribute['value'])) {
+                    continue;
+                }
+
                 if (isset($attribute['characteristic']) && $attribute['characteristic'] instanceof CharacteristicElement) {
                     $characteristic = $attribute['characteristic'];
                 } else {
                     $characteristic = Characteristic::$plugin->characteristics->getCharacteristicByHandle($groupId, $attribute['attribute']);
                 }
+
                 if (!$characteristic) {
                     continue;
                 }

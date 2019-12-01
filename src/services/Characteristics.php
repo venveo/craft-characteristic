@@ -47,6 +47,11 @@ class Characteristics extends Component
         return Craft::$app->getElements()->getElementById($characteristicId, Characteristic::class);
     }
 
+    /**
+     * @param int $groupId
+     * @param string $characteristicHandle
+     * @return Characteristic|null
+     */
     public function getCharacteristicByHandle(int $groupId, string $characteristicHandle)
     {
         if (!$characteristicHandle) {

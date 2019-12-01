@@ -23,6 +23,7 @@ use craft\db\SoftDeleteTrait;
  * @property bool $deletedWithGroup [tinyint(1)]
  * @property bool $allowCustomOptions [tinyint(1)]
  * @property bool $required [tinyint(1)]
+ * @property int $maxValues [int(11)]
  */
 class Characteristic extends ActiveRecord
 {
