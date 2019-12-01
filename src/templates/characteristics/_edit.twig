@@ -82,10 +82,8 @@
                         {% set links = relatedElement.characteristicLinks(characteristic) %}
                         <tr>
                             <td>{{ relatedElement.id }}</td>
-                            <td><a target="_blank" href="{{ relatedElement.getCpEditUrl() }}">{{ relatedElement.title }}
-                            </td>
-                            </td>
-                            <td>{{ links[0].characteristicValue.value }}</td>
+                            <td><a target="_blank" href="{{ relatedElement.getCpEditUrl() }}">{{ relatedElement.title }}</td>
+                            <td>{{ links|map(link => link.characteristicValue.value)|join(', ') }}</td>
                         </tr>
                     {% endfor %}
                     </tbody>
@@ -140,7 +138,7 @@
             autocapitalize: false,
             value: characteristic.handle,
             placeholder: "Enter handle"|t('app'),
-            errors: (characteristic.getErrors('handle')|merge(characteristic.getErrors('uri')))
+            errors: (characteristic.getErrors('handle'))
         }) }}
 
         {{ forms.lightswitchField({
@@ -153,6 +151,18 @@
             name: 'required',
             label: 'Required'|t('characteristic'),
             on: characteristic.required,
+        }) }}
+
+        {{ forms.textField({
+            label: "Maximum Values"|t('characteristic'),
+            id: 'maxValues',
+            name: 'maxValues',
+            autocorrect: false,
+            autocapitalize: false,
+            value: characteristic.maxValues,
+            placeholder: "Unlimited"|t('app'),
+            type: 'number',
+            errors: (characteristic.getErrors('maxValues')|merge(characteristic.getErrors('maxValues')))
         }) }}
     </div>
 

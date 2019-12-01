@@ -157,10 +157,12 @@ class CharacteristicsController extends Controller
                     throw new NotFoundHttpException('Characteristic not found');
                 }
             } else {
-                $variables['characteristic'] = new Characteristic();
-                $variables['characteristic']->groupId = $group->id;
-                $variables['characteristic']->required = $group->requiredByDefault;
-                $variables['characteristic']->allowCustomOptions = $group->allowCustomOptionsByDefault;
+                $newCharacteristic = new Characteristic();
+                $newCharacteristic->groupId = $group->id;
+                $newCharacteristic->required = $group->requiredByDefault;
+                $newCharacteristic->allowCustomOptions = $group->allowCustomOptionsByDefault;
+                $newCharacteristic->maxValues = 1;
+                $variables['characteristic'] = $newCharacteristic;
             }
         }
 
@@ -277,6 +279,7 @@ class CharacteristicsController extends Controller
         $characteristic->title = $request->getBodyParam('title', $characteristic->title);
         $characteristic->allowCustomOptions = $request->getBodyParam('allowCustomOptions', $characteristic->allowCustomOptions);
         $characteristic->required = $request->getBodyParam('required', $characteristic->required);
+        $characteristic->maxValues = $request->getBodyParam('maxValues', $characteristic->maxValues);
         $characteristic->setFieldValuesFromRequest('fields');
     }
 

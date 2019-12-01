@@ -55,6 +55,8 @@ class Characteristic extends Element
      */
     public $required = false;
 
+    public $maxValues = 1;
+
     /**
      * @var bool|null
      * @see _hasNewParent()
@@ -217,7 +219,7 @@ class Characteristic extends Element
     public function rules()
     {
         $rules = parent::rules();
-        $rules[] = [['groupId'], 'number', 'integerOnly' => true];
+        $rules[] = [['groupId', 'maxValues'], 'number', 'integerOnly' => true];
         $rules[] = [['required', 'allowCustomOptions'], 'boolean'];
         return $rules;
     }
@@ -338,6 +340,12 @@ class Characteristic extends Element
         $record->groupId = $this->groupId;
         $record->handle = $this->handle;
         $record->required = $this->required;
+
+        if (!$this->maxValues) {
+            $this->maxValues = null;
+        }
+
+        $record->maxValues = $this->maxValues;
         $record->allowCustomOptions = $this->allowCustomOptions;
 
         $record->save(false);

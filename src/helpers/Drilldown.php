@@ -67,7 +67,7 @@ class Drilldown extends Component
 
         // We need to mix in our idempotent values which aren't directly related
         $idempotentIds = CharacteristicValue::find()->characteristicId($characteristic->id)->idempotent(true)->ids();
-        $values = CharacteristicValue::find()->id(array_merge($valueIds, $idempotentIds))->orderBy('sortOrder DESC');
+        $values = CharacteristicValue::find()->id(array_merge($valueIds, $idempotentIds))->orderBy('sortOrder ASC');
 
         return $values;
     }
