@@ -101,7 +101,7 @@
                         this.linkSets.push(data);
                     } else if (characteristic.required) {
                         data = {
-                            index: 'new' + this.linkSet.length + 1,
+                            index: 'new' + this.linkSets.length + 1,
                             characteristic: characteristic,
                             isNew: true,
                             links: []

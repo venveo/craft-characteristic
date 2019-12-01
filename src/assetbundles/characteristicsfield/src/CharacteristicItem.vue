@@ -84,6 +84,10 @@
             margin-bottom: 0;
         }
 
+        .input.ltr.flex {
+            align-items: baseline;
+        }
+
         .characteristic__title {
             background-color: #cdd8e4;
             padding: 10px 20px 10px 10px;
