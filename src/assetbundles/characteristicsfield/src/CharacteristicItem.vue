@@ -11,8 +11,8 @@
                 <div v-if="characteristic.allowCustomOptions" class="flex">
                     <input class="text" type="text" v-for="(value, index) in values" v-model="values[index]">
                 </div>
-                <div class="select" v-else>
-                    <select v-for="(value, index) in values" v-model="values[index]" >
+                <div class="select" v-else  v-for="(value, index) in values">
+                    <select v-model="values[index]" >
                         <option disabled="disabled" selected="selected" value="">Select one</option>
                         <option :key="option.value" :value="option.value"
                                 v-for="option in characteristic.values">{{option.value}}
@@ -80,6 +80,9 @@
     .characteristic-item.matrixblock {
         padding: 0;
         padding-right: 10px;
+        .input .select, .input .text, .input .flex, .input span {
+            margin-bottom: 0;
+        }
 
         .characteristic__title {
             background-color: #cdd8e4;
