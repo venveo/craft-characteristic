@@ -46,12 +46,12 @@
         methods: {
             handleAdd(e) {
                 e.preventDefault();
-                this.linkSets.push([{
+                const newItem =
+                this.linkSets.push({
                     index: 'new' + this.linkSets.length + 1,
                     characteristic: this.availableCharacteristics[this.selectedCharacteristic],
-                    links: [],
-                    isNew: true
-                }]);
+                    links: []
+                });
                 if (window.draftEditor) {
                     window.draftEditor.checkForm();
                 }
