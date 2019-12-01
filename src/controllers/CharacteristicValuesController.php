@@ -182,10 +182,6 @@ class CharacteristicValuesController extends Controller
         $characteristicValue = $this->_getValueModel();
         $request = Craft::$app->getRequest();
 
-        // Permission enforcement
-//        $this->enforceEditEntryPermissions($entry, $duplicate);
-        $currentUser = Craft::$app->getUser()->getIdentity();
-
         // Populate the entry with post data
         $this->_populateCharacteristicValueModel($characteristicValue);
 
@@ -197,7 +193,7 @@ class CharacteristicValuesController extends Controller
                 ]);
             }
 
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save characteristic value.'));
+            Craft::$app->getSession()->setError(Craft::t('characteristic', 'Couldn’t save characteristic value.'));
 
             // Send the entry back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -244,6 +240,18 @@ class CharacteristicValuesController extends Controller
             $value = new CharacteristicValue();
             $value->characteristicId = $request->getRequiredBodyParam('characteristicId');
         }
+        $idempotent = (bool)$request->getBodyParam('idempotent', false);
+        $value->idempotent = $idempotent;
+
+        $sortOrder = 0;
+        $nextItem = \venveo\characteristic\records\CharacteristicValue::find()
+            ->addSelect('MAX(sortOrder) as sort')
+            ->where(['characteristicId' => $value->characteristicId])
+            ->scalar();
+        if ($nextItem !== null) {
+            $sortOrder = $nextItem + 1;
+        }
+        $value->sortOrder = $sortOrder;
 
         return $value;
     }
