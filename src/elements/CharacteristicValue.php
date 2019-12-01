@@ -26,6 +26,8 @@ use yii\base\InvalidConfigException;
  * @author    Venveo
  * @package   Characteristic
  * @since     1.0.0
+ *
+ * @property \venveo\characteristic\elements\Characteristic|null $characteristic
  */
 class CharacteristicValue extends Element
 {
@@ -40,6 +42,8 @@ class CharacteristicValue extends Element
     public $characteristicId = null;
 
     public $sortOrder = 0;
+
+    public $idempotent = null;
 
     // Static Methods
     // =========================================================================
@@ -226,6 +230,10 @@ class CharacteristicValue extends Element
     public function applyToDrilldownState(DrilldownState $state)
     {
         $newState = clone $state;
+        if ($this->idempotent) {
+            return $newState->setCharacteristicSatisfied($this->characteristic);
+        }
+
         return $newState->setCharacteristicValue($this);
     }
 
@@ -264,6 +272,7 @@ class CharacteristicValue extends Element
         $record->characteristicId = $this->characteristicId;
         $record->value = $this->value;
         $record->sortOrder = $this->sortOrder;
+        $record->idempotent = $this->idempotent;
 
         $record->save(false);
 

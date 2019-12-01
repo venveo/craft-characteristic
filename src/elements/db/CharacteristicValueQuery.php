@@ -16,6 +16,8 @@ class CharacteristicValueQuery extends ElementQuery
     // -------------------------------------------------------------------------
     public $value;
     public $sortOrder;
+    public $idempotent;
+
     /**
      * @inheritdoc
      */
@@ -36,6 +38,12 @@ class CharacteristicValueQuery extends ElementQuery
         return $this;
     }
 
+    public function idempotent($value)
+    {
+        $this->idempotent = $value;
+        return $this;
+    }
+
     // Protected Methods
     // =========================================================================
 
@@ -50,13 +58,17 @@ class CharacteristicValueQuery extends ElementQuery
             'characteristic_values.characteristicId',
             'characteristic_values.value',
             'characteristic_values.sortOrder',
+            'characteristic_values.idempotent',
         ]);
 
-        if ($this->characteristicId) {
+        if ($this->characteristicId !== null) {
             $this->subQuery->andWhere(Db::parseParam('characteristic_values.characteristicId', $this->characteristicId));
         }
-        if ($this->value) {
+        if ($this->value !== null) {
             $this->subQuery->andWhere(Db::parseParam('characteristic_values.value', $this->value));
+        }
+        if ($this->idempotent !== null) {
+            $this->subQuery->andWhere(Db::parseParam('characteristic_values.idempotent', $this->idempotent));
         }
 
         return parent::beforePrepare();

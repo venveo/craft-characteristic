@@ -179,8 +179,12 @@ class CharacteristicsController extends Controller
      *
      * @param bool $duplicate Whether the characteristic should be duplicated
      * @return Response|null
-     * @throws ServerErrorHttpException if reasons
+     * @throws BadRequestHttpException
+     * @throws MissingComponentException
      * @throws NotFoundHttpException
+     * @throws Throwable
+     * @throws \craft\errors\ElementNotFoundException
+     * @throws \yii\base\Exception
      */
     public function actionSaveCharacteristic(bool $duplicate = false)
     {
@@ -188,9 +192,6 @@ class CharacteristicsController extends Controller
 
         $characteristic = $this->_getCharacteristicModel();
         $request = Craft::$app->getRequest();
-
-        // Permission enforcement
-        $currentUser = Craft::$app->getUser()->getIdentity();
 
         $this->_populateCharacteristicModel($characteristic);
 
@@ -202,7 +203,7 @@ class CharacteristicsController extends Controller
                 ]);
             }
 
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save characteristic.'));
+            Craft::$app->getSession()->setError(Craft::t('characteristic', 'Couldn’t save characteristic.'));
 
             Craft::$app->getUrlManager()->setRouteParams([
                 'characteristic' => $characteristic

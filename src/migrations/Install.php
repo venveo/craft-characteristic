@@ -83,6 +83,7 @@ class Install extends Migration
             'sortOrder' => $this->smallInteger()->unsigned(),
             'value' => $this->string()->notNull(),
             'deletedWithCharacteristic' => $this->boolean()->null(),
+            'idempotent' => $this->boolean()->defaultValue(false),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),

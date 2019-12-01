@@ -34,7 +34,9 @@ class FieldController extends Controller
             return $this->asErrorJson('Source not found');
         }
         $criteria = $source['criteria'];
-        $criteria['with'] = ['values'];
+        $criteria['with'] = [
+            ['values', ['idempotent' => false]]
+        ];
 
         /** @var CharacteristicQuery $query */
         $query = Craft::configure(Characteristic::find(), $criteria);

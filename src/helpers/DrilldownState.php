@@ -47,7 +47,7 @@ class DrilldownState extends Component
 
     public function modifyQuery(ElementQueryInterface $elementQuery)
     {
-        if (!count($this->satisfiedAttributes)) {
+        if (!count($this->values)) {
             return $elementQuery;
         }
         $ids = $elementQuery->ids();

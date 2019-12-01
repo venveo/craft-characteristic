@@ -77,8 +77,14 @@
 {% endblock %}
 
 {% block details %}
-    {#    <div id="settings" class="meta">#}
-    {#    </div>#}
+        <div id="settings" class="meta">
+            {{ forms.lightswitchField({
+                name: 'idempotent',
+                label: 'Idempotent'|t('characteristic'),
+                instructions: 'This is a "skip" value - cannot be applied'|t('characteristic'),
+                on: value.idempotent,
+            }) }}
+        </div>
     {% if value.id %}
         <div class="meta read-only">
             <div class="data">

@@ -5,10 +5,10 @@ namespace venveo\characteristic\helpers;
 use Craft;
 use craft\base\Component;
 use craft\elements\db\ElementQueryInterface;
-use Exception;
 use venveo\characteristic\Characteristic;
 use venveo\characteristic\elements\Characteristic as CharacteristicElement;
-use venveo\characteristic\elements\CharacteristicValue as CharacteristicValueElement;
+use venveo\characteristic\elements\CharacteristicValue;
+use venveo\characteristic\errors\CharacteristicGroupNotFoundException;
 use venveo\characteristic\models\CharacteristicGroup;
 use venveo\characteristic\records\CharacteristicLink;
 
@@ -39,7 +39,7 @@ class Drilldown extends Component
 
         $group = Characteristic::$plugin->characteristicGroups->getGroupByHandle($this->group);
         if (!$group) {
-            throw new Exception('Characteristic group does not exist');
+            throw new CharacteristicGroupNotFoundException('Characteristic group does not exist');
         }
         $this->_group = $group;
 
@@ -56,16 +56,18 @@ class Drilldown extends Component
         $characteristic = $this->getCurrentCharacteristic();
         $ids = $this->getResults()->ids();
         $valueIds = array_keys(CharacteristicLink::find()
-            ->addSelect(['COUNT(elementId) as score', 'valueId'])
+//            ->addSelect(['COUNT(elementId) as score', 'valueId'])
+            ->addSelect(['valueId'])
             ->where(['in', 'elementId', $ids])
             ->andWhere(['characteristicId' => $characteristic->id])
             ->groupBy('valueId')
-            ->orderBy('score DESC')
             ->indexBy('valueId')
             ->asArray()
             ->all());
 
-        $values = CharacteristicValueElement::find()->id($valueIds);
+        // We need to mix in our idempotent values which aren't directly related
+        $idempotentIds = CharacteristicValue::find()->characteristicId($characteristic->id)->idempotent(true)->ids();
+        $values = CharacteristicValue::find()->id(array_merge($valueIds, $idempotentIds))->orderBy('sortOrder DESC');
 
         return $values;
     }

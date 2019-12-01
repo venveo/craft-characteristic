@@ -3,6 +3,7 @@
     <tr>
         <th class="thin">{{ "ID" }}</th>
         <th>{{ "Value" }}</th>
+        <th class="thin">{{ "Idempotent" }}</th>
         <th>{{ "Created On"|t }}</th>
         <th>{{ "Updated On"|t }}</th>
 
@@ -16,6 +17,8 @@
         <tr data-id="{{ value.id }}" data-uid="{{ value.uid }}" data-name="{{ value.value }}">
             <td>{{ value.id }}</td>
             <td>{{ value.value }}</td>
+            <td><div class="status {{ value.idempotent ? 'enabled' : '' }}" title="{{ value.idempotent ? 'Yes'|t('app') : 'No'|t('app') }}"></div></td>
+
             <td>{{ value.dateCreated|datetime('short') }}</td>
             <td>{{ value.dateUpdated|datetime('short') }}</td>
             <td class="thin"><a class="edit icon" href="{{ value.getCpEditUrl() }}" title="{{ 'Edit'|t('app') }}"

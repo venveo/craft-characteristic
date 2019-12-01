@@ -20,6 +20,8 @@ use craft\db\ActiveRecord;
  * @property int $characteristicId [int(11)]
  * @property int $sortOrder [smallint(6) unsigned]
  * @property string $value [varchar(255)]
+ * @property bool $deletedWithCharacteristic [tinyint(1)]
+ * @property bool $idempotent [tinyint(1)]
  */
 class CharacteristicValue extends ActiveRecord
 {

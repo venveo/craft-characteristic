@@ -37,21 +37,29 @@ class CharacteristicValues extends Component
      * Creates a value for a characteristic or returns an existing one
      * @param Characteristic $characteristic
      * @param $value
+     * @param bool $idempotent
      * @return array|\craft\base\ElementInterface|CharacteristicValue|null
      * @throws Throwable
      * @throws \craft\errors\ElementNotFoundException
      * @throws \yii\base\Exception
      */
-    public function getOrCreateValueElement(Characteristic $characteristic, $value)
+    public function getOrCreateValueElement(Characteristic $characteristic, $value, $idempotent = false)
     {
         $existing = CharacteristicValue::find()->value($value)->characteristicId($characteristic->id)->one();
         if ($existing) {
             return $existing;
         }
 
+        $nextItem = \venveo\characteristic\records\CharacteristicValue::find()
+            ->addSelect('MAX(\'sortOrder\' as sort')
+            ->where(['characteristicId' => $characteristic->id])
+            ->scalar();
+        Craft::dd($nextItem);
 
         $characteristicValue = new CharacteristicValue();
         $characteristicValue->value = $value;
+        $characteristicValue->idempotent = $idempotent;
+        $characteristicValue->sortOrder =
         $characteristicValue->characteristicId = $characteristic->id;
         Craft::$app->elements->saveElement($characteristicValue);
         return $characteristicValue;
