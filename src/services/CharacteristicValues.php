@@ -50,16 +50,19 @@ class CharacteristicValues extends Component
             return $existing;
         }
 
+        $sortOrder = 0;
         $nextItem = \venveo\characteristic\records\CharacteristicValue::find()
-            ->addSelect('MAX(\'sortOrder\' as sort')
+            ->addSelect('MAX(sortOrder) as sort')
             ->where(['characteristicId' => $characteristic->id])
             ->scalar();
-        Craft::dd($nextItem);
+        if ($nextItem !== null) {
+            $sortOrder = $nextItem + 1;
+        }
 
         $characteristicValue = new CharacteristicValue();
         $characteristicValue->value = $value;
         $characteristicValue->idempotent = $idempotent;
-        $characteristicValue->sortOrder =
+        $characteristicValue->sortOrder = $sortOrder;
         $characteristicValue->characteristicId = $characteristic->id;
         Craft::$app->elements->saveElement($characteristicValue);
         return $characteristicValue;
