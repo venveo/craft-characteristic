@@ -18,7 +18,7 @@
                     </option>
                 </select>
             </div>
-            <div @click="handleAdd" class="btn add icon">Add Selected</div>
+            <div @click="handleAdd" class="btn add icon">Add</div>
         </div>
     </div>
 </template>

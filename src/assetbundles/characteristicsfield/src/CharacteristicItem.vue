@@ -19,7 +19,7 @@
                         </option>
                     </select>
                 </div>
-                <span v-if="canAddValue"><button class="btn small add icon" @click="handleAddValue">Add Value</button></span>
+                <span v-if="canAddValue"><button class="btn small add icon" @click="handleAddValue">Add</button></span>
             </div>
         </div>
         <div class="actions">
