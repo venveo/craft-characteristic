@@ -33,6 +33,9 @@
                         {{ "Save and continue editing"|t('app') }}
                     </a></li>
                 <li><a class="formsubmit"
+                       data-redirect="{{ (continueEditingUrl~'/new')|hash }}">{{ "Save and add value"|t('characteristic') }}</a>
+                </li>
+                <li><a class="formsubmit"
                        data-redirect="{{ (nextCharacteristicUrl~'#')|hash }}">{{ "Save and add another"|t('app') }}</a>
                 </li>
             </ul>
