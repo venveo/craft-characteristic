@@ -1,7 +1,7 @@
 <template>
     <div class="characteristic-item matrixblock">
         <input :name="name + '[attribute]'" :value="attribute" type="hidden"/>
-        <input v-for="(value, index) in values" :name="name + '[value]['+index+']'" :key="index" :value="value" type="hidden" />
+        <input v-for="(value, index) in values" :name="name + '[value]['+index+']'" v-if="value.length" :key="index" :value="value" type="hidden" />
 
         <div class="fields flex flex-nowrap">
             <div class="input ltr characteristic__title">
@@ -19,7 +19,7 @@
                         </option>
                     </select>
                 </div>
-                <span><a href="#" @click="handleAddValue">Add Value</a></span>
+                <span><button class="btn small add icon" @click="handleAddValue">Add Value</button></span>
             </div>
         </div>
         <div class="actions">
