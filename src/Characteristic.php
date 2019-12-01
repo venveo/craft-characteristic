@@ -155,10 +155,13 @@ class Characteristic extends Plugin
 
     public function getCpNavItem()
     {
-        return [
-            'label' => 'Characteristics',
-            'url' => UrlHelper::cpUrl('characteristics'),
-        ];
+        if(count(static::$plugin->characteristicGroups->getAllGroups())) {
+            return [
+                'label' => 'Characteristics',
+                'url' => UrlHelper::cpUrl('characteristics'),
+            ];
+        }
+        return null;
     }
     // Protected Methods
     // =========================================================================
