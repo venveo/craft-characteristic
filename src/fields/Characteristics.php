@@ -126,13 +126,14 @@ class Characteristics extends Field
         return $inputData;
     }
 
-    protected function prepareDataForInputFromPost($data) {
+    protected function prepareDataForInputFromPost($data)
+    {
         $source = ElementHelper::findSource(CharacteristicElement::class, $this->source, 'index');
         $groupId = $source['criteria']['groupId'];
 
         $inputData = [];
         $index = 0;
-        foreach($data as $datum) {
+        foreach ($data as $datum) {
             $values = [];
             $characteristic = \venveo\characteristic\elements\Characteristic::find()->groupId($groupId)->handle($datum['attribute'])->with(['values'])->one();
             if (isset($datum['value']) && is_array($datum['value'])) {
@@ -153,7 +154,6 @@ class Characteristics extends Field
 
     /**
      * @param $results
-     * @param $attributes
      * @return array
      */
     protected function prepareDataForInputFromDb($results)
@@ -184,7 +184,7 @@ class Characteristics extends Field
         // We need to construct an array of characteristics and an array of its values
         /** @var CharacteristicLinkRecord $result */
         foreach ($results as $index => $result) {
-            if(!isset($inputData[$result['characteristicId']])) {
+            if (!isset($inputData[$result['characteristicId']])) {
                 $inputData[$result['characteristicId']] = [];
                 $inputData[$result['characteristicId']]['index'] = $index;
                 $inputData[$result['characteristicId']]['characteristic'] = $characteristics[$result['characteristicId']];
@@ -348,23 +348,12 @@ class Characteristics extends Field
 
         $required = CharacteristicElement::find()->groupId($groupId)->required(true)->indexBy('id')->with(['values'])->all();
         if ($required) {
-            foreach($required as $characteristicId => $characteristic) {
+            foreach ($required as $characteristicId => $characteristic) {
                 if (!isset($value[$characteristicId]) || !count($value[$characteristicId]['values'])) {
                     $element->addError($this->handle, $characteristic->title . " is required");
                 }
             }
         }
-//
-//        foreach ($value as $attribute) {
-//            $characteristic = isset($attribute['characteristic']) && ($attribute['characteristic'] instanceof CharacteristicElement) ? $attribute['characteristic'] : Characteristic::$plugin->characteristics->getCharacteristicByHandle($groupId, $attribute['attribute']);
-//
-//            if (!$characteristic) {
-//                $element->addError($this->handle, 'Characteristic does not exist');
-//            }
-//            if($characteristic->required && (!isset($attribute['values']) || !is_array($attribute['values']))) {
-//                $element->addError($this->handle, $characteristic->title . " is required");
-//            }
-//        }
     }
 
     /**
@@ -380,9 +369,6 @@ class Characteristics extends Field
         if (!is_iterable($attributes)) {
             return parent::afterElementSave($element, $isNew);
         }
-
-        $source = ElementHelper::findSource(CharacteristicElement::class, $this->source, 'index');
-        $groupId = $source['criteria']['groupId'];
 
         try {
             $linksToResave = [];
