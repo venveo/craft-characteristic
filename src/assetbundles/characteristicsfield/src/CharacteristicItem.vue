@@ -9,13 +9,25 @@
             </div>
             <div class="input ltr flex">
                 <multiselect
+                        v-if="this.characteristic.maxValues == 0 || this.characteristic.maxValues > 1"
                         v-model="values"
                         :hide-selected="true"
-                        :multiple="characteristic.maxValues > 1 || characteristic.maxValues === 0"
-                        :clearOnSelect="true"
+                        :multiple="true"
+                        :max="this.characteristic.maxValues"
+                        :clear-on-select="true"
                         :allow-empty="false"
                         :taggable="characteristic.allowCustomOptions"
+                        :tag-placeholder="'Press enter to create a new value'"
                         @tag="addTag"
+                        :options="options">
+                </multiselect>
+                <multiselect
+                        v-else
+                        v-model="values"
+                        :hide-selected="true"
+                        :multiple="false"
+                        :clear-on-select="true"
+                        :allow-empty="false"
                         :options="options">
                 </multiselect>
             </div>
