@@ -55,20 +55,6 @@ you to quickly create a "Quiz" to find the most suitable element.
 
 This plugin requires Craft CMS 3.3.0 or later.
 
-## Installation
-
-To install the plugin, follow these instructions.
-
-1. Open your terminal and go to your Craft project:
-
-        cd /path/to/project
-
-2. Then tell Composer to load the plugin:
-
-        composer require venveo/characteristic
-
-3. In the Control Panel, go to Settings → Plugins and click the “Install” button for Characteristic.
-
 ## Using Characteristic
 
 ### The Drilldown Helper
@@ -107,7 +93,24 @@ To install the plugin, follow these instructions.
 {% endfor %}
 ```
 
-### The characteristic query
-Consider you have a characteristic group, `productAttributes`
+### The characteristic attribute
+Characteristic will inject some attributes into your elements to make
+querying characteristics easier! Take care to ensure you don't have any
+fields with the same handles as these.
 
+- `characteristics` returns a CharacteristicQuery configured to return
+only those related to the source element.
 
+```twig
+<ul>
+    {% for product in craft.entries.section('products').all() %}
+    <li>{{product.title}}</li>
+    <ul>
+        {% for characteristic in product.characteristics.all() %}
+        {# We could use .values() without a parameter if we wanted to get all possible values indiscriminately #}
+        <li>{{ characteristic.title }} - {{ characteristic.values(restaurant).all()|column('value')|join(', ') }}</li>
+        {% endfor %}
+    </ul>
+    {% endfor %}
+</ul>
+```

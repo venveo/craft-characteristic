@@ -70,6 +70,8 @@ class Characteristic extends Element
      */
     private $_values;
 
+    private $_elementValues = [];
+
     /**
      * @inheritdoc
      */
@@ -469,10 +471,20 @@ class Characteristic extends Element
     /**
      * Returns the product associated with this variant.
      *
+     * @param ElementInterface|null $element
      * @return CharacteristicValue[] The product associated with this variant, or null if it isn’t known
      */
-    public function getValues()
+    public function getValues(ElementInterface $element = null)
     {
+        if ($element) {
+            if (!isset($this->_elementValues[$element->id])) {
+                $criteria['characteristicId'] = $this->id;
+                $criteria['relatedTo'] = ['sourceElement' => $element];
+                return Craft::configure(CharacteristicValue::find(), $criteria);
+            }
+            return $this->_elementValues[$element->id];
+        }
+
         if (null === $this->_values) {
             if ($this->id) {
                 $criteria['characteristicId'] = $this->id;
@@ -483,21 +495,26 @@ class Characteristic extends Element
         return $this->_values;
     }
 
-    public function setValues($values)
+    public function setValues($values, ElementInterface $element = null)
     {
-        $this->_values = [];
+        if (!$element) {
+            $this->_values = [];
+        } else {
+            $this->_elementValues[$element->id] = [];
+        }
 
         if (empty($values)) {
             return;
         }
 
         foreach ($values as $key => $value) {
-            if (!$value instanceof CharacteristicValue) {
-                die('wtf');
-            }
             $value->setCharacteristic($this);
 
-            $this->_values[] = $value;
+            if (!$element) {
+                $this->_values[] = $value;
+            } else {
+                $this->_elementValues[$element->id] = $value;
+            }
         }
     }
 
