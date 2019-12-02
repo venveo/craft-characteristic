@@ -108,7 +108,7 @@ class Characteristics extends Field
         } else {
             // Ensure we get links that don't have deleted elements
             $recordQuery = CharacteristicLinkRecord::find()
-                ->addSelect(['link.characteristicId', 'link.valueId', 'link.sortOrder'])
+                ->addSelect(['link.characteristicId', 'link.valueId'])
                 ->alias('link')
                 ->leftJoin('{{%elements}} elements1', '[[elements1.id]] = [[link.characteristicId]]')
                 ->leftJoin('{{%elements}} elements2', '[[elements2.id]] = [[link.valueId]]');

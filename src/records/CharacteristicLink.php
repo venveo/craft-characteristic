@@ -23,8 +23,6 @@ use craft\db\ActiveRecord;
  * @property int $characteristicId [int(11)]
  * @property int $valueId [int(11)]
  * @property int $fieldId [int(11)]
- * @property bool $deletedWithElement [tinyint(1)]
- * @property int $sortOrder [int(11)]
  */
 class CharacteristicLink extends ActiveRecord
 {
@@ -43,5 +41,10 @@ class CharacteristicLink extends ActiveRecord
     public function getCharacteristicValue()
     {
         return $this->hasOne(CharacteristicValue::class, ['id' => 'valueId']);
+    }
+
+    public function getCharacteristic()
+    {
+        return $this->hasOne(Characteristic::class, ['id' => 'characteristicId']);
     }
 }

@@ -53,7 +53,6 @@ class CharacteristicLinks extends Component
                 $link = new CharacteristicLink();
                 $link->characteristicId = $datum['characteristic']->id;
                 $link->valueId = $value->id;
-                $link->sortOrder = $index;
                 $link->elementId = $element->id;
                 $link->fieldId = $field->id;
                 $link->save();
