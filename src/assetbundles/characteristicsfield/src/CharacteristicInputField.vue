@@ -1,5 +1,6 @@
 <template>
     <div>
+        <a v-if="canDelete" class="icon delete" @click="handleRemove"></a>
         <input v-if="allowCustomOptions" class="text" type="text" :value="this.content" @input="handleChange">
         <div class="select" v-else>
             <select :value="this.content" @input="handleChange">
@@ -16,7 +17,7 @@
     /* global Craft */
     export default {
         components: {},
-        props: ['value', 'options', 'allowCustomOptions'],
+        props: ['value', 'options', 'allowCustomOptions', 'canDelete'],
         data() {
             return {
                 content: this.value
@@ -26,6 +27,9 @@
             handleChange(e) {
                 this.content = e.target.value;
                 this.$emit('input', this.content);
+            },
+            handleRemove(e) {
+                this.$emit('delete');
             }
         },
     }

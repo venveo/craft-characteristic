@@ -9,10 +9,10 @@
             </div>
             <div class="input ltr flex">
                 <div v-if="characteristic.allowCustomOptions" class="flex">
-                    <characteristic-input-field :allow-custom-options="true" v-for="(value, index) in values" v-model="value.value" :key="index" :options="characteristic.values" />
+                    <characteristic-input-field :allow-custom-options="true" v-for="(value, index) in values" v-on:delete="() => deleteValue(index)" v-model="value.value" :key="index" :options="characteristic.values" :can-delete="index !== 0" />
                 </div>
                 <div class="flex" v-else>
-                    <characteristic-input-field :allow-custom-options="false"v-for="(value, index) in values" v-model="value.value" :key="index" :options="characteristic.values" />
+                    <characteristic-input-field :allow-custom-options="false" v-for="(value, index) in values" v-on:delete="() => deleteValue(index)" v-model="value.value" :key="index" :options="characteristic.values" :can-delete="index !== 0" />
                 </div>
                 <span v-if="canAddValue"><button class="btn small add icon" @click="handleAddValue">Add</button></span>
             </div>
@@ -48,6 +48,9 @@
             handleAddValue(e) {
                 e.preventDefault();
                 this.values.push({value: ''});
+            },
+            deleteValue(index) {
+                this.values.splice(index, 1);
             }
         },
         watch: {
