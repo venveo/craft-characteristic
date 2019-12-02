@@ -1,6 +1,14 @@
 <template>
     <div>
-        <input class="text" type="text" :value="this.content" @input="handleChange">
+        <input v-if="allowCustomOptions" class="text" type="text" :value="this.content" @input="handleChange">
+        <div class="select" v-else>
+            <select :value="this.content" @input="handleChange">
+                <option disabled="disabled" selected="selected" value="">Select one</option>
+                <option :key="option.value" :value="option.value"
+                        v-for="option in options">{{option.value}}
+                </option>
+            </select>
+        </div>
     </div>
 </template>
 <script>
@@ -8,7 +16,7 @@
     /* global Craft */
     export default {
         components: {},
-        props: ['value'],
+        props: ['value', 'options', 'allowCustomOptions'],
         data() {
             return {
                 content: this.value
@@ -24,4 +32,7 @@
 </script>
 
 <style lang="scss" scoped>
+    .input .select, .input .text, .input .flex, .input span {
+        margin-bottom: 0;
+    }
 </style>

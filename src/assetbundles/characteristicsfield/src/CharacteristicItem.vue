@@ -9,15 +9,10 @@
             </div>
             <div class="input ltr flex">
                 <div v-if="characteristic.allowCustomOptions" class="flex">
-                    <characteristic-input-field v-for="(value, index) in values" v-model="value.value" :key="index" />
+                    <characteristic-input-field :allow-custom-options="true" v-for="(value, index) in values" v-model="value.value" :key="index" :options="characteristic.values" />
                 </div>
-                <div class="select" v-else  v-for="(value, index) in values">
-                    <select v-model="value.value" >
-                        <option disabled="disabled" selected="selected" value="">Select one</option>
-                        <option :key="option.value" :value="option.value"
-                                v-for="option in characteristic.values">{{option.value}}
-                        </option>
-                    </select>
+                <div class="flex" v-else>
+                    <characteristic-input-field :allow-custom-options="false"v-for="(value, index) in values" v-model="value.value" :key="index" :options="characteristic.values" />
                 </div>
                 <span v-if="canAddValue"><button class="btn small add icon" @click="handleAddValue">Add</button></span>
             </div>
@@ -85,7 +80,7 @@
     .characteristic-item.matrixblock {
         padding: 0;
         padding-right: 10px;
-        .input .select, .input .text, .input .flex, .input span {
+        .input .select, .input .text, .input .flex, .input span, .input .ltr .flex, .flex > div {
             margin-bottom: 0;
         }
 
