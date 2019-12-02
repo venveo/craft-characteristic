@@ -1,7 +1,7 @@
 <template>
     <div class="characteristic-item matrixblock">
         <input :name="name + '[attribute]'" :value="attribute" type="hidden"/>
-        <input v-for="(value, index) in values" :name="name + '[value]['+index+']'" v-if="value.length" :key="index" :value="value" type="hidden" />
+        <input v-for="(value, index) in values" :name="name + '[value]['+index+']'" v-if="value.value.length" :key="index" :value="value.value" type="hidden" />
 
         <div class="fields flex flex-nowrap">
             <div class="input ltr characteristic__title">
@@ -9,10 +9,10 @@
             </div>
             <div class="input ltr flex">
                 <div v-if="characteristic.allowCustomOptions" class="flex">
-                    <input class="text" type="text" v-for="(value, index) in values" v-model="values[index]">
+                    <characteristic-input-field v-for="(value, index) in values" v-model="value.value" :key="index" />
                 </div>
                 <div class="select" v-else  v-for="(value, index) in values">
-                    <select v-model="values[index]" >
+                    <select v-model="value.value" >
                         <option disabled="disabled" selected="selected" value="">Select one</option>
                         <option :key="option.value" :value="option.value"
                                 v-for="option in characteristic.values">{{option.value}}
@@ -31,10 +31,13 @@
     </div>
 </template>
 <script>
+    import CharacteristicInputField from "./CharacteristicInputField";
     /* eslint-disable */
     /* global Craft */
     export default {
-        components: {},
+        components: {
+            CharacteristicInputField
+        },
         props: {
             characteristic: Object,
             name: String,
@@ -49,7 +52,7 @@
         methods: {
             handleAddValue(e) {
                 e.preventDefault();
-                this.values.push('');
+                this.values.push({value: ''});
             }
         },
         watch: {
@@ -57,7 +60,9 @@
                 this.$emit('change', newVal);
             },
             values: function (newVal) {
-                this.$emit('change', newVal);
+                console.log(newVal);
+                let values = newVal.map(value => value.value);
+                this.$emit('change', values);
             }
         },
         computed: {
@@ -69,7 +74,7 @@
             this.attribute = this.characteristic.handle;
             if (this.linkSet.hasOwnProperty('links')) {
                 for(let link of this.linkSet.links) {
-                    this.values.push(link.value);
+                    this.values.push({value: link.value});
                 }
             }
         }
