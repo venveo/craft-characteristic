@@ -93,7 +93,7 @@ class Install extends Migration
 
         $this->createTable('{{%characteristic_links}}', [
             'id' => $this->primaryKey(),
-            'elementId' => $this->integer()->notNull(),
+            'ownerId' => $this->integer()->notNull(),
             'characteristicId' => $this->integer()->notNull(),
             'valueId' => $this->integer()->notNull(),
             'fieldId' => $this->integer()->notNull(),
@@ -140,7 +140,7 @@ class Install extends Migration
         $this->addForeignKey(null, '{{%characteristic_values}}', ['characteristicId'], '{{%characteristic_characteristics}}', ['id'], 'CASCADE', null);
 
 
-        $this->addForeignKey(null, '{{%characteristic_links}}', ['elementId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, '{{%characteristic_links}}', ['ownerId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%characteristic_links}}', ['fieldId'], Table::FIELDS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%characteristic_links}}', ['valueId'], '{{%characteristic_values}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%characteristic_links}}', ['characteristicId'], '{{%characteristic_characteristics}}', ['id'], 'CASCADE', null);

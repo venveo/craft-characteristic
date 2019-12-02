@@ -19,7 +19,7 @@ use craft\db\ActiveRecord;
  *
  * @property mixed $characteristicValue
  * @property int $id [int(11)]
- * @property int $elementId [int(11)]
+ * @property int $ownerId [int(11)]
  * @property int $characteristicId [int(11)]
  * @property int $valueId [int(11)]
  * @property int $fieldId [int(11)]

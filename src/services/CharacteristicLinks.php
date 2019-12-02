@@ -35,7 +35,7 @@ class CharacteristicLinks extends Component
     {
         // First we need to flush the existing attributes...
         $query = CharacteristicLink::find();
-        $query->where(['elementId' => $element->id])
+        $query->where(['ownerId' => $element->id])
             ->andWhere(['fieldId' => $field->id]);
         $results = $query->all();
         foreach ($results as $result) {
@@ -53,7 +53,7 @@ class CharacteristicLinks extends Component
                 $link = new CharacteristicLink();
                 $link->characteristicId = $datum['characteristic']->id;
                 $link->valueId = $value->id;
-                $link->elementId = $element->id;
+                $link->ownerId = $element->id;
                 $link->fieldId = $field->id;
                 $link->save();
 

@@ -13,7 +13,7 @@ class ElementCharacteristicsBehavior extends Behavior
     {
         /** @var Element $element */
         $element = $this->owner;
-        $linksQuery = CharacteristicLink::find()->where(['elementId' => $element->id]);
+        $linksQuery = CharacteristicLink::find()->where(['ownerId' => $element->id]);
         if ($characteristic instanceof Characteristic) {
             $linksQuery->andWhere(['characteristicId' => $characteristic->id]);
         }

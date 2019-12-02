@@ -56,9 +56,9 @@ class Drilldown extends Component
         $characteristic = $this->getCurrentCharacteristic();
         $ids = $this->getResults()->ids();
         $valueIds = array_keys(CharacteristicLink::find()
-//            ->addSelect(['COUNT(elementId) as score', 'valueId'])
+//            ->addSelect(['COUNT(ownerId) as score', 'valueId'])
             ->addSelect(['valueId'])
-            ->where(['in', 'elementId', $ids])
+            ->where(['in', 'ownerId', $ids])
             ->andWhere(['characteristicId' => $characteristic->id])
             ->groupBy('valueId')
             ->indexBy('valueId')
@@ -87,7 +87,7 @@ class Drilldown extends Component
             ->innerJoin('{{%elements}} elements2', '[[elements2.id]] = [[link.valueId]]')
             ->innerJoin('{{%structureelements}} structure', '[[structure.elementId]] = [[elements1.id]]')
             ->addSelect(['COUNT(characteristicId) as score', 'characteristicId', 'structure.lft lft'])
-            ->where(['in', 'link.elementId', $ids])
+            ->where(['in', 'link.ownerId', $ids])
             ->groupBy(['characteristicId', 'lft']);
         if ($this->respectStructure) {
             $linksQuery->orderBy('lft ASC');

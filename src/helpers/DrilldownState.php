@@ -52,14 +52,14 @@ class DrilldownState extends Component
         }
         $ids = $elementQuery->ids();
         $query = CharacteristicLink::find();
-        $query->select(['elementId', 'count(elementId) as total']);
+        $query->select(['ownerId', 'count(ownerId) as total']);
         foreach ($this->values as $characteristicId => $valueId) {
             $query->orWhere(['characteristicId' => $characteristicId, 'valueId' => $valueId]);
         }
-        $query->groupBy(['elementId']);
+        $query->groupBy(['ownerId']);
         $query->having(['>=', 'total', count($this->values)]);
-        $query->andWhere(['IN', 'elementId', $ids]);
-        $query->indexBy('elementId');
+        $query->andWhere(['IN', 'ownerId', $ids]);
+        $query->indexBy('ownerId');
         $query->asArray();
 
         $validIds = array_keys($query->all());
