@@ -1,26 +1,37 @@
 <template>
-    <div>
+    <div class="wrapper">
         <a v-if="canDelete" class="icon delete" @click="handleRemove"></a>
         <input v-if="allowCustomOptions" class="text" type="text" :value="this.content" @input="handleChange">
         <div class="select" v-else>
-            <select :value="this.content" @input="handleChange">
-                <option disabled="disabled" selected="selected" value="">Select one</option>
-                <option :key="option.value" :value="option.value"
-                        v-for="option in options">{{option.value}}
-                </option>
-            </select>
+            <model-select :options="options"
+                          v-model="this.content"
+                          placeholder="select item">
+            </model-select>
+
+<!--            <select :value="this.content" @input="handleChange">-->
+<!--                <option disabled="disabled" selected="selected" value="">Select one</option>-->
+<!--                <option :key="option.value" :value="option.value"-->
+<!--                        v-for="option in options">{{option.value}}-->
+<!--                </option>-->
+<!--            </select>-->
         </div>
     </div>
 </template>
 <script>
+    import 'vue-search-select/dist/VueSearchSelect.css'
+    import { ModelSelect } from 'vue-search-select'
+
     /* eslint-disable */
     /* global Craft */
     export default {
-        components: {},
+        components: {
+            ModelSelect
+        },
         props: ['value', 'options', 'allowCustomOptions', 'canDelete'],
         data() {
             return {
-                content: this.value
+                content: this.value,
+                item: {},
             }
         },
         methods: {
@@ -36,7 +47,9 @@
 </script>
 
 <style lang="scss" scoped>
-    .input .select, .input .text, .input .flex, .input span {
-        margin-bottom: 0;
+    .wrapper {
+    }
+    .icon {
+        margin-right: 5px;
     }
 </style>

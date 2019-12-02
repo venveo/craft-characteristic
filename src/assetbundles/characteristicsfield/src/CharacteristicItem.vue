@@ -1,20 +1,23 @@
 <template>
     <div class="characteristic-item matrixblock">
         <input :name="name + '[attribute]'" :value="attribute" type="hidden"/>
-        <input v-for="(value, index) in values" :name="name + '[value]['+index+']'" v-if="value.value.length" :key="index" :value="value.value" type="hidden" />
+        <input v-for="(value, index) in values" :name="name + '[value]['+index+']'" v-if="value.length" :key="index" :value="value" type="hidden" />
 
         <div class="fields flex flex-nowrap">
             <div class="input ltr characteristic__title">
                 <strong>{{characteristic.title}}</strong>
             </div>
             <div class="input ltr flex">
-                <div v-if="characteristic.allowCustomOptions" class="flex">
-                    <characteristic-input-field :allow-custom-options="true" v-for="(value, index) in values" v-on:delete="() => deleteValue(index)" v-model="value.value" :key="index" :options="characteristic.values" :can-delete="index !== 0" />
-                </div>
-                <div class="flex" v-else>
-                    <characteristic-input-field :allow-custom-options="false" v-for="(value, index) in values" v-on:delete="() => deleteValue(index)" v-model="value.value" :key="index" :options="characteristic.values" :can-delete="index !== 0" />
-                </div>
-                <span v-if="canAddValue"><button class="btn small add icon" @click="handleAddValue">Add</button></span>
+                <multiselect
+                        v-model="values"
+                        :hide-selected="true"
+                        :multiple="characteristic.maxValues > 1 || characteristic.maxValues === 0"
+                        :clearOnSelect="true"
+                        :allow-empty="false"
+                        :taggable="characteristic.allowCustomOptions"
+                        @tag="addTag"
+                        :options="options">
+                </multiselect>
             </div>
         </div>
         <div class="actions">
@@ -26,12 +29,16 @@
     </div>
 </template>
 <script>
-    import CharacteristicInputField from "./CharacteristicInputField";
+    // import CharacteristicInputField from "./CharacteristicInputField";
+    import Multiselect from 'vue-multiselect'
+    import _ from 'lodash'
+    import 'vue-multiselect/dist/vue-multiselect.min.css'
+
     /* eslint-disable */
     /* global Craft */
     export default {
         components: {
-            CharacteristicInputField
+            Multiselect
         },
         props: {
             characteristic: Object,
@@ -45,12 +52,8 @@
             }
         },
         methods: {
-            handleAddValue(e) {
-                e.preventDefault();
-                this.values.push({value: ''});
-            },
-            deleteValue(index) {
-                this.values.splice(index, 1);
+            addTag (newTag) {
+                this.values.push(newTag);
             }
         },
         watch: {
@@ -58,21 +61,19 @@
                 this.$emit('change', newVal);
             },
             values: function (newVal) {
-                console.log(newVal);
-                let values = newVal.map(value => value.value);
-                this.$emit('change', values);
+                this.$emit('change', newVal);
             }
         },
         computed: {
-            canAddValue() {
-                return (this.values.length < this.characteristic.maxValues) || !this.characteristic.maxValues;
+            options() {
+                return this.characteristic.values.map(value => value.value);
             }
         },
         beforeMount() {
             this.attribute = this.characteristic.handle;
             if (this.linkSet.hasOwnProperty('links')) {
                 for(let link of this.linkSet.links) {
-                    this.values.push({value: link.value});
+                    this.values.push(link.value);
                 }
             }
         }
@@ -100,10 +101,6 @@
             margin-bottom: 0;
         }
 
-        .fields {
-            align-items: baseline;
-        }
-
         .actions {
             margin-left: auto;
             right: 10px;
@@ -118,5 +115,11 @@
         .titlebar {
             padding-left: 15px;
         }
+    }
+</style>
+
+<style lang="scss">
+    .characteristic-item.matrixblock {
+
     }
 </style>

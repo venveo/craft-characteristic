@@ -135,10 +135,11 @@ class Characteristics extends Field
         $index = 0;
         foreach ($data as $datum) {
             $values = [];
+            /** @var CharacteristicElement $characteristic */
             $characteristic = \venveo\characteristic\elements\Characteristic::find()->groupId($groupId)->handle($datum['attribute'])->with(['values'])->one();
             if (isset($datum['value']) && is_array($datum['value'])) {
                 $values = array_map(function ($value) use ($characteristic) {
-                    return CharacteristicValue::find()->value($value)->characteristicId($characteristic->id)->one();
+                    return Characteristic::$plugin->characteristicValues->getOrCreateValueElement($characteristic, $value);
                 }, $datum['value']);
             }
             $cdata = [
@@ -192,24 +193,6 @@ class Characteristics extends Field
             }
             $inputData[$result['characteristicId']]['values'][] = $values[$result['valueId']];
         }
-
-        // We need to mix-in any required characteristics that weren't accounted for
-//        $source = ElementHelper::findSource(CharacteristicElement::class, $this->source, 'index');
-//        $groupId = $source['criteria']['groupId'];
-//        $required = CharacteristicElement::find()->groupId($groupId)->required(true)->indexBy('id')->with(['values'])->all();
-//        if (count($required)) {
-//            $index = count($inputData);
-//            foreach($required as $characteristicId => $characteristic) {
-//                if (!isset($inputData[$characteristicId])) {
-//                    $addData  = [
-//                        'index' => $index++,
-//                        'characteristic' => $characteristic,
-//                        'values' => []
-//                    ];
-//                    $inputData[$characteristicId] = $addData;
-//                }
-//            }
-//        }
 
         return $inputData;
     }
@@ -334,7 +317,7 @@ class Characteristics extends Field
     }
 
     /**
-     * Validates the table data.
+     * Validates the data for the characteristics
      *
      * @param ElementInterface $element
      */
