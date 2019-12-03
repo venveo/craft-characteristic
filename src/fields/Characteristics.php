@@ -16,15 +16,21 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\elements\MatrixBlock;
+use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
+use craft\services\Elements;
+use craft\web\assets\matrix\MatrixAsset;
 use Exception;
 use Throwable;
 use venveo\characteristic\assetbundles\characteristicsfield\CharacteristicsFieldAsset;
 use venveo\characteristic\Characteristic;
 use venveo\characteristic\elements\Characteristic as CharacteristicElement;
+use venveo\characteristic\elements\CharacteristicLink;
 use venveo\characteristic\elements\CharacteristicValue;
+use venveo\characteristic\elements\db\CharacteristicLinkQuery;
 use venveo\characteristic\records\CharacteristicLink as CharacteristicLinkRecord;
 
 /**
@@ -93,37 +99,152 @@ class Characteristics extends Field
      */
     public function normalizeValue($value, ElementInterface $element = null)
     {
-        if (is_array($value)) {
-            $attributes = $value;
-        } elseif (is_string($value)) {
-            try {
-                $attributes = Json::decode($value);
-            } catch (Throwable $error) {
-                Craft::error($error->getMessage());
-                $attributes = null;
-            }
-            if (!is_array($attributes)) {
-                $attributes = [];
-            }
+        if ($value instanceof CharacteristicLinkQuery) {
+            return $value;
+        }
+        $query = CharacteristicLink::find();
+
+        // Existing element?
+        /** @var Element|null $element */
+        if ($element && $element->id) {
+            $query->ownerId($element->id);
         } else {
-            // Ensure we get links that don't have deleted elements
-            $recordQuery = CharacteristicLinkRecord::find()
-                ->addSelect(['link.characteristicId', 'link.valueId'])
-                ->alias('link')
-                ->leftJoin('{{%elements}} elements1', '[[elements1.id]] = [[link.characteristicId]]')
-                ->leftJoin('{{%elements}} elements2', '[[elements2.id]] = [[link.valueId]]');
-            $recordQuery->where(['link.fieldId' => $this->id, 'link.ownerId' => $element->id]);
-            $recordQuery->andWhere(['elements1.dateDeleted' => null, 'elements2.dateDeleted' => null]);
-            $records = $recordQuery->asArray()->all();
-            $inputData = $this->prepareDataForInputFromDb($records);
-            return $inputData;
+            $query->id(false);
         }
 
-        if (isset($attributes[array_keys($attributes)[0]]['characteristic'])) {
-            return $attributes;
+
+        $query
+            ->fieldId($this->id)
+            ->siteId($element->siteId ?? null);
+
+
+        // Set the initially matched elements if $value is already set, which is the case if there was a validation
+        // error or we're loading an entry revision.
+        if ($value === '') {
+            $query->setCachedResult([]);
+        } else if ($element && is_array($value)) {
+            $query->setCachedResult($this->_createLinksFromSerializedData($value, $element));
         }
-        $inputData = $this->prepareDataForInputFromPost($attributes);
-        return $inputData;
+
+        return $query;
+    }
+
+    /**
+     * Creates an array of blocks based on the given serialized data.
+     *
+     * @param array $value The raw field value
+     * @param ElementInterface $element The element the field is associated with
+     * @return CharacteristicLink[]
+     */
+    private function _createLinksFromSerializedData(array $value, ElementInterface $element): array
+    {
+        $source = ElementHelper::findSource(CharacteristicElement::class, $this->source, 'index');
+        $groupId = $source['criteria']['groupId'];
+
+        /** @var Element $element */
+        // Get the possible block types for this field
+        /** @var Characteristic[] $characteristics */
+        $characteristics = ArrayHelper::index(CharacteristicElement::find()->groupId($groupId)->all(), 'handle');
+        // Get the old links
+        if ($element->id) {
+            $oldLinksById = CharacteristicLink::find()
+                ->fieldId($this->id)
+                ->ownerId($element->id)
+                ->siteId($element->siteId)
+                ->with(['characteristic'])
+                ->indexBy('id')
+                ->all();
+        } else {
+            $oldLinksById = [];
+        }
+
+        $characteristicsByHandle = CharacteristicElement::find()
+            ->groupId($groupId)
+            ->indexBy('handle')
+            ->all();
+
+        $oldLinksGroupedByCharacteristicHandle = ArrayHelper::index($oldLinksById, null, function($link) {
+            return $link->characteristic->handle;
+        });
+
+        $links = [];
+        $prevLink = null;
+
+        $fieldNamespace = $element->getFieldParamNamespace();
+        $baseBlockFieldNamespace = $fieldNamespace ? "{$fieldNamespace}.{$this->handle}" : null;
+
+
+        // TODO: Someday, support deltas...
+// Was the value posted in the new (delta) format?
+//        if (isset($value['blocks']) || isset($value['sortOrder'])) {
+//            $newBlockData = $value['blocks'] ?? [];
+//            $newSortOrder = $value['sortOrder'] ?? array_keys($oldLinksById);
+//            if ($baseBlockFieldNamespace) {
+//                $baseBlockFieldNamespace .= '.blocks';
+//            }
+//        } else {
+//            $newBlockData = $value;
+//            $newSortOrder = array_keys($value);
+//        }
+
+        foreach ($value as $characteristicHandle => $characteristicData) {
+//            if (isset($newBlockData[$blockId])) {
+//                $blockData = $newBlockData[$blockId];
+//            } else if (
+//                isset(Elements::$duplicatedElementSourceIds[$blockId]) &&
+//                isset($newBlockData[Elements::$duplicatedElementSourceIds[$blockId]])
+//            ) {
+//                // $blockId is a duplicated block's ID, but the data was sent with the original block ID
+//                $blockData = $newBlockData[Elements::$duplicatedElementSourceIds[$blockId]];
+//            } else {
+//                $blockData = [];
+//            }
+
+            // If this is a preexisting block but we don't have a record of it,
+            // check to see if it was recently duplicated.
+
+            // Existing block?
+            if (isset($oldLinksGroupedByCharacteristicHandle[$characteristicHandle])) {
+                // TODO
+                die('hi');
+            } else {
+                // Make sure it's a valid characteristic
+                if (!isset($characteristicsByHandle[$characteristicHandle])) {
+                    continue;
+                }
+                $characteristic = $characteristicsByHandle[$characteristicHandle];
+                if (!isset($characteristicData['values'])) {
+                    continue;
+                }
+                foreach ($characteristicData['values'] as $valueString) {
+                    $valueElement = Characteristic::$plugin->characteristicValues->getOrCreateValueElement($characteristic, $valueString);
+                    if (!$valueElement) {
+                        continue;
+                    }
+                    $block = new CharacteristicLink();
+                    $block->fieldId = $this->id;
+                    $block->characteristicId = $characteristic->id;
+                    $block->valueId = $valueElement->id;
+                    $block->ownerId = $element->id;
+                    $block->siteId = $element->siteId;
+                    $block->setCharacteristic($characteristic);
+                    $block->setValue($valueElement);
+                    $block->setOwner($element);
+
+                    // Set the prev/next blocks
+                    if ($prevLink) {
+                        /** @var ElementInterface $prevLink */
+                        $prevLink->setNext($block);
+                        /** @var ElementInterface $block */
+                        $block->setPrev($prevLink);
+                    }
+                    $prevLink = $block;
+
+                    $links[] = $block;
+                }
+                return $links;
+            }
+        }
     }
 
     protected function prepareDataForInputFromPost($data)
@@ -261,6 +382,14 @@ class Characteristics extends Field
      */
     public function getInputHtml($value, ElementInterface $element = null): string
     {
+        /** @var Element $element */
+        if ($element !== null && $element->hasEagerLoadedElements($this->handle)) {
+            $value = $element->getEagerLoadedElements($this->handle);
+        }
+        if ($value instanceof CharacteristicLinkQuery) {
+            $value = $value->getCachedResult() ?? $value->limit(null)->all();
+        }
+
         // Register our asset bundle
         Craft::$app->getView()->registerAssetBundle(CharacteristicsFieldAsset::class);
 
@@ -279,28 +408,33 @@ class Characteristics extends Field
      */
     protected function inputTemplateVariables($value = null, ElementInterface $element = null): array
     {
-        $formattedValues = [];
-        foreach ($value as $characteristicItem) {
-            $characteristicItem['characteristic'] = [
-                'id' => $characteristicItem['characteristic']->id,
-                'handle' => $characteristicItem['characteristic']->handle,
-                'title' => $characteristicItem['characteristic']->title,
-                'values' => array_map(function (CharacteristicValue $cvalue) {
-                    return [
-                        'id' => $cvalue->id,
-                        'value' => $cvalue->value
-                    ];
-                }, $characteristicItem['characteristic']['values'])
-            ];
-            $formattedValues[] = $characteristicItem;
+        foreach($value as $val) {
         }
+
+        /** @var CharacteristicLink $characteristicItem */
+//        foreach ($data as $group) {
+//            $formatted = [
+//                'characteristic' => [
+//                    'id' => $characteristicItem->characteristic->id,
+//                    'handle' => $characteristicItem->characteristic->handle,
+//                    'title' => $characteristicItem->characteristic->title,
+//                    'values' => array_map(function (CharacteristicValue $cvalue) {
+//                        return [
+//                            'id' => $cvalue->id,
+//                            'value' => $cvalue->value
+//                        ];
+//                    }, $characteristicItem->characteristic->values)
+//                ],
+//            ];
+//            $formattedValues[] = $formatted;
+//        }
         return [
             'id' => Craft::$app->getView()->formatInputId($this->handle),
             'fieldId' => $this->id,
             'storageKey' => 'field.' . $this->id,
             'name' => $this->handle,
             'source' => $this->source,
-            'value' => $formattedValues,
+            'value' => $value,
             'sourceElementId' => !empty($element->id) ? $element->id : null,
         ];
     }
@@ -368,4 +502,21 @@ class Characteristics extends Field
         }
         parent::afterElementSave($element, $isNew);
     }
+
+    protected function formatForInput() {
+
+    }
+//
+//    /**
+//     * @inheritDoc
+//     */
+//    public function modifyElementsQuery(ElementQueryInterface $query, $value)
+//    {
+//        if (!Characteristic::getInstance()) {
+//            return null;
+//        }
+//
+//        Characteristic::$plugin->characteristics->modifyElementsQuery($query, $value, $this);
+//        return null;
+//    }
 }

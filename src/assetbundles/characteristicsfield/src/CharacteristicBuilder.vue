@@ -1,11 +1,10 @@
 <template>
     <div>
-        <input :name="settings.name" type="hidden"/>
         <characteristic-item
                 :characteristic="linkSet.characteristic"
                 :key="linkSet.index"
                 :linkSet="linkSet"
-                :name="settings.name + '['+linkSet.index+']'"
+                :name="settings.name + '['+linkSet.characteristic.handle+']'"
                 v-for="linkSet in linkSets"
                 v-on:change="handleChange"
                 v-on:delete="() => handleDelete(linkSet)"
