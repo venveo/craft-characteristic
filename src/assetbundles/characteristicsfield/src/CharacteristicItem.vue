@@ -92,7 +92,7 @@
             this.characteristicHandle = this.characteristic.handle;
             if (this.linkSet.hasOwnProperty('links')) {
                 for(let link of this.linkSet.links) {
-                    this.values.push(link.value);
+                    this.values.push(link);
                 }
             }
         }

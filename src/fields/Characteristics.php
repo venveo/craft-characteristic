@@ -16,22 +16,15 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
-use craft\elements\MatrixBlock;
 use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
-use craft\helpers\Json;
-use craft\services\Elements;
-use craft\web\assets\matrix\MatrixAsset;
 use Exception;
-use Throwable;
 use venveo\characteristic\assetbundles\characteristicsfield\CharacteristicsFieldAsset;
 use venveo\characteristic\Characteristic;
 use venveo\characteristic\elements\Characteristic as CharacteristicElement;
 use venveo\characteristic\elements\CharacteristicLink;
-use venveo\characteristic\elements\CharacteristicValue;
 use venveo\characteristic\elements\db\CharacteristicLinkQuery;
-use venveo\characteristic\records\CharacteristicLink as CharacteristicLinkRecord;
 
 /**
  * @author    Venveo
@@ -163,7 +156,7 @@ class Characteristics extends Field
             ->indexBy('handle')
             ->all();
 
-        $oldLinksGroupedByCharacteristicHandle = ArrayHelper::index($oldLinksById, null, function($link) {
+        $oldLinksGroupedByCharacteristicHandle = ArrayHelper::index($oldLinksById, null, function ($link) {
             return $link->characteristic->handle;
         });
 
@@ -242,80 +235,9 @@ class Characteristics extends Field
 
                     $links[] = $block;
                 }
-                return $links;
             }
         }
-    }
-
-    protected function prepareDataForInputFromPost($data)
-    {
-        $source = ElementHelper::findSource(CharacteristicElement::class, $this->source, 'index');
-        $groupId = $source['criteria']['groupId'];
-
-        $inputData = [];
-        $index = 0;
-        foreach ($data as $datum) {
-            $values = [];
-            /** @var CharacteristicElement $characteristic */
-            $characteristic = \venveo\characteristic\elements\Characteristic::find()->groupId($groupId)->handle($datum['attribute'])->with(['values'])->one();
-            if (isset($datum['value']) && is_array($datum['value'])) {
-                $values = array_map(function ($value) use ($characteristic) {
-                    return Characteristic::$plugin->characteristicValues->getOrCreateValueElement($characteristic, $value);
-                }, $datum['value']);
-            }
-            $cdata = [
-                'index' => $index++,
-                'characteristic' => $characteristic,
-                'values' => $values
-            ];
-            $inputData[$characteristic->id] = $cdata;
-        }
-
-        return $inputData;
-    }
-
-    /**
-     * @param $results
-     * @return array
-     */
-    protected function prepareDataForInputFromDb($results)
-    {
-        // First we'll look up all the values and characteristic elements we need
-        $valueIds = [];
-        $characteristicIds = [];
-        /** @var CharacteristicLinkRecord $result */
-        foreach ($results as $result) {
-            $valueIds[] = $result['valueId'];
-            $characteristicIds[] = $result['characteristicId'];
-        }
-
-        $characteristicQuery = CharacteristicElement::find();
-        $characteristicQuery->with(['values']);
-        $characteristicQuery->id($characteristicIds);
-        $characteristicQuery->indexBy('id');
-        $characteristics = $characteristicQuery->all();
-
-        $valueQuery = CharacteristicValue::find();
-        $valueQuery->id($valueIds);
-        $valueQuery->orderBy('sortOrder ASC');
-        $valueQuery->indexBy('id');
-        $values = $valueQuery->all();
-
-        $inputData = [];
-
-        // We need to construct an array of characteristics and an array of its values
-        /** @var CharacteristicLinkRecord $result */
-        foreach ($results as $index => $result) {
-            if (!isset($inputData[$result['characteristicId']])) {
-                $inputData[$result['characteristicId']] = [];
-                $inputData[$result['characteristicId']]['index'] = $index;
-                $inputData[$result['characteristicId']]['characteristic'] = $characteristics[$result['characteristicId']];
-                $inputData[$result['characteristicId']]['values'] = [];
-            }
-            $inputData[$result['characteristicId']]['values'][] = $values[$result['valueId']];
-        }
-
-        return $inputData;
+        return $links;
     }
 
     /**
@@ -408,33 +330,26 @@ class Characteristics extends Field
      */
     protected function inputTemplateVariables($value = null, ElementInterface $element = null): array
     {
-        foreach($value as $val) {
-        }
+
+        $values = [];
 
         /** @var CharacteristicLink $characteristicItem */
-//        foreach ($data as $group) {
-//            $formatted = [
-//                'characteristic' => [
-//                    'id' => $characteristicItem->characteristic->id,
-//                    'handle' => $characteristicItem->characteristic->handle,
-//                    'title' => $characteristicItem->characteristic->title,
-//                    'values' => array_map(function (CharacteristicValue $cvalue) {
-//                        return [
-//                            'id' => $cvalue->id,
-//                            'value' => $cvalue->value
-//                        ];
-//                    }, $characteristicItem->characteristic->values)
-//                ],
-//            ];
-//            $formattedValues[] = $formatted;
-//        }
+        foreach ($value as $characteristicItem) {
+            $characteristic = $characteristicItem->characteristic;
+            $characteristicValue = $characteristicItem->value;
+
+            if (!isset($values[$characteristic->handle])) {
+                $values[$characteristic->handle] = [];
+            }
+            $values[$characteristic->handle][] = $characteristicValue->value;
+        }
         return [
             'id' => Craft::$app->getView()->formatInputId($this->handle),
             'fieldId' => $this->id,
             'storageKey' => 'field.' . $this->id,
             'name' => $this->handle,
             'source' => $this->source,
-            'value' => $value,
+            'value' => $values,
             'sourceElementId' => !empty($element->id) ? $element->id : null,
         ];
     }
@@ -503,9 +418,6 @@ class Characteristics extends Field
         parent::afterElementSave($element, $isNew);
     }
 
-    protected function formatForInput() {
-
-    }
 //
 //    /**
 //     * @inheritDoc
