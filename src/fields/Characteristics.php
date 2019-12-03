@@ -197,10 +197,10 @@ class Characteristics extends Field
             // check to see if it was recently duplicated.
 
             // Existing block?
-            if (isset($oldLinksGroupedByCharacteristicHandle[$characteristicHandle])) {
-                // TODO
-                die('hi');
-            } else {
+//            if (isset($oldLinksGroupedByCharacteristicHandle[$characteristicHandle])) {
+//                // TODO
+//                die('hi');
+//            } else {
                 // Make sure it's a valid characteristic
                 if (!isset($characteristicsByHandle[$characteristicHandle])) {
                     continue;
@@ -235,7 +235,7 @@ class Characteristics extends Field
 
                     $links[] = $block;
                 }
-            }
+//            }
         }
         return $links;
     }
@@ -375,13 +375,24 @@ class Characteristics extends Field
         /** @var Element $element */
         $value = $element->getFieldValue($this->handle);
 
+        /** @var Element $element */
+        if ($element !== null && $element->hasEagerLoadedElements($this->handle)) {
+            $value = $element->getEagerLoadedElements($this->handle);
+        }
+        if ($value instanceof CharacteristicLinkQuery) {
+            $value = $value->getCachedResult() ?? $value->limit(null)->all();
+        }
+
+        $groupedByIds = ArrayHelper::index($value, null, function($c) { return $c->characteristic->id; });
+
+
         $source = ElementHelper::findSource(CharacteristicElement::class, $this->source, 'index');
         $groupId = $source['criteria']['groupId'];
 
         $required = CharacteristicElement::find()->groupId($groupId)->required(true)->indexBy('id')->with(['values'])->all();
         if ($required) {
             foreach ($required as $characteristicId => $characteristic) {
-                if (!isset($value[$characteristicId]) || !count($value[$characteristicId]['values'])) {
+                if (!isset($groupedByIds[$characteristicId]) || !count($groupedByIds[$characteristicId])) {
                     $element->addError($this->handle, $characteristic->title . " is required");
                 }
             }
@@ -397,21 +408,20 @@ class Characteristics extends Field
         if (!$element instanceof Element || $element->propagating) {
             return parent::afterElementSave($element, $isNew);
         }
-        $attributes = $element->getFieldValue($this->handle);
-        if (!is_iterable($attributes)) {
-            return parent::afterElementSave($element, $isNew);
+
+        /** @var Element $element */
+        $value = $element->getFieldValue($this->handle);
+
+        /** @var Element $element */
+        if ($element !== null && $element->hasEagerLoadedElements($this->handle)) {
+            $value = $element->getEagerLoadedElements($this->handle);
+        }
+        if ($value instanceof CharacteristicLinkQuery) {
+            $value = $value->getCachedResult() ?? $value->limit(null)->all();
         }
 
         try {
-            $linksToResave = [];
-            foreach ($attributes as $attribute) {
-                $linksToResave[] = [
-                    'characteristic' => $attribute['characteristic'],
-                    'values' => $attribute['values']
-                ];
-            }
-
-            Characteristic::$plugin->characteristicLinks->resaveLinks($linksToResave, $element, $this);
+            Characteristic::$plugin->characteristicLinks->resaveLinks($value, $element, $this);
         } catch (Exception $e) {
             Craft::dd($e);
         }

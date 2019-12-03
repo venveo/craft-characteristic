@@ -46,7 +46,7 @@ class CharacteristicLinks extends Component
      *  ]
      * ]
      * and updates and saves all links and relationships
-     * @param $data
+     * @param CharacteristicLink[]
      * @param $element
      * @param $field
      * @throws Throwable
@@ -56,7 +56,7 @@ class CharacteristicLinks extends Component
      */
     public function resaveLinks($data, ElementInterface $element, Field $field)
     {
-        // First we need to flush the existing attributes...
+        // First we need to flush the existing link records...
         $query = CharacteristicLinkRecord::find();
         $query->select(['id'])
             ->where(['ownerId' => $element->id])
@@ -67,28 +67,25 @@ class CharacteristicLinks extends Component
         }
 
         $relationData = [];
+        $hasAddedCharacteristicRelationship = false;
+        /** @var CharacteristicLink $datum */
         foreach ($data as $datum) {
             // Create a relationship for the element to the characteristic element
-            $relationData[] = [
-                $field->id,
-                $element->id,
-                $datum['characteristic']->id
-            ];
-            foreach($datum['values'] as $index => $value) {
-                $link = new CharacteristicLink();
-                $link->characteristicId = $datum['characteristic']->id;
-                $link->valueId = $value->id;
-                $link->ownerId = $element->id;
-                $link->fieldId = $field->id;
-                Craft::$app->elements->saveElement($link, false);
-
-                // Create a relationship from the element to the value element
+            if (!$hasAddedCharacteristicRelationship) {
                 $relationData[] = [
                     $field->id,
                     $element->id,
-                    $link->valueId = $value->id
+                    $datum->characteristicId
                 ];
+                $hasAddedCharacteristicRelationship = true;
             }
+            Craft::$app->elements->saveElement($datum, false);
+            $relationData[] = [
+                $field->id,
+                $element->id,
+                $datum->valueId
+            ];
+
         }
 
         // Delete the relations and re-save them
