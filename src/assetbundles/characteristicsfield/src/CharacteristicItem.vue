@@ -1,7 +1,6 @@
 <template>
     <div class="characteristic-item matrixblock">
-        <input :name="name + '[attribute]'" :value="attribute" type="hidden"/>
-        <input v-for="(value, index) in values" :name="name + '[value]['+index+']'" v-if="value.length" :key="index" :value="value" type="hidden" />
+        <input v-for="(value) in formattedValues" :name="name + '[values][]'" v-if="value.length" :key="index" :value="value" type="hidden" />
 
         <div class="fields flex flex-nowrap">
             <div class="input ltr characteristic__title">
@@ -27,6 +26,9 @@
                         v-model="values"
                         :hide-selected="true"
                         :multiple="false"
+                        :taggable="characteristic.allowCustomOptions"
+                        :tag-placeholder="'Press enter to create a new value'"
+                        @tag="addTag"
                         :clear-on-select="true"
                         :allow-empty="false"
                         :options="options">
@@ -42,9 +44,7 @@
     </div>
 </template>
 <script>
-    // import CharacteristicInputField from "./CharacteristicInputField";
     import Multiselect from 'vue-multiselect'
-    import _ from 'lodash'
     import 'vue-multiselect/dist/vue-multiselect.min.css'
 
     /* eslint-disable */
@@ -60,7 +60,7 @@
         },
         data() {
             return {
-                attribute: '',
+                characteristicHandle: '',
                 values: []
             }
         },
@@ -80,13 +80,19 @@
         computed: {
             options() {
                 return this.characteristic.values.map(value => value.value);
+            },
+            formattedValues() {
+                if (Array.isArray(this.values)) {
+                    return this.values;
+                }
+                return [this.values]
             }
         },
         beforeMount() {
-            this.attribute = this.characteristic.handle;
+            this.characteristicHandle = this.characteristic.handle;
             if (this.linkSet.hasOwnProperty('links')) {
                 for(let link of this.linkSet.links) {
-                    this.values.push(link.value);
+                    this.values.push(link);
                 }
             }
         }

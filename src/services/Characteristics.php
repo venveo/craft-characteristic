@@ -60,4 +60,61 @@ class Characteristics extends Component
 
         return Characteristic::find()->handle($characteristicHandle)->groupId($groupId)->one();
     }
+//
+//    /**
+//     * @param ElementQueryInterface $query
+//     * @param mixed                 $value
+//     * @param CharacteristicsField              $field
+//     *
+//     * @throws \Exception
+//     */
+//    public function modifyElementsQuery (ElementQueryInterface $query, $value, CharacteristicsField $field)
+//    {
+//        if (empty($value))
+//            return;
+//        Craft::dd($value);
+//        /** @var ElementQuery $query */
+//        $table = MapRecord::TableName;
+//        $alias = MapRecord::TableNameClean . '_' . $field->handle;
+//        $on = [
+//            'and',
+//            '[[elements.id]] = [[' . $alias . '.ownerId]]',
+//            '[[elements.dateDeleted]] IS NULL',
+//            '[[elements_sites.siteId]] = [[' . $alias . '.ownerSiteId]]',
+//            '[[' . $alias . '.fieldId]] = ' . $field->id,
+//        ];
+//        $query->query->join('JOIN', $table . ' ' . $alias, $on);
+//        $query->subQuery->join('JOIN', $table . ' ' . $alias, $on);
+//        if ($value === ':empty:')
+//        {
+//            $query->query->andWhere([
+//                '[[' . $alias . '.lat]]' => null,
+//            ]);
+//            return;
+//        }
+//        else if ($value === ':notempty:' || $value === 'not :empty:')
+//        {
+//            $query->query->andWhere([
+//                'not',
+//                ['[[' . $alias . '.lat]]' => null],
+//            ]);
+//            return;
+//        }
+//        $oldOrderBy = null;
+//        $search = false;
+//        if (!is_array($query->orderBy))
+//        {
+//            $oldOrderBy = $query->orderBy;
+//            $query->orderBy = [];
+//        }
+//        // Coordinate CraftQL support
+//        if (array_key_exists('coordinate', $value))
+//            $value['location'] = $value['coordinate'];
+//        if (array_key_exists('location', $value))
+//            $search = $this->_searchLocation($query, $value, $alias);
+//        if (array_key_exists('distance', $query->orderBy))
+//            $this->_replaceOrderBy($query, $search);
+//        if (empty($query->orderBy))
+//            $query->orderBy = $oldOrderBy;
+//    }
 }

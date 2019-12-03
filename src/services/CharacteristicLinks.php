@@ -12,8 +12,14 @@ namespace venveo\characteristic\services;
 
 use Craft;
 use craft\base\Component;
+use craft\base\ElementInterface;
+use craft\base\Field;
 use craft\db\Table;
-use venveo\characteristic\records\CharacteristicLink;
+use craft\errors\ElementNotFoundException;
+use Throwable;
+use venveo\characteristic\elements\CharacteristicLink;
+use venveo\characteristic\records\CharacteristicLink as CharacteristicLinkRecord;
+use yii\db\Exception;
 
 /**
  * @author    Venveo
@@ -31,50 +37,66 @@ class CharacteristicLinks extends Component
     // Characteristics
     // -------------------------------------------------------------------------
 
-    public function resaveLinks($data, $element, $field)
+    /**
+     * Takes an array "data":
+     * [
+     *  [
+     *    characteristic Characteristic
+     *    values []CharacteristicValues
+     *  ]
+     * ]
+     * and updates and saves all links and relationships
+     * @param CharacteristicLink[]
+     * @param $element
+     * @param $field
+     * @throws Throwable
+     * @throws ElementNotFoundException
+     * @throws \yii\base\Exception
+     * @throws Exception
+     */
+    public function resaveLinks($data, ElementInterface $element, Field $field)
     {
-        // First we need to flush the existing attributes...
-        $query = CharacteristicLink::find();
-        $query->where(['ownerId' => $element->id])
+        // First we need to flush the existing link records...
+        $query = CharacteristicLinkRecord::find();
+        $query->select(['id'])
+            ->where(['ownerId' => $element->id])
             ->andWhere(['fieldId' => $field->id]);
-        $results = $query->all();
-        foreach ($results as $result) {
-            $result->delete();
+        $results = $query->column();
+        foreach($results as $result) {
+            Craft::$app->elements->deleteElementById((int)$result, CharacteristicLink::class, null, true);
         }
-        $relationData = [];
-        foreach ($data as $datum) {
-            $relationData[] = [
-                $field->id,
-                $element->id,
-                $element->siteId,
-                $datum['characteristic']->id
-            ];
-            foreach($datum['values'] as $index => $value) {
-                $link = new CharacteristicLink();
-                $link->characteristicId = $datum['characteristic']->id;
-                $link->valueId = $value->id;
-                $link->ownerId = $element->id;
-                $link->fieldId = $field->id;
-                $link->save();
 
+        $relationData = [];
+        $hasAddedCharacteristicRelationship = false;
+        /** @var CharacteristicLink $datum */
+        foreach ($data as $datum) {
+            // Create a relationship for the element to the characteristic element
+            if (!$hasAddedCharacteristicRelationship) {
                 $relationData[] = [
                     $field->id,
                     $element->id,
-                    $element->siteId,
-                    $link->valueId = $value->id
+                    $datum->characteristicId
                 ];
+                $hasAddedCharacteristicRelationship = true;
             }
+            Craft::$app->elements->saveElement($datum, false);
+            $relationData[] = [
+                $field->id,
+                $element->id,
+                $datum->valueId
+            ];
+
         }
 
         // Delete the relations and re-save them
         Craft::$app->getDb()->createCommand()
-            ->delete(Table::RELATIONS, ['fieldId' => $field->id, 'sourceId' => $element->id, 'sourceSiteId' => $element->siteId])->execute();
+            ->delete(Table::RELATIONS, ['fieldId' => $field->id, 'sourceId' => $element->id])->execute();
 
         if (!empty($relationData)) {
             Craft::$app->getDb()->createCommand()
                 ->batchInsert(
                     Table::RELATIONS,
-                    ['fieldId', 'sourceId', 'sourceSiteId', 'targetId'],
+                    ['fieldId', 'sourceId', 'targetId'],
                     $relationData)
                 ->execute();
         }

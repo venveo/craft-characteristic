@@ -1,11 +1,10 @@
 <template>
     <div>
-        <input :name="settings.name" type="hidden"/>
         <characteristic-item
                 :characteristic="linkSet.characteristic"
                 :key="linkSet.index"
                 :linkSet="linkSet"
-                :name="settings.name + '['+linkSet.index+']'"
+                :name="settings.name + '['+linkSet.characteristic.handle+']'"
                 v-for="linkSet in linkSets"
                 v-on:change="handleChange"
                 v-on:delete="() => handleDelete(linkSet)"
@@ -89,14 +88,17 @@
                 const savedLinks = this.settings.value;
                 const requiredCharacteristics = newVal.filter(characteristic => characteristic.required == true);
                 for (let characteristic of newVal) {
-                    const existingValue = savedLinks.filter(linkSet => linkSet.characteristic.id == characteristic.id);
+                    let existingValue = null;
+                    if(savedLinks.hasOwnProperty(characteristic.handle)) {
+                        existingValue = savedLinks[characteristic.handle];
+                    }
                     let data = {};
-                    if (existingValue && existingValue[0]) {
+                    if (existingValue && Array.isArray(existingValue)) {
                         data = {
-                            index: existingValue[0].index,
+                            index: characteristic.handle,
                             characteristic: characteristic,
                             isNew: false,
-                            links: existingValue[0].values
+                            links: existingValue
                         };
                         this.linkSets.push(data);
                     } else if (characteristic.required) {

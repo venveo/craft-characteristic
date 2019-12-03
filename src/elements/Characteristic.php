@@ -314,7 +314,8 @@ class Characteristic extends Element
     {
         $linkQuery = CharacteristicLink::find();
         $linkQuery->where(['characteristicId' => $this->id]);
-        $ids = $linkQuery->select('elementId')->indexBy('ownerId')->all();
+        // TODO: Should this be ->column?
+        $ids = $linkQuery->select('ownerId')->indexBy('ownerId')->all();
         $criteria['id'] = array_keys($ids);
         /** @var ElementQueryInterface $query */
         $query = Craft::configure($type::find(), $criteria);
