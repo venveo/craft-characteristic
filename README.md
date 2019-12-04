@@ -127,3 +127,15 @@ only those related to the source element.
     {% endfor %}
 </ul>
 ```
+
+### Querying for elements
+There are a few different ways to query for elements with certain characteristics.
+
+You could use the native Craft relationships, for example:
+```
+{% set characteristic = craft.characteristic.characteristics.handle('price').one() %}
+{% set value = characteristic.values.value('$').one() %}
+
+{% set restaurants = craft.entries.section('restaurants').relatedTo(['and', {targetElement: characteristic.id}, {targetElement: value.id}]) %}
+{{ restaurants.one().title }}
+```
