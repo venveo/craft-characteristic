@@ -93,6 +93,19 @@ This plugin requires Craft CMS 3.3.0 or later.
 {% endfor %}
 ```
 
+### The characteristics field
+The field returns a CharacteristicLinkQuery pre-configured for the element
+```twig
+<ul>
+    {% for restaurant in query.all() %}
+        {% set price = restaurant.restaurantAttributes.characteristic('price').with(['value']).all() %}
+        {% if price|length %}
+        {% endif %}
+        <li>{{ restaurant.title }} - {{ price ? price[0].value.value : 'No Data' }}</li>
+    {% endfor %}
+</ul>
+```
+
 ### The characteristic attribute
 Characteristic will inject some attributes into your elements to make
 querying characteristics easier! Take care to ensure you don't have any
