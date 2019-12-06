@@ -210,7 +210,7 @@ class Characteristics extends Field
                     continue;
                 }
                 foreach ($characteristicData['values'] as $valueString) {
-                    $valueElement = Characteristic::$plugin->characteristicValues->getOrCreateValueElement($characteristic, $valueString);
+                    $valueElement = Characteristic::$plugin->characteristicValues->getValueElement($characteristic, $valueString, true);
                     if (!$valueElement) {
                         continue;
                     }

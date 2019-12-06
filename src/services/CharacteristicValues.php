@@ -35,36 +35,44 @@ class CharacteristicValues extends Component
 
     /**
      * Creates a value for a characteristic or returns an existing one
+     *
      * @param Characteristic $characteristic
      * @param $value
+     * @param bool $create
      * @param bool $idempotent
      * @return array|\craft\base\ElementInterface|CharacteristicValue|null
      * @throws Throwable
      * @throws \craft\errors\ElementNotFoundException
      * @throws \yii\base\Exception
      */
-    public function getOrCreateValueElement(Characteristic $characteristic, $value, $idempotent = false)
+    public function getValueElement(Characteristic $characteristic, $value, $create = false, $idempotent = false)
     {
         $existing = CharacteristicValue::find()->value($value)->characteristicId($characteristic->id)->one();
         if ($existing) {
             return $existing;
         }
 
-        $sortOrder = 0;
-        $nextItem = \venveo\characteristic\records\CharacteristicValue::find()
-            ->addSelect('MAX(sortOrder) as sort')
-            ->where(['characteristicId' => $characteristic->id])
-            ->scalar();
-        if ($nextItem !== null) {
-            $sortOrder = $nextItem + 1;
+        if (!$create) {
+            return null;
         }
 
-        $characteristicValue = new CharacteristicValue();
-        $characteristicValue->value = $value;
-        $characteristicValue->idempotent = $idempotent;
-        $characteristicValue->sortOrder = $sortOrder;
-        $characteristicValue->characteristicId = $characteristic->id;
-        Craft::$app->elements->saveElement($characteristicValue);
+        if ($create) {
+            $sortOrder = 0;
+            $nextItem = \venveo\characteristic\records\CharacteristicValue::find()
+                ->addSelect('MAX(sortOrder) as sort')
+                ->where(['characteristicId' => $characteristic->id])
+                ->scalar();
+            if ($nextItem !== null) {
+                $sortOrder = $nextItem + 1;
+            }
+
+            $characteristicValue = new CharacteristicValue();
+            $characteristicValue->value = $value;
+            $characteristicValue->idempotent = $idempotent;
+            $characteristicValue->sortOrder = $sortOrder;
+            $characteristicValue->characteristicId = $characteristic->id;
+            Craft::$app->elements->saveElement($characteristicValue);
+        }
         return $characteristicValue;
     }
 

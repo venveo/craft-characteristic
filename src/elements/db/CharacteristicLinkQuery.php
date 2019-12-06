@@ -248,8 +248,17 @@ class CharacteristicLinkQuery extends ElementQuery
         return $this;
     }
 
+    /**
+     * @param $value
+     * @return $this
+     */
     public function characteristic($value)
     {
+        if ($value === null) {
+            $this->characteristicId = null;
+            return $this;
+        }
+
         if ($value instanceof Characteristic) {
             $this->characteristicId = $value->id;
         } else if ($value !== null) {
@@ -258,8 +267,6 @@ class CharacteristicLinkQuery extends ElementQuery
                 ->from(['{{%characteristic_characteristics}}'])
                 ->where(Db::parseParam('handle', $value))
                 ->column();
-        } else {
-            $this->characteristicId = null;
         }
 
         return $this;
