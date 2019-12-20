@@ -94,16 +94,41 @@ This plugin requires Craft CMS 3.3.0 or later.
 ```
 
 ### The characteristics field
-The field returns a CharacteristicLinkQuery pre-configured for the element
+The field returns a CharacteristicLinkQuery pre-configured for the
+element.
+
+#### Get a single characteristic's value
 ```twig
 <ul>
+{# Loop over restaurants showing the selected price Characteristic #}
     {% for restaurant in query.all() %}
         {% set price = restaurant.restaurantAttributes.characteristic('price').with(['value']).all() %}
-        {% if price|length %}
-        {% endif %}
         <li>{{ restaurant.title }} - {{ price ? price[0].value.value : 'No Data' }}</li>
     {% endfor %}
 </ul>
+```
+
+#### Get all characteristics on an entry and show them as a table
+```twig
+<table class="table-auto">
+    <thead>
+    <tr>
+        <th class="px-4 py-2">Characteristic</th>
+        <th class="px-4 py-2">Value</th>
+    </tr>
+    </thead>
+    <tbody>
+    {# We have to group our characteristics by something (title), otherwise they will show a distinct table rows #}
+    {% set attributes = entry.restaurantAttributes.all()|group(v => v.characteristic.title) %}
+    {% for title, values in attributes %}
+    <tr>
+        <td class="border px-4 py-2">{{ title }}</td>
+        {# We're going to create a string out of the characteristic value's text value #}
+        <td class="border px-4 py-2">{{ values|column('value.value')|join(', ') }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
 ```
 
 ### The characteristic attribute
@@ -132,15 +157,20 @@ only those related to the source element.
 There are a few different ways to query for elements with certain characteristics.
 
 You could use the native Craft relationships, for example:
-```
+```twig
 {% set characteristic = craft.characteristic.characteristics.handle('price').one() %}
 {% set value = characteristic.values.value('$').one() %}
-
+{# Get the first restaurant with a price "$" #} 
 {% set restaurants = craft.entries.section('restaurants').relatedTo(['and', {targetElement: characteristic.id}, {targetElement: value.id}]) %}
 {{ restaurants.one().title }}
 ```
 
 ### Terminology & Concepts
+#### Characteristic Group
+Contains a collection of Characteristics, its Values, and Links. Allows
+you maintain a separation of Characteristics that are unrelated. For
+example: 'Product Characteristics', 'Restaurant Characteristics'
+
 #### Characteristic
 An Element that represents the descriptive attribute to assign to
 another element. For example: "Material", "Flow Rate", "Open on
@@ -152,12 +182,12 @@ Characteristic Value is relative to a specific Characteristic. A
 Characteristic Value has a `value` attribute that is a text string that
 is unique to each Characteristic. For example: "Yes", "No", "1.25".
 
-### Characteristic Link
+#### Characteristic Link
 An Element that contains the linkage between a particular
 Characteristic, a Characteristic Value, the field it was created from,
 as well as the element its attached to.
 
-### Characteristic Field
+#### Characteristic Field
 A custom field that allows you to create Characteristic Links. It may be
 used on any element that supports field layouts (Entries, Products,
 Categories, etc.). When used in templating, it returns a Query object
