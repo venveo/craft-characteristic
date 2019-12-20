@@ -139,3 +139,27 @@ You could use the native Craft relationships, for example:
 {% set restaurants = craft.entries.section('restaurants').relatedTo(['and', {targetElement: characteristic.id}, {targetElement: value.id}]) %}
 {{ restaurants.one().title }}
 ```
+
+### Terminology & Concepts
+#### Characteristic
+An Element that represents the descriptive attribute to assign to
+another element. For example: "Material", "Flow Rate", "Open on
+Sundays". A Characteristic may have custom fields.
+
+#### Characteristic Value
+An Element that represents a potential value for a Characteristic. Each
+Characteristic Value is relative to a specific Characteristic. A
+Characteristic Value has a `value` attribute that is a text string that
+is unique to each Characteristic. For example: "Yes", "No", "1.25".
+
+### Characteristic Link
+An Element that contains the linkage between a particular
+Characteristic, a Characteristic Value, the field it was created from,
+as well as the element its attached to.
+
+### Characteristic Field
+A custom field that allows you to create Characteristic Links. It may be
+used on any element that supports field layouts (Entries, Products,
+Categories, etc.). When used in templating, it returns a Query object
+for Characteristic Links that is configured for the soruce element and
+field.
