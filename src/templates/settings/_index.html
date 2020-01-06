@@ -1,4 +1,20 @@
 {% extends "_layouts/cp" %}
+
+{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
+
+{% do view.registerTranslations('app', [
+    "Name",
+    "Handle",
+]) %}
+
+{% do view.registerTranslations('characteristic', [
+    "Edit characteristics",
+    "Are you sure you want to delete “{name}” and all its characteristic data?",
+    "No characteristics exist yet.",
+]) %}
+
+{% set multiple  = (groups|length > 1) %}
+
 {% set title = "Characteristic Groups"|t('characteristic') %}
 
 {% set crumbs = [
@@ -10,55 +26,49 @@
        class="btn submit add icon">{{ "New group"|t('characteristic') }}</a>
 {% endblock %}
 
-
 {% block content %}
-    <div id="nogroups"{% if groups %} class="hidden"{% endif %}>
-        <p>{{ "No groups exist yet."|t('characteristic') }}</p>
-    </div>
-
-    {% if groups|length %}
-        <div class="scrolltable">
-            <table id="groups" class="data fullwidth">
-                <thead>
-                <th scope="col">{{ "Name"|t('app') }}</th>
-                <th scope="col">{{ "Handle"|t('app') }}</th>
-                <th>
-                </td>
-                <td class="thin"></td>
-                </thead>
-                <tbody>
-                {% for group in groups %}
-                    <tr data-id="{{ group.id }}" data-name="{{ group.name|t('site') }}">
-                        <th scope="row" data-title="{{ 'Name'|t('app') }}"><a
-                                    href="{{ url('settings/characteristics/' ~ group.id) }}">{{ group.name|t('site') }}</a>
-                        </th>
-                        <td data-title="{{ 'Handle'|t('app') }}"><code>{{ group.handle }}</code></td>
-                        <td>
-                            <a href="{{ cpUrl('characteristics/' ~ group.handle) }}">{{ 'Manage Characteristics'|t('characteristic') }}</a>
-                        </td>
-                        <td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    {% endif %}
+    <div id="characteristic-groups-vue-admin-table"></div>
 {% endblock %}
+
+{% set tableData = [] %}
+{% for group in groups %}
+    {% set tableData = tableData|merge([{
+        id: group.id,
+        title: group.name|t('site'),
+        url: url('settings/characteristics/' ~ group.id),
+        handle: group.handle,
+        menu: {
+            showItems: false,
+            label: 'Manage Characteristics'|t('characteristics'),
+            url: url('characteristics/' ~ group.handle),
+            items: []
+        }
+    }]) %}
+{% endfor %}
 
 
 {% js %}
-    var adminTable = new Craft.AdminTable({
-    tableSelector: '#groups',
-    noItemsSelector: '#nogroups',
+var columns = [
+    {
+        name: '__slot:title',
+        title: Craft.t('app', 'Name'),
+    },
+    {
+        name: '__slot:handle',
+        title: Craft.t('app', 'Handle'),
+    },
+    {
+        name: '__slot:menu',
+        title: Craft.t('characteristic', 'Characteristics'),
+    }
+];
+
+new Craft.VueAdminTable({
+    columns: columns,
+    container: '#characteristic-groups-vue-admin-table',
     deleteAction: 'characteristic/settings/delete-group',
-    confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}” and all its characteristics?"|t('characteristic') }}',
-    onDeleteItem: function()
-    {
-    // Hide the Entries tab if that was the last one
-    if (adminTable.totalItems == 0)
-    {
-    $('#nav-characteristics').remove();
-    }
-    }
-    });
+    deleteConfirmationMessage: Craft.t('characteristic', "Are you sure you want to delete “{name}” and all its characteristic data?"),
+    emptyMessage: Craft.t('characteristic', 'No characteristics exist yet.'),
+    tableData: {{ tableData|json_encode|raw }}
+});
 {% endjs %}
