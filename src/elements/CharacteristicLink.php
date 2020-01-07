@@ -17,6 +17,7 @@ use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\elements\db\ElementQueryInterface;
 use venveo\characteristic\elements\db\CharacteristicLinkQuery;
+use venveo\characteristic\fields\Characteristics;
 use venveo\characteristic\fields\Characteristics as CharacteristicsField;
 use venveo\characteristic\records\CharacteristicLink as CharacteristicLinkRecord;
 use yii\base\Exception;
@@ -375,9 +376,9 @@ class CharacteristicLink extends Element implements BlockElementInterface
     // =========================================================================
 
     /**
-     * Returns the Matrix field.
+     * Returns the Link field.
      *
-     * @return Matrix
+     * @return Characteristics
      */
     private function _field(): CharacteristicsField
     {

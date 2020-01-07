@@ -32,17 +32,18 @@ use venveo\characteristic\elements\db\CharacteristicLinkQuery;
  * @since     1.0.0
  *
  * @property mixed $settingsHtml
+ * @property array $elementValidationRules
  * @property array $sourceOptions
  */
 class Characteristics extends Field
 {
-    // Public Properties
+    // Constants
     // =========================================================================
 
-    /**
-     * @var string|null The source key that this field can relate elements from (used if [[allowMultipleSources]] is set to false)
-     */
-    public $source;
+    const PROPAGATION_METHOD_NONE = 'none';
+    const PROPAGATION_METHOD_SITE_GROUP = 'siteGroup';
+    const PROPAGATION_METHOD_LANGUAGE = 'language';
+    const PROPAGATION_METHOD_ALL = 'all';
 
     // Static Methods
     // =========================================================================
@@ -72,8 +73,18 @@ class Characteristics extends Field
     public static function supportedTranslationMethods(): array
     {
         // Don't ever automatically propagate values to other sites.
-        return [self::TRANSLATION_METHOD_NONE];
+        return [
+            self::TRANSLATION_METHOD_SITE,
+        ];
     }
+
+    // Public Properties
+    // =========================================================================
+
+    /**
+     * @var string|null The source key that this field can relate elements from (used if [[allowMultipleSources]] is set to false)
+     */
+    public $source;
 
 
     /**
@@ -128,6 +139,9 @@ class Characteristics extends Field
      * @param array $value The raw field value
      * @param ElementInterface $element The element the field is associated with
      * @return CharacteristicLink[]
+     * @throws \Throwable
+     * @throws \craft\errors\ElementNotFoundException
+     * @throws \yii\base\Exception
      */
     private function _createLinksFromSerializedData(array $value, ElementInterface $element): array
     {
@@ -164,43 +178,8 @@ class Characteristics extends Field
         $prevLink = null;
 
         $fieldNamespace = $element->getFieldParamNamespace();
-        $baseBlockFieldNamespace = $fieldNamespace ? "{$fieldNamespace}.{$this->handle}" : null;
-
-
-        // TODO: Someday, support deltas...
-// Was the value posted in the new (delta) format?
-//        if (isset($value['blocks']) || isset($value['sortOrder'])) {
-//            $newBlockData = $value['blocks'] ?? [];
-//            $newSortOrder = $value['sortOrder'] ?? array_keys($oldLinksById);
-//            if ($baseBlockFieldNamespace) {
-//                $baseBlockFieldNamespace .= '.blocks';
-//            }
-//        } else {
-//            $newBlockData = $value;
-//            $newSortOrder = array_keys($value);
-//        }
 
         foreach ($value as $characteristicHandle => $characteristicData) {
-//            if (isset($newBlockData[$blockId])) {
-//                $blockData = $newBlockData[$blockId];
-//            } else if (
-//                isset(Elements::$duplicatedElementSourceIds[$blockId]) &&
-//                isset($newBlockData[Elements::$duplicatedElementSourceIds[$blockId]])
-//            ) {
-//                // $blockId is a duplicated block's ID, but the data was sent with the original block ID
-//                $blockData = $newBlockData[Elements::$duplicatedElementSourceIds[$blockId]];
-//            } else {
-//                $blockData = [];
-//            }
-
-            // If this is a preexisting block but we don't have a record of it,
-            // check to see if it was recently duplicated.
-
-            // Existing block?
-//            if (isset($oldLinksGroupedByCharacteristicHandle[$characteristicHandle])) {
-//                // TODO
-//                die('hi');
-//            } else {
                 // Make sure it's a valid characteristic
                 if (!isset($characteristicsByHandle[$characteristicHandle])) {
                     continue;
@@ -235,7 +214,6 @@ class Characteristics extends Field
 
                     $links[] = $block;
                 }
-//            }
         }
         return $links;
     }
@@ -300,7 +278,14 @@ class Characteristics extends Field
     }
 
     /**
-     * @inheritdoc
+     * @param $value
+     * @param ElementInterface|null $element
+     * @return string
+     * @throws \Twig\Error\LoaderError
+     * @throws \Twig\Error\RuntimeError
+     * @throws \Twig\Error\SyntaxError
+     * @throws \yii\base\Exception
+     * @throws \yii\base\InvalidConfigException
      */
     public function getInputHtml($value, ElementInterface $element = null): string
     {
@@ -402,6 +387,7 @@ class Characteristics extends Field
     /**
      * @inheritDoc
      * @throws Exception
+     * @throws \Throwable
      */
     public function afterElementSave(ElementInterface $element, bool $isNew)
     {
