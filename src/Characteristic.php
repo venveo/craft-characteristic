@@ -155,7 +155,7 @@ class Characteristic extends Plugin
 
     public function getCpNavItem()
     {
-        if(count(static::$plugin->characteristicGroups->getAllGroups())) {
+        if (count(static::$plugin->characteristicGroups->getAllGroups())) {
             return [
                 'label' => 'Characteristics',
                 'url' => UrlHelper::cpUrl('characteristics'),

@@ -62,7 +62,7 @@ class CharacteristicLinks extends Component
             ->where(['ownerId' => $element->id])
             ->andWhere(['fieldId' => $field->id]);
         $results = $query->column();
-        foreach($results as $result) {
+        foreach ($results as $result) {
             Craft::$app->elements->deleteElementById((int)$result, CharacteristicLink::class, null, true);
         }
 

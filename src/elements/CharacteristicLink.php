@@ -41,12 +41,43 @@ class CharacteristicLink extends Element implements BlockElementInterface
     // =========================================================================
 
     /**
+     * @var int|null Field ID
+     */
+    public $fieldId;
+    /**
+     * @var int|null Owner ID
+     */
+    public $ownerId;
+    /**
+     * @var int|null Characteristic ID
+     */
+    public $characteristicId;
+    /**
+     * @var int|null Value ID
+     */
+    public $valueId;
+    /**
+     * @var bool
+     */
+    public $deletedWithOwner;
+    /**
+     * @var ElementInterface|null The owner element, or false if [[ownerId]] is invalid
+     */
+    private $_owner;
+    private $_value;
+    private $_characteristic;
+
+    /**
      * @inheritdoc
      */
     public static function displayName(): string
     {
         return Craft::t('characteristic', 'Characteristic Link');
     }
+
+
+    // Properties
+    // =========================================================================
 
     /**
      * @inheritdoc
@@ -87,6 +118,13 @@ class CharacteristicLink extends Element implements BlockElementInterface
     {
         return false;
     }
+
+//    /**
+//     * @var bool Whether the block has changed.
+//     * @internal
+//     * @since 3.4.0
+//     */
+//    public $dirty = false;
 
     /**
      * @inheritdoc
@@ -152,51 +190,6 @@ class CharacteristicLink extends Element implements BlockElementInterface
 
         return parent::eagerLoadingMap($sourceElements, $handle);
     }
-
-
-    // Properties
-    // =========================================================================
-
-    /**
-     * @var int|null Field ID
-     */
-    public $fieldId;
-
-    /**
-     * @var int|null Owner ID
-     */
-    public $ownerId;
-
-    /**
-     * @var int|null Characteristic ID
-     */
-    public $characteristicId;
-
-    /**
-     * @var int|null Value ID
-     */
-    public $valueId;
-
-    /**
-     * @var bool
-     */
-    public $deletedWithOwner;
-
-//    /**
-//     * @var bool Whether the block has changed.
-//     * @internal
-//     * @since 3.4.0
-//     */
-//    public $dirty = false;
-
-    /**
-     * @var ElementInterface|null The owner element, or false if [[ownerId]] is invalid
-     */
-    private $_owner;
-
-    private $_value;
-
-    private $_characteristic;
 
     // Public Methods
     // =========================================================================
@@ -310,15 +303,6 @@ class CharacteristicLink extends Element implements BlockElementInterface
         return true;
     }
 
-    public function setValue($element)
-    {
-        if (is_array($element)) {
-            $this->_value = $element[0];
-        } else {
-            $this->_value = $element;
-        }
-    }
-
     public function getValue()
     {
         if ($this->_value === null) {
@@ -334,12 +318,12 @@ class CharacteristicLink extends Element implements BlockElementInterface
         return $this->_value;
     }
 
-    public function setCharacteristic($element)
+    public function setValue($element)
     {
         if (is_array($element)) {
-            return $this->_characteristic = $element[0];
+            $this->_value = $element[0];
         } else {
-            return $this->_characteristic = $element;
+            $this->_value = $element;
         }
     }
 
@@ -356,6 +340,15 @@ class CharacteristicLink extends Element implements BlockElementInterface
         }
 
         return $this->_characteristic;
+    }
+
+    public function setCharacteristic($element)
+    {
+        if (is_array($element)) {
+            return $this->_characteristic = $element[0];
+        }
+
+        return $this->_characteristic = $element;
     }
 
     /**

@@ -1,38 +1,38 @@
 {
-    "name": "venveo/craft-characteristic",
-    "description": "Drill-drown on element characteristics",
-    "type": "craft-plugin",
-    "version": "1.0.0-beta.1",
-    "keywords": [
-        "craft",
-        "cms",
-        "craftcms",
-        "craft-plugin",
-        "characteristic"
-    ],
-    "support": {
-        "docs": "https://github.com/venveo/craft-characteristic/blob/master/README.md",
-        "issues": "https://github.com/venveo/craft-characteristic/issues"
-    },
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "Venveo",
-            "homepage": "https://www.venveo.com"
-        }
-    ],
-    "require": {
-        "craftcms/cms": "^3.3.0"
-    },
-    "autoload": {
-        "psr-4": {
-          "venveo\\characteristic\\": "src/"
-        }
-    },
-    "extra": {
-        "name": "Characteristic",
-        "handle": "characteristic",
-        "changelogUrl": "https://raw.githubusercontent.com/venveo/craft-characteristic/master/CHANGELOG.md",
-        "class": "venveo\\characteristic\\Characteristic"
+  "name": "venveo/craft-characteristic",
+  "description": "Drill-drown on element characteristics",
+  "type": "craft-plugin",
+  "version": "1.0.0-beta.1",
+  "keywords": [
+    "craft",
+    "cms",
+    "craftcms",
+    "craft-plugin",
+    "characteristic"
+  ],
+  "support": {
+    "docs": "https://github.com/venveo/craft-characteristic/blob/master/README.md",
+    "issues": "https://github.com/venveo/craft-characteristic/issues"
+  },
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Venveo",
+      "homepage": "https://www.venveo.com"
     }
+  ],
+  "require": {
+    "craftcms/cms": "^3.3.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "venveo\\characteristic\\": "src/"
+    }
+  },
+  "extra": {
+    "name": "Characteristic",
+    "handle": "characteristic",
+    "changelogUrl": "https://raw.githubusercontent.com/venveo/craft-characteristic/master/CHANGELOG.md",
+    "class": "venveo\\characteristic\\Characteristic"
+  }
 }

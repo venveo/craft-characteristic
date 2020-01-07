@@ -27,7 +27,7 @@ use yii\base\InvalidConfigException;
  * @package   Characteristic
  * @since     1.0.0
  *
- * @property \venveo\characteristic\elements\Characteristic|null $characteristic
+ * @property Characteristic|null $characteristic
  */
 class CharacteristicValue extends Element
 {

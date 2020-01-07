@@ -1,6 +1,7 @@
 <template>
     <div class="characteristic-item matrixblock">
-        <input v-for="(value) in formattedValues" :name="name + '[values][]'" v-if="value.length" :key="index" :value="value" type="hidden" />
+        <input :key="index" :name="name + '[values][]'" :value="value" type="hidden"
+               v-for="(value) in formattedValues" v-if="value.length"/>
 
         <div class="fields flex flex-nowrap">
             <div class="input ltr characteristic__title">
@@ -8,30 +9,30 @@
             </div>
             <div class="input ltr flex">
                 <multiselect
-                        v-if="this.characteristic.maxValues == 0 || this.characteristic.maxValues > 1"
-                        v-model="values"
-                        :hide-selected="true"
-                        :multiple="true"
-                        :max="this.characteristic.maxValues"
                         :allow-empty="false"
-                        :close-on-select="false"
                         :clear-on-select="false"
-                        :taggable="characteristic.allowCustomOptions"
+                        :close-on-select="false"
+                        :hide-selected="true"
+                        :max="this.characteristic.maxValues"
+                        :multiple="true"
+                        :options="options"
                         :tag-placeholder="'Press enter to create a new value'"
+                        :taggable="characteristic.allowCustomOptions"
                         @tag="addTag"
-                        :options="options">
+                        v-if="this.characteristic.maxValues == 0 || this.characteristic.maxValues > 1"
+                        v-model="values">
                 </multiselect>
                 <multiselect
-                        v-else
-                        v-model="values"
+                        :allow-empty="false"
+                        :clear-on-select="true"
                         :hide-selected="true"
                         :multiple="false"
-                        :taggable="characteristic.allowCustomOptions"
+                        :options="options"
                         :tag-placeholder="'Press enter to create a new value'"
+                        :taggable="characteristic.allowCustomOptions"
                         @tag="addTag"
-                        :clear-on-select="true"
-                        :allow-empty="false"
-                        :options="options">
+                        v-else
+                        v-model="values">
                 </multiselect>
             </div>
         </div>
@@ -65,7 +66,7 @@
             }
         },
         methods: {
-            addTag (newTag) {
+            addTag(newTag) {
                 this.values.push(newTag);
             }
         },
@@ -91,7 +92,7 @@
         beforeMount() {
             this.characteristicHandle = this.characteristic.handle;
             if (this.linkSet.hasOwnProperty('links')) {
-                for(let link of this.linkSet.links) {
+                for (let link of this.linkSet.links) {
                     this.values.push(link);
                 }
             }
@@ -103,6 +104,7 @@
     .characteristic-item.matrixblock {
         padding: 0;
         padding-right: 10px;
+
         .input .select, .input .text, .input .flex, .input span, .input .ltr .flex, .flex > div {
             margin-bottom: 0;
         }

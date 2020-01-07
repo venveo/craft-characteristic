@@ -11,6 +11,7 @@
 namespace venveo\characteristic\controllers;
 
 use Craft;
+use craft\errors\ElementNotFoundException;
 use craft\errors\MissingComponentException;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\UrlHelper;
@@ -20,6 +21,7 @@ use venveo\characteristic\assetbundles\characteristicelement\CharacteristicEleme
 use venveo\characteristic\Characteristic as Plugin;
 use venveo\characteristic\elements\Characteristic;
 use venveo\characteristic\models\CharacteristicGroup;
+use yii\base\Exception;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -185,8 +187,8 @@ class CharacteristicsController extends Controller
      * @throws MissingComponentException
      * @throws NotFoundHttpException
      * @throws Throwable
-     * @throws \craft\errors\ElementNotFoundException
-     * @throws \yii\base\Exception
+     * @throws ElementNotFoundException
+     * @throws Exception
      */
     public function actionSaveCharacteristic(bool $duplicate = false)
     {

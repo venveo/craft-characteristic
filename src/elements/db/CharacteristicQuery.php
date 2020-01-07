@@ -1,4 +1,5 @@
 <?php
+
 namespace venveo\characteristic\elements\db;
 
 use craft\db\Query;

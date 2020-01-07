@@ -12,10 +12,13 @@ namespace venveo\characteristic\services;
 
 use Craft;
 use craft\base\Component;
+use craft\base\ElementInterface;
+use craft\errors\ElementNotFoundException;
 use Throwable;
 use venveo\characteristic\elements\Characteristic;
 use venveo\characteristic\elements\CharacteristicValue;
 use venveo\characteristic\records\CharacteristicValue as CharacteristicValueRecord;
+use yii\base\Exception;
 
 /**
  * @author    Venveo
@@ -40,10 +43,10 @@ class CharacteristicValues extends Component
      * @param $value
      * @param bool $create
      * @param bool $idempotent
-     * @return array|\craft\base\ElementInterface|CharacteristicValue|null
+     * @return array|ElementInterface|CharacteristicValue|null
      * @throws Throwable
-     * @throws \craft\errors\ElementNotFoundException
-     * @throws \yii\base\Exception
+     * @throws ElementNotFoundException
+     * @throws Exception
      */
     public function getValueElement(Characteristic $characteristic, $value, $create = false, $idempotent = false)
     {
@@ -58,7 +61,7 @@ class CharacteristicValues extends Component
 
         if ($create) {
             $sortOrder = 0;
-            $nextItem = \venveo\characteristic\records\CharacteristicValue::find()
+            $nextItem = CharacteristicValueRecord::find()
                 ->addSelect('MAX(sortOrder) as sort')
                 ->where(['characteristicId' => $characteristic->id])
                 ->scalar();

@@ -10,17 +10,9 @@
 
 namespace venveo\characteristic\assetbundles\characteristicsfield;
 
-use Craft;
-use craft\helpers\Json;
-use craft\helpers\UrlHelper;
 use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
 use craft\web\assets\vue\VueAsset;
-use Throwable;
-use yii\base\Exception;
-use yii\caching\TagDependency;
-use yii\web\NotFoundHttpException;
-use function count;
 
 /**
  * @author    Venveo
@@ -58,7 +50,7 @@ class CharacteristicsFieldAsset extends AssetBundle
         ];
         if ($this->useDevServer) {
             $this->js = [
-                $this->devServerBaseUrl.'js/app.js',
+                $this->devServerBaseUrl . 'js/app.js',
             ];
         } else {
             $this->css = [

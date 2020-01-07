@@ -48,27 +48,27 @@
 
 
 {% js %}
-var columns = [
-    {
-        name: '__slot:title',
-        title: Craft.t('app', 'Name'),
-    },
-    {
-        name: '__slot:handle',
-        title: Craft.t('app', 'Handle'),
-    },
-    {
-        name: '__slot:menu',
-        title: Craft.t('characteristic', 'Characteristics'),
-    }
-];
+    var columns = [
+        {
+            name: '__slot:title',
+            title: Craft.t('app', 'Name'),
+        },
+        {
+            name: '__slot:handle',
+            title: Craft.t('app', 'Handle'),
+        },
+        {
+            name: '__slot:menu',
+            title: Craft.t('characteristic', 'Characteristics'),
+        }
+    ];
 
-new Craft.VueAdminTable({
-    columns: columns,
-    container: '#characteristic-groups-vue-admin-table',
-    deleteAction: 'characteristic/settings/delete-group',
-    deleteConfirmationMessage: Craft.t('characteristic', "Are you sure you want to delete “{name}” and all its characteristic data?"),
-    emptyMessage: Craft.t('characteristic', 'No characteristics exist yet.'),
-    tableData: {{ tableData|json_encode|raw }}
-});
+    new Craft.VueAdminTable({
+        columns: columns,
+        container: '#characteristic-groups-vue-admin-table',
+        deleteAction: 'characteristic/settings/delete-group',
+        deleteConfirmationMessage: Craft.t('characteristic', "Are you sure you want to delete “{name}” and all its characteristic data?"),
+        emptyMessage: Craft.t('characteristic', 'No characteristics exist yet.'),
+        tableData: {{ tableData|json_encode|raw }}
+    });
 {% endjs %}

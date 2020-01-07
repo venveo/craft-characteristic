@@ -16,15 +16,21 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\errors\ElementNotFoundException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use Exception;
+use Throwable;
+use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
 use venveo\characteristic\assetbundles\characteristicsfield\CharacteristicsFieldAsset;
 use venveo\characteristic\Characteristic;
 use venveo\characteristic\elements\Characteristic as CharacteristicElement;
 use venveo\characteristic\elements\CharacteristicLink;
 use venveo\characteristic\elements\db\CharacteristicLinkQuery;
+use yii\base\InvalidConfigException;
 
 /**
  * @author    Venveo
@@ -47,6 +53,10 @@ class Characteristics extends Field
 
     // Static Methods
     // =========================================================================
+    /**
+     * @var string|null The source key that this field can relate elements from (used if [[allowMultipleSources]] is set to false)
+     */
+    public $source;
 
     /**
      * @inheritdoc
@@ -56,6 +66,9 @@ class Characteristics extends Field
         return Craft::t('characteristic', 'Characteristics');
     }
 
+    // Public Methods
+    // =========================================================================
+
     /**
      * @inheritdoc
      */
@@ -64,7 +77,7 @@ class Characteristics extends Field
         return false;
     }
 
-    // Public Methods
+    // Public Properties
     // =========================================================================
 
     /**
@@ -77,15 +90,6 @@ class Characteristics extends Field
             self::TRANSLATION_METHOD_SITE,
         ];
     }
-
-    // Public Properties
-    // =========================================================================
-
-    /**
-     * @var string|null The source key that this field can relate elements from (used if [[allowMultipleSources]] is set to false)
-     */
-    public $source;
-
 
     /**
      * @inheritdoc
@@ -139,8 +143,8 @@ class Characteristics extends Field
      * @param array $value The raw field value
      * @param ElementInterface $element The element the field is associated with
      * @return CharacteristicLink[]
-     * @throws \Throwable
-     * @throws \craft\errors\ElementNotFoundException
+     * @throws Throwable
+     * @throws ElementNotFoundException
      * @throws \yii\base\Exception
      */
     private function _createLinksFromSerializedData(array $value, ElementInterface $element): array
@@ -180,40 +184,40 @@ class Characteristics extends Field
         $fieldNamespace = $element->getFieldParamNamespace();
 
         foreach ($value as $characteristicHandle => $characteristicData) {
-                // Make sure it's a valid characteristic
-                if (!isset($characteristicsByHandle[$characteristicHandle])) {
+            // Make sure it's a valid characteristic
+            if (!isset($characteristicsByHandle[$characteristicHandle])) {
+                continue;
+            }
+            $characteristic = $characteristicsByHandle[$characteristicHandle];
+            if (!isset($characteristicData['values'])) {
+                continue;
+            }
+            foreach ($characteristicData['values'] as $valueString) {
+                $valueElement = Characteristic::$plugin->characteristicValues->getValueElement($characteristic, $valueString, true);
+                if (!$valueElement) {
                     continue;
                 }
-                $characteristic = $characteristicsByHandle[$characteristicHandle];
-                if (!isset($characteristicData['values'])) {
-                    continue;
-                }
-                foreach ($characteristicData['values'] as $valueString) {
-                    $valueElement = Characteristic::$plugin->characteristicValues->getValueElement($characteristic, $valueString, true);
-                    if (!$valueElement) {
-                        continue;
-                    }
-                    $block = new CharacteristicLink();
-                    $block->fieldId = $this->id;
-                    $block->characteristicId = $characteristic->id;
-                    $block->valueId = $valueElement->id;
-                    $block->ownerId = $element->id;
-                    $block->siteId = $element->siteId;
-                    $block->setCharacteristic($characteristic);
-                    $block->setValue($valueElement);
-                    $block->setOwner($element);
+                $block = new CharacteristicLink();
+                $block->fieldId = $this->id;
+                $block->characteristicId = $characteristic->id;
+                $block->valueId = $valueElement->id;
+                $block->ownerId = $element->id;
+                $block->siteId = $element->siteId;
+                $block->setCharacteristic($characteristic);
+                $block->setValue($valueElement);
+                $block->setOwner($element);
 
-                    // Set the prev/next blocks
-                    if ($prevLink) {
-                        /** @var ElementInterface $prevLink */
-                        $prevLink->setNext($block);
-                        /** @var ElementInterface $block */
-                        $block->setPrev($prevLink);
-                    }
-                    $prevLink = $block;
-
-                    $links[] = $block;
+                // Set the prev/next blocks
+                if ($prevLink) {
+                    /** @var ElementInterface $prevLink */
+                    $prevLink->setNext($block);
+                    /** @var ElementInterface $block */
+                    $block->setPrev($prevLink);
                 }
+                $prevLink = $block;
+
+                $links[] = $block;
+            }
         }
         return $links;
     }
@@ -281,11 +285,11 @@ class Characteristics extends Field
      * @param $value
      * @param ElementInterface|null $element
      * @return string
-     * @throws \Twig\Error\LoaderError
-     * @throws \Twig\Error\RuntimeError
-     * @throws \Twig\Error\SyntaxError
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
      * @throws \yii\base\Exception
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     public function getInputHtml($value, ElementInterface $element = null): string
     {
@@ -368,7 +372,9 @@ class Characteristics extends Field
             $value = $value->getCachedResult() ?? $value->limit(null)->all();
         }
 
-        $groupedByIds = ArrayHelper::index($value, null, function($c) { return $c->characteristic->id; });
+        $groupedByIds = ArrayHelper::index($value, null, function ($c) {
+            return $c->characteristic->id;
+        });
 
 
         $source = ElementHelper::findSource(CharacteristicElement::class, $this->source, 'index');
@@ -387,7 +393,7 @@ class Characteristics extends Field
     /**
      * @inheritDoc
      * @throws Exception
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function afterElementSave(ElementInterface $element, bool $isNew)
     {

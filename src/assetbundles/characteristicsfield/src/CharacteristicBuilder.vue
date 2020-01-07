@@ -46,11 +46,11 @@
             handleAdd(e) {
                 e.preventDefault();
                 const newItem =
-                this.linkSets.push({
-                    index: 'new' + this.linkSets.length + 1,
-                    characteristic: this.availableCharacteristics[this.selectedCharacteristic],
-                    links: []
-                });
+                    this.linkSets.push({
+                        index: 'new' + this.linkSets.length + 1,
+                        characteristic: this.availableCharacteristics[this.selectedCharacteristic],
+                        links: []
+                    });
                 if (window.draftEditor) {
                     window.draftEditor.checkForm();
                 }
@@ -89,7 +89,7 @@
                 const requiredCharacteristics = newVal.filter(characteristic => characteristic.required == true);
                 for (let characteristic of newVal) {
                     let existingValue = null;
-                    if(savedLinks.hasOwnProperty(characteristic.handle)) {
+                    if (savedLinks.hasOwnProperty(characteristic.handle)) {
                         existingValue = savedLinks[characteristic.handle];
                     }
                     let data = {};
