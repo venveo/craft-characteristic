@@ -14,6 +14,9 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Query;
+use craft\elements\actions\Delete;
+use craft\elements\actions\Duplicate;
+use craft\elements\actions\Restore;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\Entry;
 use craft\helpers\UrlHelper;
@@ -566,6 +569,31 @@ class Characteristic extends Element
     public function afterMoveInStructure(int $structureId)
     {
         parent::afterMoveInStructure($structureId);
+    }
+
+
+    /**
+     * @inheritdoc
+     */
+    protected static function defineActions(string $source = null): array
+    {
+        $elementsService = Craft::$app->elements;
+        $actions[] = Duplicate::class;
+        $actions[] = $elementsService->createAction([
+            'type' => Delete::class,
+            'confirmationMessage' => Craft::t('characteristic', 'Are you sure you want to delete the selected characteristics?'),
+            'successMessage' => Craft::t('characteristic', 'Characteristics deleted.'),
+        ]);
+
+        // Restore
+        $actions[] = $elementsService->createAction([
+            'type' => Restore::class,
+            'successMessage' => Craft::t('characteristic', 'Characteristics restored.'),
+            'partialSuccessMessage' => Craft::t('characteristic', 'Some characteristics restored.'),
+            'failMessage' => Craft::t('characteristic', 'Characteristics not restored.'),
+        ]);
+
+        return $actions;
     }
 
     /**
