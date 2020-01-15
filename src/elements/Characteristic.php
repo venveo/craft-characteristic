@@ -221,6 +221,30 @@ class Characteristic extends Element
     /**
      * @inheritdoc
      */
+    protected static function defineActions(string $source = null): array
+    {
+        $elementsService = Craft::$app->elements;
+        $actions[] = Duplicate::class;
+        $actions[] = $elementsService->createAction([
+            'type' => Delete::class,
+            'confirmationMessage' => Craft::t('characteristic', 'Are you sure you want to delete the selected characteristics?'),
+            'successMessage' => Craft::t('characteristic', 'Characteristics deleted.'),
+        ]);
+
+        // Restore
+        $actions[] = $elementsService->createAction([
+            'type' => Restore::class,
+            'successMessage' => Craft::t('characteristic', 'Characteristics restored.'),
+            'partialSuccessMessage' => Craft::t('characteristic', 'Some characteristics restored.'),
+            'failMessage' => Craft::t('characteristic', 'Characteristics not restored.'),
+        ]);
+
+        return $actions;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function rules()
     {
         $rules = parent::rules();
@@ -325,6 +349,9 @@ class Characteristic extends Element
         return $query;
     }
 
+    // Indexes, etc.
+    // -------------------------------------------------------------------------
+
     /**
      * @inheritdoc
      * @throws Exception if reasons
@@ -368,9 +395,6 @@ class Characteristic extends Element
         parent::afterSave($isNew);
     }
 
-    // Indexes, etc.
-    // -------------------------------------------------------------------------
-
     /**
      * Returns whether the category has been assigned a new parent entry.
      *
@@ -386,6 +410,9 @@ class Characteristic extends Element
 
         return $this->_hasNewParent = $this->_checkForNewParent();
     }
+
+    // Events
+    // -------------------------------------------------------------------------
 
     /**
      * Checks if an category was submitted with a new parent category selected.
@@ -425,9 +452,6 @@ class Characteristic extends Element
 
         return $this->newParentId != $oldParentId;
     }
-
-    // Events
-    // -------------------------------------------------------------------------
 
     /**
      * @inheritdoc
@@ -534,6 +558,9 @@ class Characteristic extends Element
         return parent::beforeValidate();
     }
 
+    // Private Methods
+    // =========================================================================
+
     /**
      * @inheritdoc
      * @throws Exception if reasons
@@ -560,40 +587,12 @@ class Characteristic extends Element
         return parent::beforeSave($isNew);
     }
 
-    // Private Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
     public function afterMoveInStructure(int $structureId)
     {
         parent::afterMoveInStructure($structureId);
-    }
-
-
-    /**
-     * @inheritdoc
-     */
-    protected static function defineActions(string $source = null): array
-    {
-        $elementsService = Craft::$app->elements;
-        $actions[] = Duplicate::class;
-        $actions[] = $elementsService->createAction([
-            'type' => Delete::class,
-            'confirmationMessage' => Craft::t('characteristic', 'Are you sure you want to delete the selected characteristics?'),
-            'successMessage' => Craft::t('characteristic', 'Characteristics deleted.'),
-        ]);
-
-        // Restore
-        $actions[] = $elementsService->createAction([
-            'type' => Restore::class,
-            'successMessage' => Craft::t('characteristic', 'Characteristics restored.'),
-            'partialSuccessMessage' => Craft::t('characteristic', 'Some characteristics restored.'),
-            'failMessage' => Craft::t('characteristic', 'Characteristics not restored.'),
-        ]);
-
-        return $actions;
     }
 
     /**
