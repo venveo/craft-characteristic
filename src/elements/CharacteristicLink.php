@@ -30,6 +30,7 @@ use yii\base\InvalidConfigException;
  *
  *
  * @property CharacteristicValue $value
+ * @property null|ElementInterface $owner
  * @property Characteristic $characteristic
  */
 class CharacteristicLink extends Element implements BlockElementInterface
@@ -126,13 +127,6 @@ class CharacteristicLink extends Element implements BlockElementInterface
 //     */
 //    public $dirty = false;
 
-    /**
-     * @inheritdoc
-     */
-    public static function isLocalized(): bool
-    {
-        return false;
-    }
 
     /**
      * @inheritdoc

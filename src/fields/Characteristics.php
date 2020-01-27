@@ -86,9 +86,7 @@ class Characteristics extends Field
     public static function supportedTranslationMethods(): array
     {
         // Don't ever automatically propagate values to other sites.
-        return [
-            self::TRANSLATION_METHOD_SITE,
-        ];
+        return [];
     }
 
     /**

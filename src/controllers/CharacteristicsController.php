@@ -251,9 +251,7 @@ class CharacteristicsController extends Controller
         $characteristicId = $request->getBodyParam('characteristicId');
 
         if ($characteristicId) {
-            $characteristic = null;
             $characteristic = Plugin::$plugin->characteristics->getCharacteristicById($characteristicId);
-
             if (!$characteristic) {
                 throw new NotFoundHttpException('Characteristic not found');
             }

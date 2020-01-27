@@ -166,7 +166,7 @@ class CharacteristicValue extends Element
         $rules = parent::defineRules();
         $rules[] = [['characteristicId'], 'number', 'integerOnly' => true];
 
-        $rules[] = [¬
+        $rules[] = [
             ['value'],
             UniqueValidator::class,
             'targetAttribute' => ['value', 'characteristicId'],
