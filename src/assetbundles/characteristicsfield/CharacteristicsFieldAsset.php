@@ -22,7 +22,7 @@ class CharacteristicsFieldAsset extends AssetBundle
     /**
      * @var bool
      */
-    private $useDevServer = true;
+    private $useDevServer = false;
 
     /**
      * @var bool
