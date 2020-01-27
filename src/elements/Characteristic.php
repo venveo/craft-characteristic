@@ -245,9 +245,9 @@ class Characteristic extends Element
     /**
      * @inheritdoc
      */
-    public function rules()
+    public function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['groupId', 'maxValues'], 'number', 'integerOnly' => true];
         $rules[] = [['required', 'allowCustomOptions'], 'boolean'];
         return $rules;

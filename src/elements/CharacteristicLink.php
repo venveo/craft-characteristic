@@ -217,9 +217,9 @@ class CharacteristicLink extends Element implements BlockElementInterface
     /**
      * @inheritdoc
      */
-    public function rules()
+    public function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['fieldId', 'ownerId', 'characteristicId', 'valueId'], 'number', 'integerOnly' => true];
         return $rules;
     }

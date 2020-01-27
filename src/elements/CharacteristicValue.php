@@ -15,6 +15,7 @@ use craft\base\Element;
 use craft\db\Query;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\UrlHelper;
+use craft\validators\UniqueValidator;
 use venveo\characteristic\Characteristic as Plugin;
 use venveo\characteristic\elements\db\CharacteristicValueQuery;
 use venveo\characteristic\helpers\DrilldownState;
@@ -160,10 +161,18 @@ class CharacteristicValue extends Element
     /**
      * @inheritdoc
      */
-    public function rules()
+    public function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['characteristicId'], 'number', 'integerOnly' => true];
+
+        $rules[] = [¬
+            ['value'],
+            UniqueValidator::class,
+            'targetAttribute' => ['value', 'characteristicId'],
+            'targetClass' => CharacteristicValueRecord::class,
+            'message' => Craft::t('characteristic', 'Characteristic Value must be unique to this characteristic')
+        ];
         return $rules;
     }
 
