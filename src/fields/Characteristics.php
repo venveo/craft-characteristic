@@ -121,8 +121,7 @@ class Characteristics extends Field
 
         $query
             ->fieldId($this->id)
-            ->siteId($element->siteId ?? null);
-
+            ->siteId(Craft::$app->sites->getPrimarySite()->id);
 
         // Set the initially matched elements if $value is already set, which is the case if there was a validation
         // error or we're loading an entry revision.
@@ -159,7 +158,7 @@ class Characteristics extends Field
             $oldLinksById = CharacteristicLink::find()
                 ->fieldId($this->id)
                 ->ownerId($element->id)
-                ->siteId($element->siteId)
+                ->siteId(Craft::$app->sites->getPrimarySite()->id)
                 ->with(['characteristic'])
                 ->indexBy('id')
                 ->all();
@@ -200,7 +199,7 @@ class Characteristics extends Field
                 $block->characteristicId = $characteristic->id;
                 $block->valueId = $valueElement->id;
                 $block->ownerId = $element->id;
-                $block->siteId = $element->siteId;
+                $block->siteId = Craft::$app->sites->getPrimarySite()->id;
                 $block->setCharacteristic($characteristic);
                 $block->setValue($valueElement);
                 $block->setOwner($element);
