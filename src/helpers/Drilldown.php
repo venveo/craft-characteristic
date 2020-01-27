@@ -12,6 +12,13 @@ use venveo\characteristic\errors\CharacteristicGroupNotFoundException;
 use venveo\characteristic\models\CharacteristicGroup;
 use venveo\characteristic\records\CharacteristicLink;
 
+/**
+ *
+ * @property mixed $currentOptions
+ * @property CharacteristicElement $currentCharacteristic
+ * @property mixed $results
+ * @property mixed $skipUrl
+ */
 class Drilldown extends Component
 {
     /** @var DrilldownState $state */
@@ -113,7 +120,7 @@ class Drilldown extends Component
         return $this->state->modifyQuery($this->query);
     }
 
-    public function getState()
+    public function getState(): DrilldownState
     {
         return $this->state;
     }

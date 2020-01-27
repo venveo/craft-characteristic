@@ -101,9 +101,10 @@
 </script>
 
 <style lang="scss" scoped>
+    @import "../node_modules/craftcms-sass/mixins";
     .characteristic-item.matrixblock {
-        padding: 0;
-        padding-right: 10px;
+        @include input-styles();
+        @include padding(0, 10px, 0, 0);
 
         .input .select, .input .text, .input .flex, .input span, .input .ltr .flex, .flex > div {
             margin-bottom: 0;
@@ -114,10 +115,11 @@
         }
 
         .characteristic__title {
-            background-color: #cdd8e4;
-            padding: 10px 20px 10px 10px;
-            border-radius: 5px 0 0 5px;
-            border-right: 1px solid #cdd8e4;
+            background-color: $lightSelColor;
+            @include padding(10px, 20px, 10px, 10px);
+
+            border-radius: $smallBorderRadius 0 0 $smallBorderRadius;
+            border-right: 1px solid $lightSelColor;
             min-width: 100px;
             margin-bottom: 0;
         }
@@ -140,7 +142,11 @@
 </style>
 
 <style lang="scss">
-    .characteristic-item.matrixblock {
+    @import "../node_modules/craftcms-sass/mixins";
 
+    .characteristic-item.matrixblock {
+        .multiselect__input, .multiselect__single, .multiselect__option {
+            font-size: 14px;
+        }
     }
 </style>

@@ -3,27 +3,18 @@
 
 import Vue from 'vue'
 import CharacteristicBuilder from './CharacteristicBuilder'
+import {t} from '../../../../../../vendor/craftcms/cms/src/web/assets/pluginstore/src/js/filters/craft'
+
+Vue.filter('t', t)
 
 Vue.config.devtools = true;
 
-Craft.VueCharacteristicsField = Garnish.Base.extend(
-    {
-        settings: {
-            container: '.vue-characteristics-input',
-            options: {},
-        },
-
+Craft.VueCharacteristicsField = Garnish.Base.extend({
         init: function (settings) {
-
-            if (settings.options) {
-                settings.options = {...this.settings.options, ...settings.options};
-            } else {
-                settings.options = this.settings.options;
-            }
-
             this.setSettings(settings, Craft.VueCharacteristicsField.defaults);
 
-            const dataSettings = this.settings;
+            const props = this.settings;
+
             return new Vue({
                 components: {
                     CharacteristicBuilder
@@ -33,16 +24,17 @@ Craft.VueCharacteristicsField = Garnish.Base.extend(
                 },
                 render: (h) => {
                     return h(CharacteristicBuilder, {
-                        props: {
-                            settings: dataSettings
-                        }
+                        props: props
                     })
                 },
             }).$mount(this.settings.container);
-        },
-
-    },
-    {
-        defaults: {}
+        }
+},
+{
+    defaults: {
+        container: null,
+        name: null,
+        source: null,
+        value: null
     }
-);
+});

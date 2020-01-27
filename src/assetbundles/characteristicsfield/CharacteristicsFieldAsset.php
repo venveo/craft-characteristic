@@ -5,7 +5,7 @@
  * Drill-drown on element characteristics
  *
  * @link      https://www.venveo.com
- * @copyright Copyright (c) 2019 Venveo
+ * @copyright Copyright (c) 2020 Venveo
  */
 
 namespace venveo\characteristic\assetbundles\characteristicsfield;
@@ -15,27 +15,19 @@ use craft\web\assets\cp\CpAsset;
 use craft\web\assets\vue\VueAsset;
 
 /**
- * @author    Venveo
- * @package   Characteristic
- * @since     1.0.0
+ * Asset bundle for admin tables
  */
 class CharacteristicsFieldAsset extends AssetBundle
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var bool
      */
-    private $useDevServer = false;
+    private $useDevServer = true;
+
     /**
      * @var bool
      */
     private $devServerBaseUrl = 'https://localhost:3000/';
-
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -48,15 +40,17 @@ class CharacteristicsFieldAsset extends AssetBundle
             CpAsset::class,
             VueAsset::class,
         ];
+
         if ($this->useDevServer) {
             $this->js = [
-                $this->devServerBaseUrl . 'js/app.js',
+                $this->devServerBaseUrl . 'app.js',
             ];
         } else {
             $this->css = [
                 'css/chunk-vendors.css',
                 'css/app.css',
             ];
+
             $this->js = [
                 'js/chunk-vendors.js',
                 'js/app.js',

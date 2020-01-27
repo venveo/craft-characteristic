@@ -1,38 +1,53 @@
 <template>
     <div>
-        <characteristic-item
-                :characteristic="linkSet.characteristic"
-                :key="linkSet.index"
-                :linkSet="linkSet"
-                :name="settings.name + '['+linkSet.characteristic.handle+']'"
-                v-for="linkSet in linkSets"
-                v-on:change="handleChange"
-                v-on:delete="() => handleDelete(linkSet)"
-        />
-        <div class="buttons last add-button" v-if="availableCharacteristics.length !== 0">
-            <div class="select">
-                <select v-model="selectedCharacteristic">
-                    <option :value="index" v-for="(characteristic, index) in availableCharacteristics">
-                        {{characteristic.title}}
-                    </option>
-                </select>
+        <spinner v-if="loading"></spinner>
+        <div v-else>
+            <characteristic-item
+                    :characteristic="linkSet.characteristic"
+                    :key="linkSet.index"
+                    :linkSet="linkSet"
+                    :name="name + '['+linkSet.characteristic.handle+']'"
+                    v-for="linkSet in linkSets"
+                    v-on:change="handleChange"
+                    v-on:delete="() => handleDelete(linkSet)"
+            />
+            <div class="buttons last add-button" v-if="availableCharacteristics.length !== 0">
+                <div class="select">
+                    <select v-model="selectedCharacteristic">
+                        <option :value="index" v-for="(characteristic, index) in availableCharacteristics">
+                            {{characteristic.title}}
+                        </option>
+                    </select>
+                </div>
+                <div @click="handleAdd" class="btn add icon">Add</div>
             </div>
-            <div @click="handleAdd" class="btn add icon">Add</div>
         </div>
     </div>
 </template>
 <script>
+    /* global Craft, Vue */
     import CharacteristicItem from "./CharacteristicItem";
     import api from './api/characteristics';
+    import Spinner from '@pixelandtonic/craftui/src/components/Spinner';
 
-    /* eslint-disable */
-    /* global Craft */
     export default {
         components: {
-            CharacteristicItem: CharacteristicItem
+            CharacteristicItem,
+            Spinner
         },
         props: {
-            'settings': Object
+            container: {
+                type: String,
+            },
+            name: {
+                type: String
+            },
+            source: {
+                type: String
+            },
+            value: {
+                type: Object
+            }
         },
         data() {
             return {
@@ -85,7 +100,7 @@
              * After characteristics have loaded, we need to parse them
              */
             characteristics: function (newVal) {
-                const savedLinks = this.settings.value;
+                const savedLinks = this.value;
                 const requiredCharacteristics = newVal.filter(characteristic => characteristic.required == true);
                 for (let characteristic of newVal) {
                     let existingValue = null;
@@ -123,7 +138,7 @@
         mounted() {
             // this.characteristics = this.settings.value;
             this.loading = true;
-            api.getCharacteristicsForSource(this.settings.source).then((result) => {
+            api.getCharacteristicsForSource(this.source).then((result) => {
                 this.characteristics = result.data;
             }).finally(() => {
                 this.loading = false;

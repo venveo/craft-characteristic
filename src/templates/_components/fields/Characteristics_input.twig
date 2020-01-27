@@ -17,7 +17,8 @@
 
 <div class="vue-characteristics-input"></div>
 {% js %}
-    var field = new Craft.VueCharacteristicsField({
+var field = new Craft.VueCharacteristicsField({
+    container: '.vue-characteristics-input',
     name: {{ name|namespaceInputName|json_encode|raw }},
     source: {{ source|json_encode|raw }},
     value: {{ value|json_encode|raw }}
