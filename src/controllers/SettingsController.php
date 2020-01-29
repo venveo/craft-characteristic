@@ -9,13 +9,17 @@ namespace venveo\characteristic\controllers;
 
 use Craft;
 use craft\behaviors\FieldLayoutBehavior;
+use craft\errors\MissingComponentException;
+use craft\errors\SectionNotFoundException;
 use craft\helpers\UrlHelper;
 use craft\web\Controller;
+use Throwable;
 use venveo\characteristic\Characteristic;
 use venveo\characteristic\elements\Characteristic as CharacteristicElement;
 use venveo\characteristic\elements\CharacteristicValue as CharacteristicValueElement;
 use venveo\characteristic\models\CharacteristicGroup;
 use yii\web\BadRequestHttpException;
+use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
@@ -115,13 +119,17 @@ class SettingsController extends Controller
      *
      * @return Response|null
      * @throws BadRequestHttpException if any invalid site IDs are specified in the request
+     * @throws Throwable
+     * @throws MissingComponentException
+     * @throws SectionNotFoundException
+     * @throws ForbiddenHttpException
      */
     public function actionSaveGroup()
     {
         $this->requirePostRequest();
+        $this->requireAdmin();
 
         $request = Craft::$app->getRequest();
-
         $group = new CharacteristicGroup();
 
         // Main section settings
@@ -155,7 +163,7 @@ class SettingsController extends Controller
             return null;
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('characteristic', 'Group saved.'));
+        Craft::$app->getSession()->setNotice(Craft::t('characteristic', 'Characteristic group saved.'));
 
         return $this->redirectToPostedUrl($group);
     }

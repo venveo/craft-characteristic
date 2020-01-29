@@ -25,6 +25,7 @@ use craft\models\Structure;
 use Throwable;
 use venveo\characteristic\elements\Characteristic;
 use venveo\characteristic\elements\CharacteristicValue;
+use venveo\characteristic\errors\CharacteristicGroupNotFoundException;
 use venveo\characteristic\events\CharacteristicGroupEvent;
 use venveo\characteristic\models\CharacteristicGroup;
 use venveo\characteristic\records\CharacteristicGroup as CharacteristicGroupRecord;
@@ -308,9 +309,17 @@ class CharacteristicGroups extends Component
         if ($isNewGroup) {
             $group->uid = StringHelper::UUID();
             $structureUid = StringHelper::UUID();
-        } else if (!$group->uid) {
-            $group->uid = Db::uidById(CharacteristicGroupRecord::tableName(), $group->id);
-            $structureUid = Db::uidById(Table::STRUCTURES, $group->structureId);
+        } else {
+            $existingGroupRecord = CharacteristicGroupRecord::find()
+                ->where(['id' => $group->id])
+                ->one();
+
+            if (!$existingGroupRecord) {
+                throw new CharacteristicGroupNotFoundException("No characteristic group exists with the ID '{$group->id}'");
+            }
+
+            $group->uid = $existingGroupRecord->uid;
+            $structureUid = Db::uidById(Table::STRUCTURES, $existingGroupRecord->structureId);
         }
 
         // Assemble the section config

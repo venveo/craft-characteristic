@@ -1,5 +1,9 @@
 # Characteristic Changelog
 
-## 1.0.0 - 1/28/20
+## Unreleased
+## Fixed
+Fixed error when saving an existing group (#40)
+
+## 1.0.0-beta.1 - 1/28/20
 ### Added
 - Initial release
