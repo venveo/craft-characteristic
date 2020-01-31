@@ -13,13 +13,21 @@ namespace venveo\characteristic\controllers;
 use Craft;
 use craft\errors\ElementNotFoundException;
 use craft\errors\MissingComponentException;
+use craft\helpers\AdminTable;
+use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\Html;
 use craft\helpers\UrlHelper;
+use craft\records\EntryType;
+use craft\records\Field;
+use craft\records\FieldLayout;
+use craft\records\FieldLayoutField;
 use craft\web\Controller;
 use Throwable;
 use venveo\characteristic\assetbundles\characteristicelement\CharacteristicElement;
 use venveo\characteristic\Characteristic as Plugin;
 use venveo\characteristic\elements\Characteristic;
+use venveo\characteristic\fields\Characteristics as CharacteristicsField;
 use venveo\characteristic\models\CharacteristicGroup;
 use yii\base\Exception;
 use yii\web\BadRequestHttpException;
@@ -110,6 +118,13 @@ class CharacteristicsController extends Controller
             $tabs['characteristicFields'] = [
                 'label' => Craft::t('characteristic', 'Content'),
                 'url' => '#fields',
+            ];
+        }
+
+        if ($characteristicId) {
+            $tabs['audit'] = [
+                'label' => Craft::t('characteristic', 'Audit'),
+                'url' => '#audit',
             ];
         }
 
@@ -339,5 +354,104 @@ class CharacteristicsController extends Controller
         Craft::$app->getSession()->setNotice(Craft::t('characteristic', 'Characteristic deleted.'));
 
         return $this->redirectToPostedUrl($characteristic);
+    }
+
+    public function actionAuditTable()
+    {
+//        $this->requireAcceptsJson();
+        $request = Craft::$app->getRequest();
+
+        $page = $request->getParam('page', 1);
+        $characteristicId = $request->getRequiredParam('characteristicId');
+        $sort = $request->getParam('sort', null);
+        $limit = $request->getParam('per_page', 10);
+        $search = $request->getParam('search', null);
+        $siteId = $request->getParam('siteId', Craft::$app->sites->getCurrentSite()->id);
+        $offset = ($page - 1) * $limit;
+
+        $characteristic = \venveo\characteristic\Characteristic::getInstance()->characteristics->getCharacteristicById($characteristicId);
+        if (!$characteristic) {
+            return $this->asErrorJson('Characteristic not found');
+        }
+
+        // First we'll get all the fields that can use this characteristic
+        $fieldRecords = Field::find()->where(['=', 'type', CharacteristicsField::class])->all();
+        $targetFields = [];
+        foreach($fieldRecords as $fieldRecord) {
+            /** @var CharacteristicsField $field */
+            $field = Craft::$app->fields->getFieldById($fieldRecord->id);
+            $group = $field->getCharacteristicGroup();
+            if ((int)$group->id === (int)$characteristic->groupId) {
+                $targetFields[] = $field;
+            }
+        }
+
+        $fieldIds = ArrayHelper::getColumn($targetFields, 'id', false);
+
+        // Now let's get all the field layouts with those fields
+        $fieldLayoutIds = FieldLayoutField::find()->select(['layoutId'])->distinct(true)->where(['in', 'fieldId', $fieldIds])->column();
+
+        // All of the entry types with these fields
+        $entryTypeIds = EntryType::find()->select(['id'])->where(['in', 'fieldLayoutId', $fieldLayoutIds])->column();
+
+
+//        $recordQuery = CatchAllUrl::find();
+
+//        if ($search) {
+//            $likeOperator = Craft::$app->getDb()->getIsPgsql() ? 'ILIKE' : 'LIKE';
+//            $recordQuery->andWhere([
+//                'or',
+//                [$likeOperator, '[[id]]', $search],
+//                [$likeOperator, '[[uri]]', $search],
+//                [$likeOperator, '[[uid]]', $search],
+//                [$likeOperator, '[[query]]', $search],
+//                [$likeOperator, '[[referrer]]', $search],
+//                [$likeOperator, '[[dateUpdated]]', $search],
+//                [$likeOperator, '[[dateCreated]]', $search]
+//            ]);
+//        }
+
+//        if ($siteId) {
+//            $recordQuery->andWhere(['=', '[[siteId]]', $siteId]);
+//        }
+
+//        $recordQuery->andWhere(['=', '[[ignored]]', (bool)$ignoredOnly]);
+
+//        if ($sort) {
+//            $sortData = explode('|', $sort);
+//            $sortKey = $sortData[0];
+//            $sortDir = $sortData[1] === 'asc' ? SORT_ASC : SORT_DESC;
+//            $orderParam = [$sortKey => $sortDir];
+//            $recordQuery->orderBy($orderParam);
+//        } else {
+//            $recordQuery->orderBy(['dateCreated' => SORT_DESC]);
+//        }
+
+//        $total = $recordQuery->count();
+
+//        $recordQuery->offset($offset);
+//        $recordQuery->limit($limit);
+
+//        $registered404s = $recordQuery->all();
+
+//        $rows = [];
+//        foreach ($registered404s as $item) {
+//            $title = $item['uri'];
+//            if (isset($item['query']) && $item['query']) {
+//                $title .= '?' . $item['query'];
+//            }
+//
+//            $rows[] = [
+//                'id' => $item['id'],
+//                'siteId' => $item['siteId'],
+//                'ignored' => $item['ignored'],
+//                'title' => Html::encode($title),
+//            ];
+//        }
+
+//        return $this->asJson([
+//            'pagination' => AdminTable::paginationLinks($page, $total, $limit),
+//            'data' => $rows,
+//        ]);
     }
 }

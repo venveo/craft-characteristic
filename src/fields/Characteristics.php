@@ -417,6 +417,12 @@ class Characteristics extends Field
         parent::afterElementSave($element, $isNew);
     }
 
+    public function getCharacteristicGroup() {
+        $source = ElementHelper::findSource(CharacteristicElement::class, $this->source, 'index');
+        $groupId = $source['criteria']['groupId'];
+        return Characteristic::getInstance()->characteristicGroups->getGroupById($groupId);
+    }
+
 //
 //    /**
 //     * @inheritDoc

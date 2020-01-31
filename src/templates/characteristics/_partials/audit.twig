@@ -1,0 +1,18 @@
+<div id="audit-vue-admin-table"></div>
+
+{% js %}
+var columns = [
+    {
+        name: '__slot:title', title: Craft.t('app', 'Title'), sortField: 'title'
+    }
+];
+
+new Craft.VueAdminTable({
+    columns: columns,
+    container: '#audit-vue-admin-table',
+    emptyMessage: Craft.t('vredirect', 'All values are assigned!'),
+    padded: false,
+    search: false,
+    tableDataEndpoint: Craft.getActionUrl('characteristic/characteristics/audit-table?siteId=' + Craft.siteId + '&characteristicId={{ characteristic.id}}')
+});
+{% endjs %}
