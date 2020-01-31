@@ -56,14 +56,13 @@ class CharacteristicLinks extends Component
      */
     public function resaveLinks($data, ElementInterface $element, Field $field)
     {
-        // First we need to flush the existing link records...
+        // First we need to flush the existing link elements
         $query = CharacteristicLinkRecord::find();
         $query->select(['id'])
-            ->where(['ownerId' => $element->id])
-            ->andWhere(['fieldId' => $field->id]);
-        $results = $query->column();
-        foreach ($results as $result) {
-            Craft::$app->elements->deleteElementById((int)$result, CharacteristicLink::class, null, true);
+            ->where(['ownerId' => $element->id, 'fieldId' => $field->id]);
+        $linkElementIds = $query->column();
+        foreach ($linkElementIds as $linkElementId) {
+            Craft::$app->elements->deleteElementById((int)$linkElementId, CharacteristicLink::class, null, true);
         }
 
         $relationData = [];
@@ -79,7 +78,13 @@ class CharacteristicLinks extends Component
                 ];
                 $hasAddedCharacteristicRelationship = true;
             }
-            Craft::$app->elements->saveElement($datum, false);
+
+            $newLink = new CharacteristicLink();
+            $newLink->characteristicId = $datum->characteristicId;
+            $newLink->fieldId = $field->id;
+            $newLink->valueId = $datum->valueId;
+            $newLink->ownerId = $element->id;
+            Craft::$app->elements->saveElement($newLink, false);
             $relationData[] = [
                 $field->id,
                 $element->id,

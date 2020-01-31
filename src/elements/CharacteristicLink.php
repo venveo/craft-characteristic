@@ -226,7 +226,7 @@ class CharacteristicLink extends Element implements BlockElementInterface
     {
         if ($this->_owner === null) {
             if ($this->ownerId === null) {
-                throw new InvalidConfigException('Matrix block is missing its owner ID');
+                throw new InvalidConfigException('Characteristic Link is missing its owner ID');
             }
 
             if (($this->_owner = Craft::$app->getElements()->getElementById($this->ownerId, null, $this->siteId)) === null) {

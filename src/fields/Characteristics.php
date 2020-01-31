@@ -392,10 +392,10 @@ class Characteristics extends Field
      * @throws Exception
      * @throws Throwable
      */
-    public function afterElementSave(ElementInterface $element, bool $isNew)
+    public function afterElementPropagate(ElementInterface $element, bool $isNew)
     {
         if (!$element instanceof Element || $element->propagating) {
-            return parent::afterElementSave($element, $isNew);
+            return parent::afterElementPropagate($element, $isNew);
         }
 
         /** @var Element $element */

@@ -326,8 +326,6 @@ class CharacteristicLinkQuery extends ElementQuery
 
         // Ensure we don't get any drafts or revisions
         $this->subQuery->innerJoin(Table::ELEMENTS . ' owners', '[[owners.id]] = [[characteristic_links.ownerId]]');
-        $this->subQuery->andWhere(['owners.draftId' => null]);
-        $this->subQuery->andWhere(['owners.revisionId' => null]);
 
         return parent::beforePrepare();
     }
