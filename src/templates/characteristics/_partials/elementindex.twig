@@ -1,0 +1,20 @@
+<table class="data fullwidth collapsible">
+    <thead>
+    <tr>
+        <th class="thin">{{ "ID" }}</th>
+        <th>{{ "Title" }}</th>
+        <th>{{ "Value" }}</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for relatedElement in relatedElements %}
+        {% set links = relatedElement.characteristicLinks(characteristic) %}
+        <tr>
+            <td>{{ relatedElement.id }}</td>
+            <td><a target="_blank" href="{{ relatedElement.getCpEditUrl() }}">{{ relatedElement.title }}
+            </td>
+            <td>{{ links|map(link => link.characteristicValue.value)|join(', ') }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
