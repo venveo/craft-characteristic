@@ -25,3 +25,39 @@
     options: sourceOptions,
     value: field.source
 }) }}
+
+{% if craft.app.getIsMultiSite() %}
+    {{ forms.selectField({
+        label: 'Propagation Method'|t('app'),
+        instructions: 'Which sites should blocks be saved to?'|t('app'),
+        id: 'propagationMethod',
+        name: 'propagationMethod',
+        options: [
+            { value: 'none', label: 'Only save blocks to the site they were created in'|t('app') },
+            { value: 'siteGroup', label: 'Save blocks to other sites in the same site group'|t('app') },
+            { value: 'language', label: 'Save blocks to other sites with the same language'|t('app') },
+            { value: 'all', label: 'Save blocks to all sites the owner element is saved in'|t('app') },
+        ],
+        value: field.propagationMethod
+    }) }}
+
+    {% if field.id and field.propagationMethod != 'none' %}
+        {% js %}
+            (function() {
+            var showingWarning = false;
+            $("#{{ 'propagationMethod'|namespaceInputId }}").on('change', function() {
+            if ($(this).val() !== '{{ field.propagationMethod }}') {
+            if (!showingWarning) {
+            $('<p/>', {'class': 'warning', text: "{{ 'Applying this change to existing blocks can take some time.'|t('app')|e('js') }}"})
+            .appendTo($("#{{ 'propagationMethod-field'|namespaceInputId }}"));
+            showingWarning = true;
+            }
+            } else if (showingWarning) {
+            $("#{{ 'propagationMethod-field'|namespaceInputId }} .warning").remove();
+            showingWarning = false;
+            }
+            });
+            })();
+        {% endjs %}
+    {% endif %}
+{% endif %}

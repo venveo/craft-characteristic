@@ -2,19 +2,26 @@
     <thead>
     <tr>
         <th class="thin">{{ "ID" }}</th>
+        <th class="thin">{{ "Site" }}</th>
         <th>{{ "Title" }}</th>
         <th>{{ "Value" }}</th>
     </tr>
     </thead>
     <tbody>
     {% for relatedElement in relatedElements %}
-        {% set links = relatedElement.characteristicLinks(characteristic) %}
-        <tr>
-            <td>{{ relatedElement.id }}</td>
-            <td><a target="_blank" href="{{ relatedElement.getCpEditUrl() }}">{{ relatedElement.title }}
-            </td>
-            <td>{{ links|map(link => link.characteristicValue.value)|join(', ') }}</td>
-        </tr>
+        {% set blocks = craft.characteristic.characteristicLinkBlocks.ownerId(relatedElement.id).characteristicId(characteristic.id).site('*').all() %}
+        {% if blocks %}
+            {% for block in blocks %}
+                {% set values = block.getValues.all() %}
+                <tr>
+                    <td>{{ relatedElement.id }}</td>
+                    <td>{{ block.site.handle }}</td>
+                    <td><a target="_blank" href="{{ relatedElement.getCpEditUrl() }}">{{ relatedElement.title }}
+                    </td>
+                    <td>{{ values|map(value => value.value)|join(', ') }}</td>
+                </tr>
+            {% endfor %}
+        {% endif %}
     {% endfor %}
     </tbody>
 </table>

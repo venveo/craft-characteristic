@@ -333,21 +333,20 @@ class Characteristic extends Element
         return $html;
     }
 
-    /**
-     * @param string $type
-     * @return ElementQueryInterface
-     */
-    public function getRelatedElements($type = Entry::class)
-    {
-        $linkQuery = CharacteristicLink::find();
-        $linkQuery->where(['characteristicId' => $this->id]);
-        // TODO: Should this be ->column?
-        $ids = $linkQuery->select('ownerId')->indexBy('ownerId')->all();
-        $criteria['id'] = array_keys($ids);
-        /** @var ElementQueryInterface $query */
-        $query = Craft::configure($type::find(), $criteria);
-        return $query;
-    }
+//    /**
+//     * @param string $type
+//     * @return ElementQueryInterface
+//     */
+//    public function getRelatedElements($type = Entry::class)
+//    {
+//        $linkQuery = CharacteristicLink::find();
+//        $linkQuery->where(['characteristicId' => $this->id]);
+//        $ids = $linkQuery->select('ownerId')->indexBy('ownerId')->all();
+//        $criteria['id'] = array_keys($ids);
+//        /** @var ElementQueryInterface $query */
+//        $query = Craft::configure($type::find(), $criteria);
+//        return $query;
+//    }
 
     // Indexes, etc.
     // -------------------------------------------------------------------------

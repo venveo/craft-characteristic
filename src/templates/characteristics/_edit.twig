@@ -18,8 +18,8 @@
 
 {% block actionButton %}
     {% if not isNewCharacteristic %}
-        <a class="btn" href="{{ cpUrl('characteristics/' ~ groupHandle ~ '/' ~ characteristic.id ~ '/new') }}">Create
-            Value</a>
+        <a class="btn" href="{{ cpUrl('characteristics/' ~ groupHandle ~ '/' ~ characteristic.id ~ '/new') }}">{{'Create
+            Value'|t('characteristic')}}</a>
     {% endif %}
 
     <div class="btngroup">
@@ -64,11 +64,10 @@
             {% if characteristic.id %}
                 {% set values = characteristic.values.all() %}
                 <h2>All Values</h2>
-
-                {% include 'characteristic/characteristics/_partials/valueindex' %}
+                {% include 'characteristic/characteristics/_partials/valueindex.twig' %}
                 <h2>Elements</h2>
-                {% set relatedElements = characteristic.relatedElements.all() %}
-                {% include 'characteristic/characteristics/_partials/elementindex' %}
+                {% set relatedElements = craft.entries.relatedTo({targetElement: characteristic.id}).all() %}
+                {% include 'characteristic/characteristics/_partials/elementindex.twig' %}
             {% endif %}
         </div>
     {% endif %}

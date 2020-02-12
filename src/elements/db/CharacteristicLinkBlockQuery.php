@@ -13,10 +13,21 @@ use venveo\characteristic\elements\Characteristic;
 use venveo\characteristic\elements\CharacteristicValue;
 use venveo\characteristic\fields\Characteristics as CharacteristicsField;
 
-class CharacteristicLinkQuery extends ElementQuery
+class CharacteristicLinkBlockQuery extends ElementQuery
 {
-    // Properties
-    // =========================================================================
+    /**
+     * @inheritdoc
+     */
+    protected $defaultOrderBy = ['dateCreated' => SORT_DESC];
+
+    // General parameters
+    // -------------------------------------------------------------------------
+
+    /**
+     * @var int|int[]|string|false|null The field ID(s) that the resulting characteristic must belong to.
+     * @used-by fieldId()
+     */
+    public $fieldId;
 
     /**
      * @var int|int[]|null The owner element ID(s) that the resulting characteristic links must belong to.
@@ -32,26 +43,20 @@ class CharacteristicLinkQuery extends ElementQuery
      */
     public $characteristicId;
 
-    /**
-     * @var int|int[]|null The value the relationship must have
-     * @used-by value()
-     * @used-by valueId()
-     */
-    public $valueId;
 
     /**
-     * @var int|int[]|string|false|null The field ID(s) that the resulting characteristic must belong to.
-     * @used-by fieldId()
+     * @var bool|null Whether the owner elements can be drafts.
+     * @used-by allowOwnerDrafts()
+     * @since 3.3.10
      */
-    public $fieldId;
+    public $allowOwnerDrafts;
 
     /**
-     * @inheritdoc
+     * @var bool|null Whether the owner elements can be revisions.
+     * @used-by allowOwnerRevisions()
+     * @since 3.3.10
      */
-    protected $defaultOrderBy = ['dateCreated' => SORT_DESC];
-
-    // Public Methods
-    // =========================================================================
+    public $allowOwnerRevisions;
 
 
     /**
@@ -225,29 +230,6 @@ class CharacteristicLinkQuery extends ElementQuery
         return $this;
     }
 
-    public function value($value)
-    {
-        if ($value instanceof CharacteristicValue) {
-            $this->valueId = $value->id;
-        } else if ($value !== null) {
-            $this->valueId = (new Query())
-                ->select(['id'])
-                ->from(['{{%characteristic_values}}'])
-                ->where(Db::parseParam('value', $value))
-                ->column();
-        } else {
-            $this->valueId = null;
-        }
-
-        return $this;
-    }
-
-    public function valueId($value)
-    {
-        $this->valueId = $value;
-        return $this;
-    }
-
     /**
      * @param $value
      * @return $this
@@ -279,8 +261,47 @@ class CharacteristicLinkQuery extends ElementQuery
     }
 
 
-    // Protected Methods
-    // =========================================================================
+    /**
+     * Narrows the query results based on whether the Matrix blocks’ owners are drafts.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches Matrix blocks…
+     * | - | -
+     * | `true` | which can belong to a draft.
+     * | `false` | which cannot belong to a draft.
+     *
+     * @param bool|null $value The property value
+     * @return static self reference
+     * @uses $allowOwnerDrafts
+     * @since 3.3.10
+     */
+    public function allowOwnerDrafts($value = true)
+    {
+        $this->allowOwnerDrafts = $value;
+        return $this;
+    }
+
+    /**
+     * Narrows the query results based on whether the Matrix blocks’ owners are revisions.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches Matrix blocks…
+     * | - | -
+     * | `true` | which can belong to a revision.
+     * | `false` | which cannot belong to a revision.
+     *
+     * @param bool|null $value The property value
+     * @return static self reference
+     * @uses $allowOwnerDrafts
+     * @since 3.3.10
+     */
+    public function allowOwnerRevisions($value = true)
+    {
+        $this->allowOwnerRevisions = $value;
+        return $this;
+    }
 
     /**
      * @inheritdoc
@@ -291,21 +312,35 @@ class CharacteristicLinkQuery extends ElementQuery
             throw new QueryAbortedException();
         }
 
-        $this->joinElementTable('characteristic_links');
+        $this->joinElementTable('characteristic_linkblocks');
 
+
+        if (!$this->fieldId && $this->id) {
+            $fieldIds = (new Query())
+                ->select(['fieldId'])
+                ->distinct()
+                ->from('{{%characteristic_linkblocks}}')
+                ->where(Db::parseParam('id', $this->id))
+                ->column();
+
+            $this->fieldId = count($fieldIds) === 1 ? $fieldIds[0] : $fieldIds;
+        }
+
+
+        // TODO: Get the sort order from the characteristics
         $this->query->select([
-            'characteristic_links.fieldId',
-            'characteristic_links.ownerId',
-            'characteristic_links.characteristicId',
-            'characteristic_links.valueId',
+            'characteristic_linkblocks.characteristicId',
+            'characteristic_linkblocks.ownerId',
+            'characteristic_linkblocks.fieldId',
         ]);
 
+
         if ($this->fieldId) {
-            $this->subQuery->andWhere(Db::parseParam('characteristic_links.fieldId', $this->fieldId));
+            $this->subQuery->andWhere(Db::parseParam('characteristic_linkblocks.fieldId', $this->fieldId));
         }
 
         if ($this->ownerId) {
-            $this->subQuery->andWhere(Db::parseParam('characteristic_links.ownerId', $this->ownerId));
+            $this->subQuery->andWhere(Db::parseParam('characteristic_linkblocks.ownerId', $this->ownerId));
         }
 
         if ($this->characteristicId !== null) {
@@ -313,20 +348,25 @@ class CharacteristicLinkQuery extends ElementQuery
                 return false;
             }
 
-            $this->subQuery->andWhere(Db::parseParam('characteristic_links.characteristicId', $this->characteristicId));
+            $this->subQuery->andWhere(Db::parseParam('characteristic_linkblocks.characteristicId', $this->characteristicId));
         }
 
-        if ($this->valueId !== null) {
-            if (empty($this->valueId)) {
-                return false;
+
+        // Ignore revision/draft blocks by default
+        $allowOwnerDrafts = $this->allowOwnerDrafts ?? ($this->id || $this->ownerId);
+        $allowOwnerRevisions = $this->allowOwnerRevisions ?? ($this->id || $this->ownerId);
+
+        if (!$allowOwnerDrafts || !$allowOwnerRevisions) {
+            $this->subQuery->innerJoin(Table::ELEMENTS . ' owners', '[[owners.id]] = [[characteristic_linkblocks.ownerId]]');
+
+            if (!$allowOwnerDrafts) {
+                $this->subQuery->andWhere(['owners.draftId' => null]);
             }
 
-            $this->subQuery->andWhere(Db::parseParam('characteristic_links.valueId', $this->valueId));
+            if (!$allowOwnerRevisions) {
+                $this->subQuery->andWhere(['owners.revisionId' => null]);
+            }
         }
-
-        // Ensure we don't get any drafts or revisions
-        $this->subQuery->innerJoin(Table::ELEMENTS . ' owners', '[[owners.id]] = [[characteristic_links.ownerId]]');
-
         return parent::beforePrepare();
     }
 }

@@ -13,6 +13,8 @@ namespace venveo\characteristic\variables;
 use Craft;
 use craft\elements\db\ElementQueryInterface;
 use venveo\characteristic\elements\Characteristic;
+use venveo\characteristic\elements\CharacteristicLinkBlock;
+use venveo\characteristic\elements\db\CharacteristicLinkBlockQuery;
 use venveo\characteristic\elements\db\CharacteristicQuery;
 use venveo\characteristic\helpers\Drilldown;
 
@@ -33,6 +35,13 @@ class CharacteristicVariable
     public function characteristics(array $criteria = []): CharacteristicQuery
     {
         $query = Characteristic::find();
+        Craft::configure($query, $criteria);
+        return $query;
+    }
+
+    public function characteristicLinkBlocks(array $criteria = []): CharacteristicLinkBlockQuery
+    {
+        $query = CharacteristicLinkBlock::find();
         Craft::configure($query, $criteria);
         return $query;
     }
