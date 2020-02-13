@@ -46,12 +46,11 @@ class CharacteristicLinkBlocks extends Component
             $saveAll = false;
         } else {
             $blocksQuery = clone $query;
-            $blocks = $blocksQuery->all();
+            $blocks = $blocksQuery->anyStatus()->all();
             $saveAll = true;
         }
 
         $blockIds = [];
-        $db = Craft::$app->getDb();
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
@@ -68,55 +67,55 @@ class CharacteristicLinkBlocks extends Component
             $this->_deleteOtherBlocks($field, $owner, $blockIds);
 
             // Should we duplicate the blocks to other sites?
-//            if (
-//                $field->propagationMethod !== CharacteristicsField::PROPAGATION_METHOD_ALL &&
-//                ($owner->propagateAll || !empty($owner->newSiteIds))
-//            ) {
+            if (
+                $field->propagationMethod !== CharacteristicsField::PROPAGATION_METHOD_ALL &&
+                ($owner->propagateAll || !empty($owner->newSiteIds))
+            ) {
                 // Find the owner's site IDs that *aren't* supported by this site's Matrix blocks
-//                $ownerSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($owner), 'siteId');
-//                $fieldSiteIds = $this->getSupportedSiteIds($field->propagationMethod, $owner);
-//                $otherSiteIds = array_diff($ownerSiteIds, $fieldSiteIds);
+                $ownerSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($owner), 'siteId');
+                $fieldSiteIds = $this->getSupportedSiteIds($field->propagationMethod, $owner);
+                $otherSiteIds = array_diff($ownerSiteIds, $fieldSiteIds);
 
                 // If propagateAll isn't set, only deal with sites that the element was just propagated to for the first time
-//                if (!$owner->propagateAll) {
-//                    $otherSiteIds = array_intersect($otherSiteIds, $owner->newSiteIds);
-//                }
+                if (!$owner->propagateAll) {
+                    $otherSiteIds = array_intersect($otherSiteIds, $owner->newSiteIds);
+                }
 
-//                if (!empty($otherSiteIds)) {
-//                    // Get the original element and duplicated element for each of those sites
-//                    /** @var Element[] $otherTargets */
-//                    $otherTargets = $owner::find()
-//                        ->drafts($owner->getIsDraft())
-//                        ->revisions($owner->getIsRevision())
-//                        ->id($owner->id)
-//                        ->siteId($otherSiteIds)
-//                        ->anyStatus()
-//                        ->all();
-//
-//                    // Duplicate Matrix blocks, ensuring we don't process the same blocks more than once
-//                    $handledSiteIds = [];
-//
-//                    $cachedQuery = clone $query;
-//                    $cachedQuery->anyStatus();
-//                    $cachedQuery->setCachedResult($blocks);
-//                    $owner->setFieldValue($field->handle, $cachedQuery);
-//
-//                    foreach ($otherTargets as $otherTarget) {
-//                        // Make sure we haven't already duplicated blocks for this site, via propagation from another site
-//                        if (isset($handledSiteIds[$otherTarget->siteId])) {
-//                            continue;
-//                        }
-//
-//                        $this->duplicateBlocks($field, $owner, $otherTarget);
-//
-//                        // Make sure we don't duplicate blocks for any of the sites that were just propagated to
-//                        $sourceSupportedSiteIds = $this->getSupportedSiteIds($field->propagationMethod, $otherTarget);
-//                        $handledSiteIds = array_merge($handledSiteIds, array_flip($sourceSupportedSiteIds));
-//                    }
-//
-//                    $owner->setFieldValue($field->handle, $query);
-//                }
-//            }
+                if (!empty($otherSiteIds)) {
+                    // Get the original element and duplicated element for each of those sites
+                    /** @var Element[] $otherTargets */
+                    $otherTargets = $owner::find()
+                        ->drafts($owner->getIsDraft())
+                        ->revisions($owner->getIsRevision())
+                        ->id($owner->id)
+                        ->siteId($otherSiteIds)
+                        ->anyStatus()
+                        ->all();
+
+                    // Duplicate Matrix blocks, ensuring we don't process the same blocks more than once
+                    $handledSiteIds = [];
+
+                    $cachedQuery = clone $query;
+                    $cachedQuery->anyStatus();
+                    $cachedQuery->setCachedResult($blocks);
+                    $owner->setFieldValue($field->handle, $cachedQuery);
+
+                    foreach ($otherTargets as $otherTarget) {
+                        // Make sure we haven't already duplicated blocks for this site, via propagation from another site
+                        if (isset($handledSiteIds[$otherTarget->siteId])) {
+                            continue;
+                        }
+
+                        $this->duplicateBlocks($field, $owner, $otherTarget);
+
+                        // Make sure we don't duplicate blocks for any of the sites that were just propagated to
+                        $sourceSupportedSiteIds = $this->getSupportedSiteIds($field->propagationMethod, $otherTarget);
+                        $handledSiteIds = array_merge($handledSiteIds, array_flip($sourceSupportedSiteIds));
+                    }
+
+                    $owner->setFieldValue($field->handle, $query);
+                }
+            }
 
             $transaction->commit();
         } catch (\Throwable $e) {

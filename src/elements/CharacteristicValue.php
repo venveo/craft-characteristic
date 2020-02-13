@@ -44,7 +44,7 @@ class CharacteristicValue extends Element
 
     public $sortOrder = 0;
 
-    public $idempotent = null;
+    public $idempotent = false;
 
     // Static Methods
     // =========================================================================

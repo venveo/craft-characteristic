@@ -18,7 +18,7 @@
                             :multiple="true"
                             label="value"
                             track-by="id"
-                            :options="characteristic.values"
+                            :options="availableValues"
                             :tag-placeholder="'Press enter to create a new value'"
                             :taggable="characteristic.allowCustomOptions"
                             @tag="addTag"
@@ -32,7 +32,7 @@
                             :multiple="false"
                             label="value"
                             track-by="id"
-                            :options="characteristic.values"
+                            :options="availableValues"
                             :tag-placeholder="'Press enter to create a new value'"
                             :taggable="characteristic.allowCustomOptions"
                             @tag="addTag"
@@ -116,6 +116,9 @@
             },
             characteristic() {
                 return this.$root.characteristics.find(o => o.id === this.characteristicId);
+            },
+            availableValues() {
+                return this.characteristic.values.filter(o => !o.idempotent);
             }
         }
     }

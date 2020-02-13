@@ -167,6 +167,7 @@ class Characteristics extends Field implements EagerLoadingFieldInterface
                 ->fieldId($this->id)
                 ->ownerId($element->id)
                 ->siteId($element->siteId)
+                ->anyStatus()
                 ->indexBy('id')
                 ->all();
         } else {
@@ -174,9 +175,6 @@ class Characteristics extends Field implements EagerLoadingFieldInterface
         }
 
         $blocks = [];
-        $prevBlock = null;
-
-        $newBlockData = $value;
 
         foreach($value as $blockId => $blockData) {
             // If this is a preexisting block but we don't have a record of it,
@@ -192,7 +190,6 @@ class Characteristics extends Field implements EagerLoadingFieldInterface
 
             // Existing block?
             if (isset($oldBlocksById[$blockId])) {
-                // TODO: Check values for changes
                 /** @var CharacteristicLinkBlock $block */
                 $block = $oldBlocksById[$blockId];
                 $block->dirty = true;
@@ -210,75 +207,10 @@ class Characteristics extends Field implements EagerLoadingFieldInterface
                 $block->setValues($blockData['values']);
             }
 
-            // Set the prev/next blocks
-            if ($prevBlock) {
-                /** @var ElementInterface $prevBlock */
-                $prevBlock->setNext($block);
-                /** @var ElementInterface $block */
-                $block->setPrev($prevBlock);
-            }
-            $prevBlock = $block;
-
             $blocks[] = $block;
         }
-        return $blocks;
 
-//
-        /** @var Characteristic[] $characteristics */
-//        $characteristics = ArrayHelper::index(CharacteristicElement::find()->groupId($groupId)->all(), 'handle');
-//        // Get the old links
-//        if ($element->id) {
-//            $oldLinksById = CharacteristicLinkBlock::find()
-//                ->fieldId($this->id)
-//                ->ownerId($element->id)
-//                ->siteId($element->siteId)
-////                ->with(['characteristic'])
-//                ->indexBy('id')
-//                ->all();
-//        } else {
-//            $oldLinksById = [];
-//        }
-//
-//        $links = [];
-//        $prevLink = null;
-//
-//        foreach ($value as $characteristicHandle => $characteristicData) {
-//            // Make sure it's a valid characteristic
-//            if (!isset($characteristicsByHandle[$characteristicHandle])) {
-//                continue;
-//            }
-//            $characteristic = $characteristicsByHandle[$characteristicHandle];
-//            if (!isset($characteristicData['values'])) {
-//                continue;
-//            }
-//            foreach ($characteristicData['values'] as $valueString) {
-//                $valueElement = Characteristic::$plugin->characteristicValues->getValueElement($characteristic, $valueString, true);
-//                if (!$valueElement) {
-//                    continue;
-//                }
-//                $block = new CharacteristicLink();
-//                $block->fieldId = $this->id;
-//                $block->characteristicId = $characteristic->id;
-//                $block->valueId = $valueElement->id;
-//                $block->ownerId = $element->id;
-//                $block->siteId = Craft::$app->sites->getPrimarySite()->id;
-//                $block->setCharacteristic($characteristic);
-//                $block->setValue($valueElement);
-//                $block->setOwner($element);
-//
-//                // Set the prev/next blocks
-//                if ($prevLink) {
-//                    /** @var ElementInterface $prevLink */
-//                    $prevLink->setNext($block);
-//                    /** @var ElementInterface $block */
-//                    $block->setPrev($prevLink);
-//                }
-//                $prevLink = $block;
-//
-//                $links[] = $block;
-//            }
-//        }
-//        return $links;
+        return $blocks;
     }
 
     /**
@@ -290,9 +222,12 @@ class Characteristics extends Field implements EagerLoadingFieldInterface
         $serialized = [];
         $new = 0;
 
+        /** @var CharacteristicLinkBlock $block */
         foreach ($value->all() as $block) {
-            $blockId = $block->id ?? 'new' . ++$new;
+            $blockId = $block->id ?? 'new' . $new++;
             $serialized[$blockId] = [
+                'characteristic' => $block->characteristic->id,
+                'values' => $block->getValues()->ids()
             ];
         }
 
@@ -391,28 +326,6 @@ class Characteristics extends Field implements EagerLoadingFieldInterface
         // Register our asset bundle
         Craft::$app->getView()->registerAssetBundle(CharacteristicsFieldAsset::class);
 
-//        $values = [];
-
-//        /** @var CharacteristicLinkBlock $characteristicItem */
-//        foreach ($value as $characteristicItem) {
-//            $characteristic = $characteristicItem->characteristic;
-//            $characteristicValue = $characteristicItem->value;
-//
-//            if (!isset($values[$characteristic->handle])) {
-//                $values[$characteristic->handle] = [];
-//            }
-//            $values[$characteristic->handle][] = $characteristicValue->value;
-//        }
-        Craft::$app->getView()->registerAssetBundle(CharacteristicsFieldAsset::class);
-
-//        // Safe to create the default blocks?
-//        if ($createDefaultBlocks) {
-//            $blockTypeJs = Json::encode($blockTypes[0]->handle);
-//            for ($i = count($value); $i < $this->minBlocks; $i++) {
-//                $js .= "\nmatrixInput.addBlock({$blockTypeJs});";
-//            }
-//        }
-
         $source = ElementHelper::findSource(CharacteristicElement::class, $this->source, 'index');
         $groupId = $source['criteria']['groupId'];
 
@@ -422,8 +335,8 @@ class Characteristics extends Field implements EagerLoadingFieldInterface
             'id' => $id,
             'name' => $this->handle,
             'characteristics' => $characteristics,
-            'static' => false,
             'blocks' => $value,
+            'static' => false,
             'staticBlocks' => []
         ];
     }

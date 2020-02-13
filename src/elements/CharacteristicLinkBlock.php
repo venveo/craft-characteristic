@@ -266,10 +266,40 @@ class CharacteristicLinkBlock extends Element implements BlockElementInterface
             if (is_iterable($this->_values)) {
                 $valueService = \venveo\characteristic\Characteristic::getInstance()->characteristicValues;
                 $targetIds = [];
-                if (!$isNew) {
-                    Craft::$app->getDb()->createCommand()->delete(Table::RELATIONS, ['fieldId' => $this->fieldId, 'sourceId' => $this->id, 'sourceSiteId' => $this->siteId])->execute();
-                    Craft::$app->getDb()->createCommand()->delete(Table::RELATIONS, ['fieldId' => $this->fieldId, 'sourceId' => $this->ownerId, 'sourceSiteId' => $this->siteId])->execute();
-                }
+
+                // TODO: Make this work on multi-site environments
+                $conditions = [
+                    'and',
+                    [
+                        'fieldId' => $this->fieldId,
+                        'sourceId' => $this->id,
+                    ]
+                ];
+//                $conditions[] = [
+//                    'and',
+//                    [
+//                        'fieldId' => $this->fieldId,
+//                        'sourceId' => $this->ownerId,
+//                    ]
+//                ];
+
+//                $conditions[] = [
+//                    'or',
+//                    ['sourceSiteId' => null],
+//                    ['sourceSiteId' => $source->siteId]
+//                ];
+
+                // Delete the relations from Blocks to Values
+                Craft::$app->getDb()->createCommand()
+                    ->delete(Table::RELATIONS, $conditions)
+                    ->execute();
+
+                // Delete the relations from element to characteristic
+                Craft::$app->getDb()->createCommand()
+                    ->delete(Table::RELATIONS, [
+                        'fieldId' => $this->fieldId,
+                        'sourceId' => $this->ownerId,
+                    ])->execute();
 
                 foreach ($this->_values as $value) {
                     $valueId = $value;

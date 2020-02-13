@@ -22,6 +22,7 @@
     {% for value in characteristic.values %}
         {% set valueData = valueData|merge([{
             id: value.id,
+            idempotent: value.idempotent ? true : false,
             value: value.value
         }]) %}
     {% endfor %}
