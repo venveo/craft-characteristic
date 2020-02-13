@@ -294,7 +294,7 @@ class CharacteristicLinkBlock extends Element implements BlockElementInterface
                     ->delete(Table::RELATIONS, $conditions)
                     ->execute();
 
-                // Delete the relations from element to characteristic
+                // Delete the relations from element to characteristic & values
                 Craft::$app->getDb()->createCommand()
                     ->delete(Table::RELATIONS, [
                         'fieldId' => $this->fieldId,
@@ -326,7 +326,15 @@ class CharacteristicLinkBlock extends Element implements BlockElementInterface
                         $this->id, // LinkBlock
                         $this->siteId,
                         $targetId, // Value
-                        $sortOrder + 1
+                        null
+                    ];
+
+                    $batchInsertRelationValues[] = [
+                        $this->fieldId,
+                        $this->ownerId, // LinkBlock
+                        $this->siteId,
+                        $targetId, // Value
+                        null
                     ];
                 }
 
