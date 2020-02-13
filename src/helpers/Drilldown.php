@@ -5,12 +5,13 @@ namespace venveo\characteristic\helpers;
 use Craft;
 use craft\base\Component;
 use craft\elements\db\ElementQueryInterface;
+use craft\helpers\ArrayHelper;
 use venveo\characteristic\Characteristic;
 use venveo\characteristic\elements\Characteristic as CharacteristicElement;
+use venveo\characteristic\elements\CharacteristicLinkBlock;
 use venveo\characteristic\elements\CharacteristicValue;
 use venveo\characteristic\errors\CharacteristicGroupNotFoundException;
 use venveo\characteristic\models\CharacteristicGroup;
-use venveo\characteristic\records\CharacteristicLink;
 
 /**
  *
@@ -30,16 +31,13 @@ class Drilldown extends Component
     /** @var ElementQueryInterface $query */
     public $query = null;
 
-    /**
-     * @var bool $respectStructure
-     * If true, we'll show characteristics in the order explicitly as it appears int he structure
-     */
-    public $respectStructure = false;
-
     private $_group;
 
     private $_currentCharacteristic = null;
 
+    /**
+     * @throws CharacteristicGroupNotFoundException
+     */
     public function init()
     {
         parent::init();
@@ -62,15 +60,12 @@ class Drilldown extends Component
     {
         $characteristic = $this->getCurrentCharacteristic();
         $ids = $this->getResults()->ids();
-        $valueIds = array_keys(CharacteristicLink::find()
-//            ->addSelect(['COUNT(ownerId) as score', 'valueId'])
-            ->addSelect(['valueId'])
-            ->where(['in', 'ownerId', $ids])
-            ->andWhere(['characteristicId' => $characteristic->id])
-            ->groupBy('valueId')
-            ->indexBy('valueId')
-            ->asArray()
-            ->all());
+        $valueIds = CharacteristicValue::find()
+            ->relatedTo([
+                'and',
+                ['sourceElement' => $ids],
+            ])
+            ->characteristicId($characteristic->id)->ids();
 
         // We need to mix in our idempotent values which aren't directly related
         $idempotentIds = CharacteristicValue::find()->characteristicId($characteristic->id)->idempotent(true)->ids();
@@ -87,30 +82,30 @@ class Drilldown extends Component
         if ($this->_currentCharacteristic instanceof CharacteristicElement) {
             return $this->_currentCharacteristic;
         }
-        $ids = $this->query->ids();
-        $linksQuery = CharacteristicLink::find()
-            ->alias('link')
-            ->innerJoin('{{%elements}} elements1', '[[elements1.id]] = [[link.characteristicId]]')
-            ->innerJoin('{{%elements}} elements2', '[[elements2.id]] = [[link.valueId]]')
-            ->innerJoin('{{%structureelements}} structure', '[[structure.elementId]] = [[elements1.id]]')
-            ->addSelect(['COUNT(characteristicId) as score', 'characteristicId', 'structure.lft lft'])
-            ->where(['in', 'link.ownerId', $ids])
-            ->groupBy(['characteristicId', 'lft']);
-        if ($this->respectStructure) {
-            $linksQuery->orderBy('lft ASC');
-        } else {
-            $linksQuery->orderBy('score ASC, lft ASC');
-        }
 
+        // Get the entire possible result set IDs
+        $ids = $this->query->ids();
+
+        // Get all link blocks that belong to the result set
+        $linksQuery = CharacteristicLinkBlock::find()
+            ->ownerId($ids);
+
+        // Get just the available characteristics in the result set
         $linksQuery->indexBy('characteristicId');
 
+        // Make sure we don't include characteristics we've already satisfied
         $skipIds = array_keys($this->state->satisfiedAttributes);
-        $linksQuery->andWhere(['NOT IN', 'characteristicId', $skipIds]);
-        $linksQuery->andWhere(['elements1.dateDeleted' => null, 'elements2.dateDeleted' => null]);
+        $parsedSkipIds = array_map(function ($skipId) {
+            return '!=' . $skipId;
+        }, $skipIds);
 
-        $links = array_keys($linksQuery->asArray()->all());
+        array_unshift($parsedSkipIds, 'and');
+        $linksQuery->characteristicId($parsedSkipIds);
 
-        $characteristic = $this->_currentCharacteristic = CharacteristicElement::find()->groupId($this->_group->id)->id($links)->fixedOrder(true)->one();
+        $blocks = $linksQuery->asArray()->all();
+        $characteristicIds = ArrayHelper::getColumn($blocks, 'characteristicId');
+
+        $characteristic = $this->_currentCharacteristic = CharacteristicElement::find()->groupId($this->_group->id)->id($characteristicIds)->orderBy('lft ASC')->one();
 
         return $characteristic;
     }

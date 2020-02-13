@@ -11,9 +11,7 @@
 namespace venveo\characteristic;
 
 use Craft;
-use craft\base\Element;
 use craft\base\Plugin;
-use craft\events\DefineBehaviorsEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterCpSettingsEvent;
 use craft\events\RegisterUrlRulesEvent;
@@ -23,12 +21,12 @@ use craft\services\Fields;
 use craft\web\twig\variables\Cp;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
-use venveo\characteristic\behaviors\ElementCharacteristicsBehavior;
 use venveo\characteristic\elements\Characteristic as CharacteristicElement;
+use venveo\characteristic\elements\CharacteristicLinkBlock as CharacteristicLinkBlockElement;
 use venveo\characteristic\elements\CharacteristicValue as CharacteristicValueElement;
 use venveo\characteristic\fields\Characteristics as CharacteristicsField;
 use venveo\characteristic\services\CharacteristicGroups;
-use venveo\characteristic\services\CharacteristicLinks;
+use venveo\characteristic\services\CharacteristicLinkBlocks;
 use venveo\characteristic\services\Characteristics;
 use venveo\characteristic\services\CharacteristicValues;
 use venveo\characteristic\variables\CharacteristicVariable;
@@ -44,7 +42,7 @@ use yii\base\Event;
  * @property  CharacteristicGroups $characteristicGroups
  * @property  Characteristics $characteristics
  * @property  CharacteristicValues $characteristicValues
- * @property  CharacteristicLinks $characteristicLinks
+ * @property  CharacteristicLinkBlocks $characteristicLinkBlocks
  */
 class Characteristic extends Plugin
 {
@@ -81,7 +79,7 @@ class Characteristic extends Plugin
             'characteristicGroups' => CharacteristicGroups::class,
             'characteristics' => Characteristics::class,
             'characteristicValues' => CharacteristicValues::class,
-            'characteristicLinks' => CharacteristicLinks::class,
+            'characteristicLinkBlocks' => CharacteristicLinkBlocks::class,
         ]);
 
         Event::on(
@@ -114,13 +112,10 @@ class Characteristic extends Plugin
             Elements::EVENT_REGISTER_ELEMENT_TYPES,
             function (RegisterComponentTypesEvent $event) {
                 $event->types[] = CharacteristicElement::class;
+                $event->types[] = CharacteristicLinkBlockElement::class;
                 $event->types[] = CharacteristicValueElement::class;
             }
         );
-
-        Event::on(Element::class, Element::EVENT_DEFINE_BEHAVIORS, function (DefineBehaviorsEvent $e) {
-            $e->behaviors[] = ElementCharacteristicsBehavior::class;
-        });
 
         Event::on(
             Fields::class,
@@ -163,6 +158,4 @@ class Characteristic extends Plugin
         }
         return null;
     }
-    // Protected Methods
-    // =========================================================================
 }

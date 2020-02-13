@@ -12,15 +12,74 @@
  * @since     1.0.0
  */
 #}
+{{ hiddenInput(name, '') }}
+{% set characteristicData = [] %}
 
-{% import "_includes/forms" as forms %}
+{# @var characteristic \venveo\characteristic\elements\Characteristic #}
+{% for characteristic in characteristics %}
+    {% set valueData = [] %}
+    {# @var value \venveo\characteristic\elements\CharacteristicValue #}
+    {% for value in characteristic.values %}
+        {% set valueData = valueData|merge([{
+            id: value.id,
+            idempotent: value.idempotent ? true : false,
+            value: value.value
+        }]) %}
+    {% endfor %}
+    {% set characteristicData = characteristicData|merge([{
+        id: characteristic.id,
+        title: characteristic.title,
+        handle: characteristic.handle,
+        required: characteristic.required,
+        maxValues: characteristic.maxValues,
+        values: valueData,
+        allowCustomOptions: characteristic.allowCustomOptions
+    }]) %}
+{% endfor %}
 
-<div class="vue-characteristics-input"></div>
+{% set serializedBlockData = [] %}
+
+<div class="vue-characteristics-input">
+    <div class="defaults">
+        {% for block in blocks %}
+            {% set characteristicInputName = name|namespaceInputName ~ '['~block.id~'][characteristic]' %}
+            {{ hiddenInput(characteristicInputName, block.characteristic.id) }}
+            {% set valueData = [] %}
+            {% for value in block.values.all() %}
+                {% set valueData = valueData|merge([value.id]) %}
+                {% set valueInputName = name|namespaceInputName ~ '['~block.id~'][values][]' %}
+                {{ hiddenInput(valueInputName, value.id) }}
+            {% endfor %}
+
+            {% set blockData = {
+                id: block.id,
+                isNew: false,
+                characteristic: block.characteristic.id,
+                values: valueData
+            } %}
+            {% set serializedBlockData = serializedBlockData|merge([blockData]) %}
+        {% endfor %}
+    </div>
+    <characteristic-input>
+        <template v-slot:blocks>
+            <characteristic-link-block v-for="block in blocks"
+                                       :key="block.id"
+                                       :characteristic-id="block.characteristic"
+                                       :block-id="block.id"
+                                       :value-ids="block.values"
+                                       :is-new="block.isNew"
+            />
+        </template>
+        <template v-slot:controls>
+            <characteristic-controls :characteristics="characteristics"/>
+        </template>
+    </characteristic-input>
+</div>
 {% js %}
-var field = new Craft.VueCharacteristicsField({
+var field = new Craft.CharacteristicsField({
     container: '.vue-characteristics-input',
     name: {{ name|namespaceInputName|json_encode|raw }},
-    source: {{ source|json_encode|raw }},
-    value: {{ value|json_encode|raw }}
+    characteristics: {{ characteristicData|json_encode|raw }},
+    blocks: {{ serializedBlockData|json_encode|raw }}
     });
 {% endjs %}

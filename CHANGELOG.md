@@ -1,5 +1,23 @@
 # Characteristic Changelog
 
+## 1.0.0-beta.4 - 2/13/20
+## Changed
+- Refactored element structures such that we rely more on native Craft relations and Block Elements
+- Rewrote frontend field input to be more maintainable
+- Drilldown should be more performant 
+- Now requires Craft 3.4
+- Start using Vue Admin Table
+- Removed characteristic behavior in favor of field
+- Improved characteristic field to work more like Matrix fields
+- Changed CharacteristicLink to CharacteristicLinkBlock
+- Removed respectStructure from drilldown in favor of always respecting the structure
+- Characteristics now support multiple propagation methods
+
+## Fixed
+- Various improvements to multi-site support
+- Erroneous warning about unsaved changes on edit element screens
+- Drilldown now respects existing query parameters and paths
+
 ## 1.0.0-beta.3 - 1/31/20
 ## Fixed
 - Fixed error when saving drafts

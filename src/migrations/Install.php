@@ -91,11 +91,10 @@ class Install extends Migration
             'PRIMARY KEY([[id]])',
         ]);
 
-        $this->createTable('{{%characteristic_links}}', [
+        $this->createTable('{{%characteristic_linkblocks}}', [
             'id' => $this->integer()->notNull(),
-            'ownerId' => $this->integer()->notNull(),
             'characteristicId' => $this->integer()->notNull(),
-            'valueId' => $this->integer()->notNull(),
+            'ownerId' => $this->integer()->notNull(),
             'fieldId' => $this->integer()->notNull(),
             'deletedWithOwner' => $this->boolean()->null(),
             'dateCreated' => $this->dateTime()->notNull(),
@@ -122,7 +121,7 @@ class Install extends Migration
         $this->createIndex(null, '{{%characteristic_values}}', ['value'], false);
         $this->createIndex(null, '{{%characteristic_values}}', ['value', 'characteristicId'], true);
 
-        $this->createIndex(null, '{{%characteristic_links}}', ['deletedWithOwner'], false);
+        $this->createIndex(null, '{{%characteristic_linkblocks}}', ['deletedWithOwner'], false);
     }
 
     /**
@@ -141,11 +140,10 @@ class Install extends Migration
         $this->addForeignKey(null, '{{%characteristic_values}}', ['id'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%characteristic_values}}', ['characteristicId'], '{{%characteristic_characteristics}}', ['id'], 'CASCADE', null);
 
-        $this->addForeignKey(null, '{{%characteristic_links}}', ['id'], Table::ELEMENTS, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, '{{%characteristic_links}}', ['ownerId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, '{{%characteristic_links}}', ['fieldId'], Table::FIELDS, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, '{{%characteristic_links}}', ['valueId'], '{{%characteristic_values}}', ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, '{{%characteristic_links}}', ['characteristicId'], '{{%characteristic_characteristics}}', ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, '{{%characteristic_linkblocks}}', ['id'], Table::ELEMENTS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, '{{%characteristic_linkblocks}}', ['ownerId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, '{{%characteristic_linkblocks}}', ['fieldId'], Table::FIELDS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, '{{%characteristic_linkblocks}}', ['characteristicId'], '{{%characteristic_characteristics}}', ['id'], 'CASCADE', null);
     }
 
     /**
@@ -164,7 +162,7 @@ class Install extends Migration
      */
     protected function removeTables()
     {
-        $this->dropTableIfExists('{{%characteristic_links}}');
+        $this->dropTableIfExists('{{%characteristic_linkblocks}}');
         $this->dropTableIfExists('{{%characteristic_values}}');
         $this->dropTableIfExists('{{%characteristic_characteristics}}');
         $this->dropTableIfExists('{{%characteristic_groups}}');

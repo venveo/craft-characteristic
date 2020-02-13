@@ -18,12 +18,10 @@ use craft\elements\actions\Delete;
 use craft\elements\actions\Duplicate;
 use craft\elements\actions\Restore;
 use craft\elements\db\ElementQueryInterface;
-use craft\elements\Entry;
 use craft\helpers\UrlHelper;
 use venveo\characteristic\Characteristic as Plugin;
 use venveo\characteristic\elements\db\CharacteristicQuery;
 use venveo\characteristic\records\Characteristic as CharacteristicRecord;
-use venveo\characteristic\records\CharacteristicLink;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 
@@ -334,25 +332,6 @@ class Characteristic extends Element
     }
 
     /**
-     * @param string $type
-     * @return ElementQueryInterface
-     */
-    public function getRelatedElements($type = Entry::class)
-    {
-        $linkQuery = CharacteristicLink::find();
-        $linkQuery->where(['characteristicId' => $this->id]);
-        // TODO: Should this be ->column?
-        $ids = $linkQuery->select('ownerId')->indexBy('ownerId')->all();
-        $criteria['id'] = array_keys($ids);
-        /** @var ElementQueryInterface $query */
-        $query = Craft::configure($type::find(), $criteria);
-        return $query;
-    }
-
-    // Indexes, etc.
-    // -------------------------------------------------------------------------
-
-    /**
      * @inheritdoc
      * @throws Exception if reasons
      */
@@ -585,14 +564,6 @@ class Characteristic extends Element
         }
 
         return parent::beforeSave($isNew);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function afterMoveInStructure(int $structureId)
-    {
-        parent::afterMoveInStructure($structureId);
     }
 
     /**

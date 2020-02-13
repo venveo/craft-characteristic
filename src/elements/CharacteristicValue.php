@@ -44,7 +44,7 @@ class CharacteristicValue extends Element
 
     public $sortOrder = 0;
 
-    public $idempotent = null;
+    public $idempotent = false;
 
     // Static Methods
     // =========================================================================
@@ -240,7 +240,7 @@ class CharacteristicValue extends Element
     {
         $newState = clone $state;
         if ($this->idempotent) {
-            return $newState->setCharacteristicSatisfied($this->characteristic);
+            return $newState->setCharacteristicSatisfied($this->getCharacteristic());
         }
 
         return $newState->setCharacteristicValue($this);
@@ -254,11 +254,6 @@ class CharacteristicValue extends Element
     {
         return UrlHelper::cpUrl('characteristics/' . $this->getCharacteristic()->getGroup()->handle . '/' . $this->getCharacteristic()->id . '/' . $this->id);
     }
-
-    // Events
-    // -------------------------------------------------------------------------
-// Events
-    // -------------------------------------------------------------------------
 
     /**
      * @inheritdoc
