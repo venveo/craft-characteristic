@@ -7,10 +7,16 @@
 - Drilldown should be more performant 
 - Now requires Craft 3.4
 - Start using Vue Admin Table
+- Removed characteristic behavior in favor of field
+- Improved characteristic field to work more like Matrix fields
+- Changed CharacteristicLink to CharacteristicLinkBlock
+- Removed respectStructure from drilldown in favor of always respecting the structure
+- Characteristics now support multiple propagation methods
 
 ## Fixed
 - Various improvements to multi-site support
 - Erroneous warning about unsaved changes on edit element screens
+- Drilldown now respects existing query parameters and paths
 
 ## 1.0.0-beta.3 - 1/31/20
 ## Fixed

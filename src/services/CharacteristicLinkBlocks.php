@@ -14,8 +14,6 @@ use Craft;
 use craft\base\Component;
 use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\base\Field;
-use craft\db\Table;
 use craft\errors\ElementNotFoundException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
@@ -24,7 +22,6 @@ use venveo\characteristic\elements\CharacteristicLink;
 use venveo\characteristic\elements\CharacteristicLinkBlock;
 use venveo\characteristic\elements\db\CharacteristicLinkBlockQuery;
 use venveo\characteristic\fields\Characteristics as CharacteristicsField;
-use venveo\characteristic\records\CharacteristicLink as CharacteristicLinkRecord;
 use yii\db\Exception;
 
 /**
@@ -130,6 +127,7 @@ class CharacteristicLinkBlocks extends Component
      * @param MatrixField $field The Matrix field
      * @param ElementInterface The owner element
      * @param int[] $except Block IDs that should be left alone
+     * @throws Throwable
      */
     private function _deleteOtherBlocks(CharacteristicsField $field, ElementInterface $owner, array $except)
     {
@@ -147,76 +145,6 @@ class CharacteristicLinkBlocks extends Component
             $elementsService->deleteElement($deleteBlock);
         }
     }
-
-    /**
-     * Takes an array "data":
-     * [
-     *  [
-     *    characteristic Characteristic
-     *    values []CharacteristicValues
-     *  ]
-     * ]
-     * and updates and saves all links and relationships
-     * @param CharacteristicLink[]
-     * @param $element
-     * @param $field
-     * @throws Throwable
-     * @throws ElementNotFoundException
-     * @throws \yii\base\Exception
-     * @throws Exception
-     */
-//    public function resaveLinks($data, ElementInterface $element, Field $field)
-//    {
-//        // First we need to flush the existing link elements
-//        $query = CharacteristicLinkRecord::find();
-//        $query->select(['id'])
-//            ->where(['ownerId' => $element->id, 'fieldId' => $field->id]);
-//        $linkElementIds = $query->column();
-//        foreach ($linkElementIds as $linkElementId) {
-//            Craft::$app->elements->deleteElementById((int)$linkElementId, CharacteristicLink::class, null, true);
-//        }
-//
-//        $relationData = [];
-//        $hasAddedCharacteristicRelationship = false;
-//        /** @var CharacteristicLink $datum */
-//        foreach ($data as $datum) {
-//            // Create a relationship for the element to the characteristic element
-//            if (!$hasAddedCharacteristicRelationship) {
-//                $relationData[] = [
-//                    $field->id,
-//                    $element->id,
-//                    $datum->characteristicId
-//                ];
-//                $hasAddedCharacteristicRelationship = true;
-//            }
-//
-//            $newLink = new CharacteristicLink();
-//            $newLink->characteristicId = $datum->characteristicId;
-//            $newLink->fieldId = $field->id;
-//            $newLink->valueId = $datum->valueId;
-//            $newLink->ownerId = $element->id;
-//            Craft::$app->elements->saveElement($newLink, false);
-//            $relationData[] = [
-//                $field->id,
-//                $element->id,
-//                $datum->valueId
-//            ];
-//
-//        }
-//
-//        // Delete the relations and re-save them
-//        Craft::$app->getDb()->createCommand()
-//            ->delete(Table::RELATIONS, ['fieldId' => $field->id, 'sourceId' => $element->id])->execute();
-//
-//        if (!empty($relationData)) {
-//            Craft::$app->getDb()->createCommand()
-//                ->batchInsert(
-//                    Table::RELATIONS,
-//                    ['fieldId', 'sourceId', 'targetId'],
-//                    $relationData)
-//                ->execute();
-//        }
-//    }
 
     /**
      * @param CharacteristicsField $field
@@ -321,6 +249,7 @@ class CharacteristicLinkBlocks extends Component
      * @param string $propagationMethod
      * @param ElementInterface $owner
      * @return int[]
+     * @throws \yii\base\Exception
      * @since 3.3.18
      */
     public function getSupportedSiteIds(string $propagationMethod, ElementInterface $owner): array
