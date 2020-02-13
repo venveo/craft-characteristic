@@ -53,31 +53,41 @@ you to quickly create a "Quiz" to find the most suitable element.
 
 ## Requirements
 
-This plugin requires Craft CMS 3.3.0 or later.
+This plugin requires Craft CMS 3.4.0 or later.
 
 ## Using Characteristic
 
 ### The Drilldown Helper
 ```twig
+{# Any arbitrary base element query #}
 {% set query = craft.entries.section('restaurants') %}
-{% set drilldown = craft.characteristic.drilldown('restaurants', query) %}
+
+{# Create an instance of the drilldown helper for the characteristic group with the handle `restaurantCharacteristics` #}
+{% set drilldown = craft.characteristic.drilldown('restaurantCharacteristics', query) %}
 
 {% set state = drilldown.state %}
 
 {% set current = drilldown.currentCharacteristic %}
 
+{# Get a text field called characteristicDescription off of the characteristic #}
 <h2>{{ current.characteristicDescription }}</h2>
 
+{# Get all of the options available for the current characteristic #}
 {% set options = drilldown.currentOptions.all() %}
 
 <ul>
     {% for option in options %}
+{# Use the applyToDrilldownState method to create a URL for this value based on the current state #}
         <li><a href="{{ option.applyToDrilldownState(state).url }}">{{ option.value }}</a></li>
+
+{# Grab a featuredImage Asset field off of the option #}
         {% if option.featuredImage.exists() %}
         <img src="{{ option.featuredImage.one().url }}" />
         {% endif %}
     {% endfor %}
     <hr>
+
+{# Optional URL to skip the question with picking an answer #}
     <a href="{{ drilldown.skipUrl() }}">Skip Question</a>
 </ul>
 
@@ -94,19 +104,8 @@ This plugin requires Craft CMS 3.3.0 or later.
 ```
 
 ### The characteristics field
-The field returns a CharacteristicLinkQuery pre-configured for the
+The field returns a CharacteristicLinkBlockQuery pre-configured for the
 element.
-
-#### Get a single characteristic's value
-```twig
-<ul>
-{# Loop over restaurants showing the selected price Characteristic #}
-    {% for restaurant in query.all() %}
-        {% set price = restaurant.restaurantAttributes.characteristic('price').with(['value']).all() %}
-        <li>{{ restaurant.title }} - {{ price ? price[0].value.value : 'No Data' }}</li>
-    {% endfor %}
-</ul>
-```
 
 #### Get all characteristics on an entry and show them as a table
 ```twig
@@ -118,39 +117,17 @@ element.
     </tr>
     </thead>
     <tbody>
-    {# We have to group our characteristics by something (title), otherwise they will show a distinct table rows #}
-    {% set attributes = entry.restaurantAttributes.all()|group(v => v.characteristic.title) %}
-    {% for title, values in attributes %}
+    
+    {% set blocks = entry.restaurantAttributes.all() %}
+    {% for block in blocks %}
     <tr>
-        <td class="border px-4 py-2">{{ title }}</td>
+        <td class="border px-4 py-2">{{ block.characteristic.title }}</td>
         {# We're going to create a string out of the characteristic value's text value #}
-        <td class="border px-4 py-2">{{ values|column('value.value')|join(', ') }}</td>
+        <td class="border px-4 py-2">{{ block.values.all()|column('value')|join(', ') }}</td>
     </tr>
     {% endfor %}
     </tbody>
 </table>
-```
-
-### The characteristic attribute
-Characteristic will inject some attributes into your elements to make
-querying characteristics easier! Take care to ensure you don't have any
-fields with the same handles as these.
-
-- `characteristics` returns a CharacteristicQuery configured to return
-only those related to the source element.
-
-```twig
-<ul>
-    {% for product in craft.entries.section('products').all() %}
-    <li>{{product.title}}</li>
-    <ul>
-        {% for characteristic in product.characteristics.all() %}
-        {# We could use .values() without a parameter if we wanted to get all possible values indiscriminately #}
-        <li>{{ characteristic.title }} - {{ characteristic.values(restaurant).all()|column('value')|join(', ') }}</li>
-        {% endfor %}
-    </ul>
-    {% endfor %}
-</ul>
 ```
 
 ### Querying for elements
@@ -182,9 +159,9 @@ Characteristic Value is relative to a specific Characteristic. A
 Characteristic Value has a `value` attribute that is a text string that
 is unique to each Characteristic. For example: "Yes", "No", "1.25".
 
-#### Characteristic Link
+#### Characteristic Link Block
 An Element that contains the linkage between a particular
-Characteristic, a Characteristic Value, the field it was created from,
+Characteristic, a number of Characteristic Values, the field it was created from,
 as well as the element its attached to.
 
 #### Characteristic Field

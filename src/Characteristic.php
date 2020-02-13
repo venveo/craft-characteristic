@@ -11,9 +11,7 @@
 namespace venveo\characteristic;
 
 use Craft;
-use craft\base\Element;
 use craft\base\Plugin;
-use craft\events\DefineBehaviorsEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterCpSettingsEvent;
 use craft\events\RegisterUrlRulesEvent;
@@ -23,8 +21,8 @@ use craft\services\Fields;
 use craft\web\twig\variables\Cp;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
-use venveo\characteristic\behaviors\ElementCharacteristicsBehavior;
 use venveo\characteristic\elements\Characteristic as CharacteristicElement;
+use venveo\characteristic\elements\CharacteristicLinkBlock as CharacteristicLinkBlockElement;
 use venveo\characteristic\elements\CharacteristicValue as CharacteristicValueElement;
 use venveo\characteristic\fields\Characteristics as CharacteristicsField;
 use venveo\characteristic\services\CharacteristicGroups;
@@ -114,13 +112,10 @@ class Characteristic extends Plugin
             Elements::EVENT_REGISTER_ELEMENT_TYPES,
             function (RegisterComponentTypesEvent $event) {
                 $event->types[] = CharacteristicElement::class;
+                $event->types[] = CharacteristicLinkBlockElement::class;
                 $event->types[] = CharacteristicValueElement::class;
             }
         );
-
-        Event::on(Element::class, Element::EVENT_DEFINE_BEHAVIORS, function (DefineBehaviorsEvent $e) {
-            $e->behaviors[] = ElementCharacteristicsBehavior::class;
-        });
 
         Event::on(
             Fields::class,
@@ -163,6 +158,4 @@ class Characteristic extends Plugin
         }
         return null;
     }
-    // Protected Methods
-    // =========================================================================
 }
