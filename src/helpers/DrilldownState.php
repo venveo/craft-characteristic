@@ -2,13 +2,13 @@
 
 namespace venveo\characteristic\helpers;
 
+use Craft;
 use craft\base\Component;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use venveo\characteristic\elements\Characteristic;
 use venveo\characteristic\elements\CharacteristicValue;
-use venveo\characteristic\records\CharacteristicLink;
 
 class DrilldownState extends Component
 {
@@ -37,7 +37,7 @@ class DrilldownState extends Component
 
     public function getUrl()
     {
-        return UrlHelper::urlWithParams(UrlHelper::baseRequestUrl(), ['state' => $this->__toString()]);
+        return UrlHelper::urlWithParams(Craft::$app->request->fullPath, array_merge(Craft::$app->request->getQueryParams(), ['state' => $this->__toString()]));
     }
 
     public function __toString()
@@ -50,20 +50,10 @@ class DrilldownState extends Component
         if (!count($this->values)) {
             return $elementQuery;
         }
-        $ids = $elementQuery->ids();
-        $query = CharacteristicLink::find();
-        $query->select(['ownerId', 'count(ownerId) as total']);
-        foreach ($this->values as $characteristicId => $valueId) {
-            $query->orWhere(['characteristicId' => $characteristicId, 'valueId' => $valueId]);
-        }
-        $query->groupBy(['ownerId']);
-        $query->having(['>=', 'total', count($this->values)]);
-        $query->andWhere(['IN', 'ownerId', $ids]);
-        $query->indexBy('ownerId');
-        $query->asArray();
-
-        $validIds = array_keys($query->all());
-        $elementQuery->andWhere(['IN', '[[elements.id]]', $validIds]);
+        // TODO: Merge in existing relations
+        $elementQuery->relatedTo([
+            'targetElement' => $this->values
+        ]);
         return $elementQuery;
     }
 }

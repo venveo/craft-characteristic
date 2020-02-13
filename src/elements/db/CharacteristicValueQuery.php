@@ -19,8 +19,6 @@ class CharacteristicValueQuery extends ElementQuery
     public $sortOrder;
     public $idempotent;
 
-    public $includeIdempotent = false;
-
     /**
      * @inheritdoc
      */
@@ -53,11 +51,6 @@ class CharacteristicValueQuery extends ElementQuery
         return $this;
     }
 
-    public function includeIdempotent($value) {
-        $this->includeIdempotent = $value;
-        return $this;
-    }
-
     // Protected Methods
     // =========================================================================
 
@@ -86,14 +79,5 @@ class CharacteristicValueQuery extends ElementQuery
         }
 
         return parent::beforePrepare();
-    }
-
-    protected function afterPrepare(): bool
-    {
-        if ($this->includeIdempotent) {
-            $this->subQuery->orWhere(['characteristic_values.idempotent' => true]);
-        }
-
-        return parent::afterPrepare();
     }
 }
