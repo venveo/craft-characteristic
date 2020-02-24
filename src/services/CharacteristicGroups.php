@@ -181,7 +181,7 @@ class CharacteristicGroups extends Component
     {
         $userSession = Craft::$app->getUser();
         return ArrayHelper::where($this->getAllGroups(), function (CharacteristicGroup $group) use ($userSession) {
-            return $userSession->checkPermission('editCharacteristics:' . $group->uid);
+            return $userSession->checkPermission('editCharacteristicGroup:' . $group->uid);
         });
     }
 

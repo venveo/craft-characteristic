@@ -1,7 +1,14 @@
 # Characteristic Changelog
 
+## 1.0.0-beta.5 - 3/24/20
+### Fixed
+- Issue where non-admin users could not edit characteristics
+
+### Added
+- Permissions for each characteristic group
+
 ## 1.0.0-beta.4 - 2/13/20
-## Changed
+### Changed
 - Refactored element structures such that we rely more on native Craft relations and Block Elements
 - Rewrote frontend field input to be more maintainable
 - Drilldown should be more performant 
@@ -13,17 +20,17 @@
 - Removed respectStructure from drilldown in favor of always respecting the structure
 - Characteristics now support multiple propagation methods
 
-## Fixed
+### Fixed
 - Various improvements to multi-site support
 - Erroneous warning about unsaved changes on edit element screens
 - Drilldown now respects existing query parameters and paths
 
 ## 1.0.0-beta.3 - 1/31/20
-## Fixed
+### Fixed
 - Fixed error when saving drafts
 
 ## 1.0.0-beta.2 - 1/29/20
-## Fixed
+### Fixed
 - Fixed error when saving an existing group ([#40](https://github.com/venveo/craft-characteristic/issues/40))
 
 ## 1.0.0-beta.1 - 1/28/20
