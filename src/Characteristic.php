@@ -66,7 +66,8 @@ class Characteristic extends Plugin
     /**
      * @var string
      */
-    public $schemaVersion = '1.0.0';
+    // 1.0.0.1 = 1.0.0-beta.6
+    public $schemaVersion = '1.0.0.1';
 
     // Public Methods
     // =========================================================================

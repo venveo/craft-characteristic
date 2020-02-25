@@ -117,6 +117,8 @@ class CharacteristicLinkBlock extends Element implements BlockElementInterface
      */
     public $deletedWithOwner = false;
 
+    public $deletedWithCharacteristic = false;
+
     /**
      * @var ElementInterface|null The owner element, or false if [[ownerId]] is invalid
      */
@@ -379,6 +381,7 @@ class CharacteristicLinkBlock extends Element implements BlockElementInterface
         Craft::$app->getDb()->createCommand()
             ->update('{{%characteristic_linkblocks}}', [
                 'deletedWithOwner' => $this->deletedWithOwner,
+                'deletedWithCharacteristic' => $this->deletedWithCharacteristic
             ], ['id' => $this->id], [], false)
             ->execute();
 

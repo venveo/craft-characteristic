@@ -18,6 +18,7 @@ class CharacteristicValueQuery extends ElementQuery
     public $value;
     public $sortOrder;
     public $idempotent;
+    public $deletedWithCharacteristic;
 
     /**
      * @inheritdoc
@@ -51,6 +52,12 @@ class CharacteristicValueQuery extends ElementQuery
         return $this;
     }
 
+    public function deletedWithCharacteristic($value)
+    {
+        $this->deletedWithCharacteristic = $value;
+        return $this;
+    }
+
     // Protected Methods
     // =========================================================================
 
@@ -76,6 +83,9 @@ class CharacteristicValueQuery extends ElementQuery
         }
         if ($this->idempotent !== null) {
             $this->subQuery->andWhere(Db::parseParam('characteristic_values.idempotent', $this->idempotent));
+        }
+        if ($this->deletedWithCharacteristic !== null) {
+            $this->subQuery->andWhere(Db::parseParam('characteristic_values.deletedWithCharacteristic', $this->deletedWithCharacteristic));
         }
 
         return parent::beforePrepare();

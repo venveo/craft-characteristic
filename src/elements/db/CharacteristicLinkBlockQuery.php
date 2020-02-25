@@ -10,7 +10,6 @@ use craft\db\Table;
 use craft\elements\db\ElementQuery;
 use craft\helpers\Db;
 use venveo\characteristic\elements\Characteristic;
-use venveo\characteristic\elements\CharacteristicValue;
 use venveo\characteristic\fields\Characteristics as CharacteristicsField;
 
 class CharacteristicLinkBlockQuery extends ElementQuery
@@ -57,6 +56,8 @@ class CharacteristicLinkBlockQuery extends ElementQuery
      * @since 3.3.10
      */
     public $allowOwnerRevisions;
+
+    public $deletedWithCharacteristic;
 
 
     /**
@@ -260,6 +261,12 @@ class CharacteristicLinkBlockQuery extends ElementQuery
         return $this;
     }
 
+    public function deletedWithCharacteristic($value)
+    {
+        $this->deletedWithCharacteristic = $value;
+        return $this;
+    }
+
 
     /**
      * Narrows the query results based on whether the Matrix blocks’ owners are drafts.
@@ -367,6 +374,13 @@ class CharacteristicLinkBlockQuery extends ElementQuery
                 $this->subQuery->andWhere(['owners.revisionId' => null]);
             }
         }
+
+        if ($this->deletedWithCharacteristic) {
+            $this->subQuery->andWhere(Db::parseParam('characteristic_linkblocks.deletedWithCharacteristic', $this->deletedWithCharacteristic));
+        }
+
+        $this->subQuery->innerJoin(Table::ELEMENTS . ' characteristics', '[[characteristics.id]] = [[characteristic_linkblocks.characteristicId]]');
+        $this->subQuery->andWhere(['characteristics.dateDeleted' => null]);
         return parent::beforePrepare();
     }
 }

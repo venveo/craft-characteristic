@@ -46,6 +46,8 @@ class CharacteristicValue extends Element
 
     public $idempotent = false;
 
+    public $deletedWithCharacteristic = false;
+
     // Static Methods
     // =========================================================================
     /**
@@ -303,6 +305,15 @@ class CharacteristicValue extends Element
         if (!parent::beforeDelete()) {
             return false;
         }
+
+        if ($this->deletedWithCharacteristic) {
+            Craft::$app->getDb()->createCommand()
+                ->update('{{%characteristic_values}}', [
+                    'deletedWithCharacteristic' => $this->deletedWithCharacteristic
+                ], ['id' => $this->id], [], false)
+                ->execute();
+        }
+
         return true;
     }
 }

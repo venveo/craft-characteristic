@@ -73,7 +73,6 @@ class Install extends Migration
             'deletedWithGroup' => $this->boolean()->null(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'dateDeleted' => $this->dateTime()->null(),
             'uid' => $this->uid(),
             'PRIMARY KEY([[id]])',
         ]);
@@ -97,6 +96,7 @@ class Install extends Migration
             'ownerId' => $this->integer()->notNull(),
             'fieldId' => $this->integer()->notNull(),
             'deletedWithOwner' => $this->boolean()->null(),
+            'deletedWithCharacteristic' => $this->boolean()->null(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),

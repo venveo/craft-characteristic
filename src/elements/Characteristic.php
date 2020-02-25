@@ -449,6 +449,24 @@ class Characteristic extends Element
         if (!parent::beforeDelete()) {
             return false;
         }
+
+        // Delete all the links
+        $links = CharacteristicLinkBlock::find()->characteristicId($this->id)->all();
+        foreach($links as $link) {
+            $link->deletedWithCharacteristic = true;
+            Craft::$app->elements->deleteElement($link);
+        }
+
+        // Delete all the values
+        $values = $this->getValues();
+        if ($values instanceof ElementQueryInterface) {
+            $values = $values->all();
+        }
+        /** @var CharacteristicValue $value */
+        foreach ($values as $value) {
+            $value->deletedWithCharacteristic = true;
+            Craft::$app->elements->deleteElement($value);
+        }
         return true;
     }
 
@@ -457,22 +475,29 @@ class Characteristic extends Element
      */
     public function afterDelete()
     {
-        // Update the answer records record
-        Craft::$app->getDb()->createCommand()
-            ->update('{{%characteristic_values}}', [
-                'deletedWithCharacteristic' => true,
-            ], ['characteristicId' => $this->id], [], false)
-            ->execute();
-
-        $values = $this->getValues();
-        if ($values instanceof ElementQueryInterface) {
-            $values = $values->all();
-        }
-        foreach ($values as $value) {
-            Craft::$app->elements->deleteElement($value);
-        }
-
         parent::afterDelete();
+    }
+
+
+    public function afterRestore()
+    {
+        parent::afterRestore();
+
+        // Restore any link blocks that were also deleted
+        $values = CharacteristicValue::find()->characteristicId($this->id)->deletedWithCharacteristic(true)->trashed(true)->all();
+        foreach($values as $value) {
+            $value->deletedWithCharacteristic = false;
+            Craft::$app->elements->restoreElement($value);
+        }
+
+        // Restore any link blocks that were also deleted
+        $links = CharacteristicLinkBlock::find()->characteristicId($this->id)->deletedWithCharacteristic(true)->trashed(true)->all();
+        foreach($links as $link) {
+            $link->deletedWithCharacteristic = false;
+            Craft::$app->elements->restoreElement($link);
+        }
+
+        Craft::$app->getStructures()->appendToRoot($this->getGroup()->structureId, $this);
     }
 
     /**
