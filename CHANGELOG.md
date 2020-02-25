@@ -1,11 +1,14 @@
 # Characteristic Changelog
 
-## 1.0.0-beta.6 - Unreleased
+## 1.0.0-beta.6 - 2/25/20
 ### Fixed
 - Errors caused by soft-deleting and restoring characteristic elements
 - Fixed Drilldown not ignoring deleted characteristics
 
-## 1.0.0-beta.5 - 3/24/20
+### Changed
+- Minor style improvements
+
+## 1.0.0-beta.5 - 2/24/20
 ### Fixed
 - Issue where non-admin users could not edit characteristics
 

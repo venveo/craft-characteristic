@@ -136,8 +136,8 @@
     }
 
     .characteristic-item.matrixblock {
-        @include input-styles();
         @include padding(0, 10px, 0, 0);
+
 
         .input .select, .input .text, .input .flex, .input span, .input .ltr .flex, .flex > div {
             margin-bottom: 0;
@@ -149,10 +149,9 @@
 
         .characteristic__title {
             background-color: $lightSelColor;
-            @include padding(10px, 20px, 10px, 10px);
+            @include padding(13px, 20px, 13px, 10px);
 
             border-radius: $smallBorderRadius 0 0 $smallBorderRadius;
-            border-right: 1px solid $lightSelColor;
             min-width: 100px;
             margin-bottom: 0;
         }
@@ -160,7 +159,7 @@
         .actions {
             margin-left: auto;
             right: 10px;
-            top: 7px;
+            top: 11px;
         }
 
         .actions > .delete {
@@ -176,10 +175,16 @@
 
 <style lang="scss">
     @import "../node_modules/craftcms-sass/mixins";
+    .multiselect__tags {
+    }
+    .characteristic-item .fields {
+        padding-top: 0 !important;
+        border-top: 0 !important;
+    }
 
     .characteristic-item.matrixblock {
         .multiselect__input, .multiselect__single, .multiselect__option {
-            font-size: 14px;
+            /*font-size: 14px;*/
         }
     }
 </style>
