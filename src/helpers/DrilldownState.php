@@ -54,9 +54,14 @@ class DrilldownState extends Component
             return $elementQuery;
         }
         // TODO: Merge in existing relations
-        $elementQuery->relatedTo([
-            'targetElement' => $this->values
-        ]);
+        $targets = [];
+        if (count($this->values) > 1) {
+            $targets[] = 'and';
+        }
+        foreach ($this->values as $value) {
+            $targets[] = ['targetElement' => $value];
+        }
+        $elementQuery->relatedTo($targets);
         return $elementQuery;
     }
 }

@@ -59,6 +59,10 @@ class Drilldown extends Component
     public function getCurrentOptions()
     {
         $characteristic = $this->getCurrentCharacteristic();
+
+        if (!$characteristic) {
+            return null;
+        }
         $ids = $this->getResults()->ids();
         $valueIds = CharacteristicValue::find()
             ->relatedTo([

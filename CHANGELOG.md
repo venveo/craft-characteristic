@@ -1,5 +1,9 @@
 # Characteristic Changelog
 
+## 1.0.0-beta.8 - 2/26/20
+### Fixed
+- Issue with drilldown not properly ensuring exclusivity in relation query
+
 ## 1.0.0-beta.7 - 2/26/20
 ### Fixed
 - Issue with some relations not being saved and drilldown not working properly
