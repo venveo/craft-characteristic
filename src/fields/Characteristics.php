@@ -335,6 +335,7 @@ class Characteristics extends Field implements EagerLoadingFieldInterface
             'id' => $id,
             'name' => $this->handle,
             'characteristics' => $characteristics,
+            'group' => Characteristic::getInstance()->characteristicGroups->getGroupById($groupId),
             'blocks' => $value,
             'static' => false,
             'staticBlocks' => []

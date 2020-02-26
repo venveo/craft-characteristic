@@ -5,7 +5,10 @@
             <input type="hidden" v-for="value in formattedValues" :name="valuesFieldName" :value="value.id"/>
 
             <div class="fields flex flex-nowrap">
-                <div class="input ltr characteristic__title">
+                <a v-if="characteristic.cpEditUrl" class="input ltr characteristic__title" :href="characteristic.cpEditUrl" target="_blank">
+                    <strong>{{characteristic.title}}</strong>
+                </a>
+                <div v-else class="input ltr characteristic__title" target="_blank">
                     <strong>{{characteristic.title}}</strong>
                 </div>
                 <div class="input ltr flex">
@@ -154,6 +157,10 @@
             border-radius: $smallBorderRadius 0 0 $smallBorderRadius;
             min-width: 100px;
             margin-bottom: 0;
+            color: $mediumDarkTextColor;
+            &:hover {
+                color: $linkColor;
+            }
         }
 
         .actions {

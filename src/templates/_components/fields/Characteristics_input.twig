@@ -15,6 +15,8 @@
 {{ hiddenInput(name, '') }}
 {% set characteristicData = [] %}
 
+{% set canEditCharacteristics = currentUser.can('editCharacteristicGroup:' ~ group.uid) %}
+
 {# @var characteristic \venveo\characteristic\elements\Characteristic #}
 {% for characteristic in characteristics %}
     {% set valueData = [] %}
@@ -29,6 +31,7 @@
     {% set characteristicData = characteristicData|merge([{
         id: characteristic.id,
         title: characteristic.title,
+        cpEditUrl: canEditCharacteristics ? characteristic.cpEditUrl : null,
         handle: characteristic.handle,
         required: characteristic.required,
         maxValues: characteristic.maxValues,
