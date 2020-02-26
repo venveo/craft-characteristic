@@ -202,15 +202,16 @@ class CharacteristicLinkBlock extends Element implements BlockElementInterface
 
     /**
      * @throws InvalidConfigException
+     * @return Characteristic
      */
-    public function getCharacteristic(): ElementInterface
+    public function getCharacteristic(): Characteristic
     {
         if ($this->_characteristic === null) {
             if ($this->characteristicId === null) {
                 throw new InvalidConfigException('Characteristic Link Block is missing its characteristic ID');
             }
 
-            if (($this->_characteristic = Craft::$app->getElements()->getElementById($this->characteristicId, null, $this->siteId)) === null) {
+            if (($this->_characteristic = Craft::$app->getElements()->getElementById($this->characteristicId, Characteristic::class, $this->siteId)) === null) {
                 throw new InvalidConfigException('Invalid characteristic ID: ' . $this->characteristicId);
             }
         }
@@ -269,40 +270,37 @@ class CharacteristicLinkBlock extends Element implements BlockElementInterface
                 $valueService = \venveo\characteristic\Characteristic::getInstance()->characteristicValues;
                 $targetIds = [];
 
-                // TODO: Make this work on multi-site environments
                 $conditions = [
                     'and',
                     [
                         'fieldId' => $this->fieldId,
                         'sourceId' => $this->id,
+                        'sourceSiteId' => $this->siteId
                     ]
                 ];
-//                $conditions[] = [
-//                    'and',
-//                    [
-//                        'fieldId' => $this->fieldId,
-//                        'sourceId' => $this->ownerId,
-//                    ]
-//                ];
-
-//                $conditions[] = [
-//                    'or',
-//                    ['sourceSiteId' => null],
-//                    ['sourceSiteId' => $source->siteId]
-//                ];
-
-                // Delete the relations from Blocks to Values
+                // Delete the relations from this block to its values
                 Craft::$app->getDb()->createCommand()
                     ->delete(Table::RELATIONS, $conditions)
                     ->execute();
 
-                // Delete the relations from element to characteristic & values
-                Craft::$app->getDb()->createCommand()
-                    ->delete(Table::RELATIONS, [
+                // Delete the relations from owner element to the characteristic & all of its potential values
+                $allValueIds = CharacteristicValue::find()->characteristicId($this->characteristicId)->ids();
+                $allValueIds[] = $this->characteristicId;
+                $conditions = [
+                    'or'
+                ];
+                foreach($allValueIds as $valueId) {
+                    $conditions[] = [
                         'fieldId' => $this->fieldId,
                         'sourceId' => $this->ownerId,
-                    ])->execute();
+                        'targetId' => $valueId,
+                        'sourceSiteId' => $this->siteId
+                    ];
+                }
+                Craft::$app->getDb()->createCommand()
+                    ->delete(Table::RELATIONS, $conditions)->execute();
 
+                // Collect all of the values we need to create relations for
                 foreach ($this->_values as $value) {
                     $valueId = $value;
                     if ($value instanceof CharacteristicValue && isset($value->id)) {
@@ -321,8 +319,8 @@ class CharacteristicLinkBlock extends Element implements BlockElementInterface
                 }
 
                 $batchInsertRelationValues = [];
-                // Create relationship from Value to LinkBlock
                 foreach ($targetIds as $sortOrder => $targetId) {
+                    // Create relationship from linkblock to value
                     $batchInsertRelationValues[] = [
                         $this->fieldId,
                         $this->id, // LinkBlock
@@ -331,16 +329,17 @@ class CharacteristicLinkBlock extends Element implements BlockElementInterface
                         null
                     ];
 
+                    // Create relation from owner element to value
                     $batchInsertRelationValues[] = [
                         $this->fieldId,
                         $this->ownerId, // LinkBlock
                         $this->siteId,
-                        $targetId, // Value
+                        $targetId,
                         null
                     ];
                 }
 
-                // Create a relationship of element to characteristic
+                // Create a relationship from owner element to characteristic
                 $batchInsertRelationValues[] = [
                     $this->fieldId,
                     $this->ownerId,

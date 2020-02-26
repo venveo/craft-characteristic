@@ -501,10 +501,8 @@ class Characteristic extends Element
     }
 
     /**
-     * Returns the product associated with this variant.
-     *
      * @param ElementInterface|null $element
-     * @return CharacteristicValue[] The product associated with this variant, or null if it isn’t known
+     * @return CharacteristicValue[]
      */
     public function getValues(ElementInterface $element = null)
     {

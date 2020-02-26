@@ -496,9 +496,7 @@ class Characteristics extends Field implements EagerLoadingFieldInterface
                 ->andWhere(['characteristic_linkblocks.deletedWithOwner' => true])
                 ->all();
 
-            foreach ($blocks as $block) {
-                $elementsService->restoreElement($block);
-            }
+            $elementsService->restoreElements($blocks);
         }
 
         parent::afterElementRestore($element);

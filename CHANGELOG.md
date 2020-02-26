@@ -1,5 +1,11 @@
 # Characteristic Changelog
 
+## 1.0.0-beta.7 - Unreleased
+### Fixed
+- Issue with some relations not being saved and drilldown not working properly
+- Drilldown URL would not return an absolute URL
+- Issues with relations not being localized properly
+
 ## 1.0.0-beta.6 - 2/25/20
 ### Fixed
 - Errors caused by soft-deleting and restoring characteristic elements

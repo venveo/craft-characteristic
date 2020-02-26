@@ -10,6 +10,9 @@ use craft\helpers\UrlHelper;
 use venveo\characteristic\elements\Characteristic;
 use venveo\characteristic\elements\CharacteristicValue;
 
+/**
+ * @property string $url
+ */
 class DrilldownState extends Component
 {
     public $values = [];
@@ -37,7 +40,7 @@ class DrilldownState extends Component
 
     public function getUrl()
     {
-        return UrlHelper::urlWithParams(Craft::$app->request->fullPath, array_merge(Craft::$app->request->getQueryParams(), ['state' => $this->__toString()]));
+        return UrlHelper::siteUrl(UrlHelper::urlWithParams(Craft::$app->request->fullPath, array_merge(Craft::$app->request->getQueryParams(), ['state' => $this->__toString()])));
     }
 
     public function __toString()
