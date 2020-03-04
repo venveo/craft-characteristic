@@ -96,7 +96,7 @@ class Characteristic extends Plugin
         Event::on(Cp::class, Cp::EVENT_REGISTER_CP_SETTINGS,
             function (RegisterCpSettingsEvent $e) {
                 $e->settings['Content']['characteristics'] = [
-                    'icon' => '@app/icons/sliders.svg',
+                    'icon' => $this->cpNavIconPath(),
                     'url' => 'settings/characteristics',
                     'label' => 'Characteristics'
                 ];
@@ -111,10 +111,10 @@ class Characteristic extends Plugin
     public function getCpNavItem()
     {
         if (count(static::$plugin->characteristicGroups->getAllGroups())) {
-            return [
-                'label' => 'Characteristics',
-                'url' => UrlHelper::cpUrl('characteristics'),
-            ];
+            $navItem = parent::getCpNavItem();
+            $navItem['label'] = 'Characteristics';
+            $navItem['url'] = UrlHelper::cpUrl('characteristics');
+            return $navItem;
         }
         return null;
     }

@@ -1,5 +1,9 @@
 # Characteristic Changelog
 
+## 1.0.0-beta.9 - 3/4/20
+### Changed
+- Added icons
+
 ## 1.0.0-beta.8 - 2/26/20
 ### Fixed
 - Issue with drilldown not properly ensuring exclusivity in relation query
