@@ -175,7 +175,7 @@ class Characteristic extends Element
                     'groupId' => $group->id
                 ],
                 'structureId' => $group->structureId,
-                'structureEditable' => Craft::$app->getRequest()->getIsConsoleRequest() ? true : Craft::$app->getUser()->checkPermission('editCharacteristics:' . $group->uid),
+                'structureEditable' => Craft::$app->getRequest()->getIsConsoleRequest() ? true : Craft::$app->getUser()->checkPermission('editCharacteristicGroup:' . $group->uid),
             ];
         }
         return $sources;

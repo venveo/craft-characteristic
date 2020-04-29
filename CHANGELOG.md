@@ -1,5 +1,9 @@
 # Characteristic Changelog
 
+## Unreleased
+### Fixed
+- Bug where non-admin users could not sort characteristics
+
 ## 1.0.0-beta.9 - 3/4/20
 ### Changed
 - Added icons
