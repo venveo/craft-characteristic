@@ -1,8 +1,14 @@
 # Characteristic Changelog
 
-## Unreleased
+## 1.0.0-beta.10 - 5/1/20
 ### Fixed
 - Bug where non-admin users could not sort characteristics
+
+### Changed
+- Drilldown will no longer show characteristics with only one option for the result set
+
+### Added
+- CharacteristicLinkBlocks can now eager-load their values
 
 ## 1.0.0-beta.9 - 3/4/20
 ### Changed

@@ -14,7 +14,9 @@ use Craft;
 use craft\base\BlockElementInterface;
 use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\db\Query;
 use craft\db\Table;
+use craft\db\Table as DbTable;
 use craft\elements\db\ElementQueryInterface;
 use venveo\characteristic\elements\db\CharacteristicLinkBlockQuery;
 use venveo\characteristic\fields\Characteristics;
@@ -332,7 +334,7 @@ class CharacteristicLinkBlock extends Element implements BlockElementInterface
                     // Create relation from owner element to value
                     $batchInsertRelationValues[] = [
                         $this->fieldId,
-                        $this->ownerId, // LinkBlock
+                        $this->ownerId, // owner element
                         $this->siteId,
                         $targetId,
                         null
@@ -394,13 +396,68 @@ class CharacteristicLinkBlock extends Element implements BlockElementInterface
 
     public function getValues()
     {
-        // TODO: Ensure not already loaded
+        if ($this->_values) {
+            return $this->_values;
+        }
         $query = CharacteristicValue::find();
         $query->relatedTo([
             'sourceElement' => $this->id,
             'fieldId' => $this->fieldId
         ]);
         return $query;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function eagerLoadingMap(array $sourceElements, string $handle)
+    {
+        if ($handle === 'values') {
+            // Get the source element IDs
+            $sourceElementIdsBySiteId = [];
+
+            foreach ($sourceElements as $element) {
+                $sourceElementIdsBySiteId[$element->siteId][] = $element->id;
+            }
+
+            $condition = ['and'];
+
+
+            foreach ($sourceElementIdsBySiteId as $siteId => $elementIds) {
+                $condition[] = [
+                    'and',
+                    ['sourceId' => $elementIds],
+                    ['or', ['sourceSiteId' => $siteId], ['sourceSiteId' => null]],
+                ];
+            }
+
+            // Return any relation data on these elements, defined with this field
+            $map = (new Query())
+                ->select(['sourceId as source', 'targetId as target'])
+                ->from([DbTable::RELATIONS])
+                ->where($condition)
+                ->orderBy(['sortOrder' => SORT_ASC])
+                ->all();
+
+            $criteria = [];
+
+            return [
+                'elementType' => CharacteristicValue::class,
+                'map' => $map,
+                'criteria' => $criteria,
+            ];
+        }
+
+        return parent::eagerLoadingMap($sourceElements, $handle);
+    }
+
+    public function setEagerLoadedElements(string $handle, array $elements)
+    {
+        if ($handle === 'values') {
+            $this->_values = $elements;
+        } else {
+            parent::setEagerLoadedElements($handle, $elements);
+        }
     }
 
     /**
