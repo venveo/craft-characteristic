@@ -1,5 +1,9 @@
 # Characteristic Changelog
 
+## 1.0.0-beta.11 - 6/5/20
+### Fixed
+- Bug where saving characteristics wasn't working anymore
+
 ## 1.0.0-beta.10 - 5/1/20
 ### Fixed
 - Bug where non-admin users could not sort characteristics
