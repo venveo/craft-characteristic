@@ -8,7 +8,7 @@
         <div class="buttons last add-button" v-if="availableCharacteristics.length !== 0">
             <div class="select">
                 <select v-model="selectedCharacteristicIndex">
-                    <option :value="index" v-for="(characteristic, index) in availableCharacteristics">
+                    <option :value="index" v-for="(characteristic, index) in availableCharacteristics" :key="characteristic.id">
                         {{characteristic.title}}
                     </option>
                 </select>

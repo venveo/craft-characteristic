@@ -2,9 +2,9 @@
     <transition name="fade">
         <div class="characteristic-item matrixblock">
             <input type="hidden" :name="characteristicFieldName" :value="characteristic.id"/>
-            <input type="hidden" v-for="value in formattedValues" :name="valuesFieldName" :value="value.id"/>
+            <input type="hidden" v-for="value in formattedValues" :name="valuesFieldName" :value="value.id" :key="value.id"/>
 
-            <div class="fields flex flex-nowrap">
+            <div class="fields flex flex-nowrap" ref="addValueTrigger">
                 <a v-if="characteristic.cpEditUrl" class="input ltr characteristic__title" :href="characteristic.cpEditUrl" target="_blank">
                     <strong>{{characteristic.title}}</strong>
                 </a>
@@ -86,6 +86,16 @@
         },
         methods: {
             addTag(newTag) {
+              Craft.createElementEditor("venveo\\characteristic\\elements\\CharacteristicValue", {
+                hudTrigger: $(this.$refs.addValueTrigger),
+                siteId: Craft.siteId,
+                attributes: {
+                  characteristicId: this.characteristicId
+                },
+                onSaveElement: function(response) {
+                  console.log(response)
+                }
+              });
                 console.log(newTag);
                 // this.values.push(newTag);
             },
