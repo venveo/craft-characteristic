@@ -321,7 +321,7 @@ class Characteristics extends Field implements EagerLoadingFieldInterface
      */
     protected function inputTemplateVariables($value = null, ElementInterface $element = null): array
     {
-        $id = Craft::$app->getView()->formatInputId($this->handle);
+        $id = Html::id($this->handle);
 
         // Register our asset bundle
         Craft::$app->getView()->registerAssetBundle(CharacteristicsFieldAsset::class);
