@@ -22,12 +22,12 @@ class CharacteristicsFieldAsset extends AssetBundle
     /**
      * @var bool
      */
-    private $useDevServer = false;
+    private $useDevServer = true;
 
     /**
      * @var bool
      */
-    private $devServerBaseUrl = 'https://localhost:3000/';
+    private $devServerBaseUrl = 'https://craft3-plugindev.test:3000/';
 
     /**
      * @inheritdoc
@@ -37,14 +37,15 @@ class CharacteristicsFieldAsset extends AssetBundle
         $this->sourcePath = __DIR__ . '/dist/';
 
         $this->depends = [
-            CpAsset::class,
-            VueAsset::class,
+            CpAsset::class
         ];
 
         if ($this->useDevServer) {
             $this->js = [
-                $this->devServerBaseUrl . 'app.js',
+                $this->devServerBaseUrl . '@vite/client',
+                $this->devServerBaseUrl . 'main.ts',
             ];
+            $this->jsOptions = ['type' => 'module'];
         } else {
             $this->css = [
                 'css/chunk-vendors.css',

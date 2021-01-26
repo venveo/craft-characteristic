@@ -1,42 +1,31 @@
 /* global Craft */
 /* global Garnish */
+import 'vite/dynamic-import-polyfill'
+import {createApp, ref} from 'vue'
 
-import Vue from 'vue'
-import VueEvents from 'vue-events'
-import CharacteristicLinkBlock from './CharacteristicLinkBlock'
-import CharacteristicControls from './CharacteristicControls'
-import CharacteristicInput from './CharacteristicInput'
-import {t} from '../../../../../../vendor/craftcms/cms/src/web/assets/pluginstore/src/js/filters/craft'
+import App from './App.vue'
+import FieldSettings = characteristic.FieldSettings;
+// import {store} from "./store";
+import './css/main.css';
+import {characteristicStore} from "./store/CharacteristicStore";
 
-Vue.filter('t', t)
-Vue.use(VueEvents)
-
-Vue.config.devtools = true;
-
+// @ts-ignore
 Craft.CharacteristicsField = Garnish.Base.extend({
         vm: null,
-        init: function (settings) {
+        init: function (settings: FieldSettings) {
+            // @ts-ignore
             this.setSettings(settings, Craft.CharacteristicsField.defaults);
-
             const props = this.settings;
 
+            characteristicStore.setCharacteristics(props.characteristics)
+            characteristicStore.setBlocks(props.blocks)
+            characteristicStore.setFieldName(props.name)
+            const app = createApp(App)
+            app.mount(this.settings.mountPoint)
+            document.querySelector(this.settings.defaultsContainer).remove();
+
+            return;
             this.vm = new Vue({
-                el: this.settings.container,
-                components: {
-                    CharacteristicLinkBlock,
-                    CharacteristicControls,
-                    CharacteristicInput
-                },
-                delimiters: ['${', '}'],
-                data() {
-                    return {
-                        characteristics: props.characteristics,
-                        usedCharacteristics: {},
-                        blocks: props.blocks,
-                        totalNewBlocks: 0,
-                        name: props.name
-                    };
-                },
                 mounted() {
                     // We're going to remove any Twig rendered values to avoid confusing the Draft editor
                     Garnish.$doc.ready($.proxy(this, 'clearDefaultValues'));
@@ -82,7 +71,8 @@ Craft.CharacteristicsField = Garnish.Base.extend({
     },
     {
         defaults: {
-            container: null,
+            mountPoint: null,
+            defaultsContainer: null,
             name: null,
             blocks: []
         }

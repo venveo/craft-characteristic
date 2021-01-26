@@ -1,3 +1,5 @@
 /dist/hot
 /node_modules/
 /.env
+
+.env.local
