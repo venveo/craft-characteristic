@@ -41,6 +41,10 @@ use yii\base\InvalidConfigException;
  * @package   Characteristic
  * @since     1.0.0
  *
+ *
+ * @property-read array $elementValidationRules
+ * @property-read mixed $settingsHtml
+ * @property-read array $sourceOptions
  */
 class Characteristics extends Field implements EagerLoadingFieldInterface
 {
@@ -304,7 +308,6 @@ class Characteristics extends Field implements EagerLoadingFieldInterface
         if ($value instanceof CharacteristicLinkBlockQuery) {
             $value = $value->getCachedResult() ?? $value->limit(null)->anyStatus()->all();
         }
-
 
         /** @var ElementQuery|array $value */
         $variables = $this->inputTemplateVariables($value, $element);

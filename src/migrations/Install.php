@@ -13,6 +13,7 @@ namespace venveo\characteristic\migrations;
 use Craft;
 use craft\db\Migration;
 use craft\db\Table;
+use venveo\characteristic\db\Table as CharacteristicTable;
 
 /**
  * @author    Venveo
@@ -21,9 +22,6 @@ use craft\db\Table;
  */
 class Install extends Migration
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var string The database driver to use
      */
@@ -47,7 +45,7 @@ class Install extends Migration
 
     protected function createTables()
     {
-        $this->createTable('{{%characteristic_groups}}',
+        $this->createTable(CharacteristicTable::GROUPS,
             [
                 'id' => $this->primaryKey(),
                 'structureId' => $this->integer()->notNull(),
@@ -63,12 +61,13 @@ class Install extends Migration
             ]
         );
 
-        $this->createTable('{{%characteristic_characteristics}}', [
+        $this->createTable(CharacteristicTable::CHARACTERISTICS, [
             'id' => $this->integer()->notNull(),
             'groupId' => $this->integer()->notNull(),
             'handle' => $this->string(),
             'allowCustomOptions' => $this->boolean(),
             'maxValues' => $this->integer()->null(),
+//            'type' => $this->string()->null(), // bool, text, int, datetime?
             'required' => $this->boolean()->null(),
             'deletedWithGroup' => $this->boolean()->null(),
             'dateCreated' => $this->dateTime()->notNull(),
@@ -78,11 +77,12 @@ class Install extends Migration
             'PRIMARY KEY([[id]])',
         ]);
 
-        $this->createTable('{{%characteristic_values}}', [
+        $this->createTable(CharacteristicTable::VALUES, [
             'id' => $this->integer()->notNull(),
             'characteristicId' => $this->integer()->notNull(),
             'sortOrder' => $this->smallInteger()->unsigned(),
             'value' => $this->string()->notNull(),
+//            'type' => $this->string()->notNull(),
             'deletedWithCharacteristic' => $this->boolean()->null(),
             'idempotent' => $this->boolean()->defaultValue(false),
             'dateCreated' => $this->dateTime()->notNull(),
@@ -90,8 +90,30 @@ class Install extends Migration
             'uid' => $this->uid(),
             'PRIMARY KEY([[id]])',
         ]);
+//
+//        $this->createTable(CharacteristicTable::VALUESBOOL, [
+//            'id' => $this->integer()->notNull(),
+//            'value' => $this->boolean()->notNull(),
+//            'PRIMARY KEY([[id]])',
+//        ]);
+//        $this->createTable(CharacteristicTable::VALUESTEXT, [
+//            'id' => $this->integer()->notNull(),
+//            'value' => $this->text()->notNull(),
+//            'PRIMARY KEY([[id]])',
+//        ]);
+//        $this->createTable(CharacteristicTable::VALUESINT, [
+//            'id' => $this->integer()->notNull(),
+//            'value' => $this->integer()->notNull(),
+//            'PRIMARY KEY([[id]])',
+//        ]);
+//        $this->createTable(CharacteristicTable::VALUESDATETIME, [
+//            'id' => $this->integer()->notNull(),
+//            'value' => $this->dateTime()->notNull(),
+//            'PRIMARY KEY([[id]])',
+//        ]);
 
-        $this->createTable('{{%characteristic_linkblocks}}', [
+
+        $this->createTable(CharacteristicTable::LINKBLOCKS, [
             'id' => $this->integer()->notNull(),
             'characteristicId' => $this->integer()->notNull(),
             'ownerId' => $this->integer()->notNull(),
@@ -113,16 +135,16 @@ class Install extends Migration
      */
     protected function createIndexes()
     {
-        $this->createIndex(null, '{{%characteristic_groups}}', ['name'], false);
-        $this->createIndex(null, '{{%characteristic_groups}}', ['handle'], true);
+        $this->createIndex(null, CharacteristicTable::GROUPS, ['name'], false);
+        $this->createIndex(null, CharacteristicTable::GROUPS, ['handle'], true);
 
-        $this->createIndex(null, '{{%characteristic_characteristics}}', ['handle'], false);
+        $this->createIndex(null, CharacteristicTable::CHARACTERISTICS, ['handle'], false);
 
-        $this->createIndex(null, '{{%characteristic_values}}', ['sortOrder'], false);
-        $this->createIndex(null, '{{%characteristic_values}}', ['value'], false);
-        $this->createIndex(null, '{{%characteristic_values}}', ['value', 'characteristicId'], true);
+        $this->createIndex(null, CharacteristicTable::VALUES, ['sortOrder'], false);
+        $this->createIndex(null, CharacteristicTable::VALUES, ['value'], false);
+        $this->createIndex(null, CharacteristicTable::VALUES, ['value', 'characteristicId'], true);
 
-        $this->createIndex(null, '{{%characteristic_linkblocks}}', ['deletedWithOwner'], false);
+        $this->createIndex(null, CharacteristicTable::LINKBLOCKS, ['deletedWithOwner'], false);
     }
 
     /**
@@ -130,21 +152,24 @@ class Install extends Migration
      */
     protected function addForeignKeys()
     {
-        $this->addForeignKey(null, '{{%characteristic_groups}}', ['characteristicFieldLayoutId'], Table::FIELDLAYOUTS, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, '{{%characteristic_groups}}', ['valueFieldLayoutId'], Table::FIELDLAYOUTS, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, '{{%characteristic_groups}}', ['structureId'], Table::STRUCTURES, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, CharacteristicTable::GROUPS, ['characteristicFieldLayoutId'], Table::FIELDLAYOUTS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, CharacteristicTable::GROUPS, ['valueFieldLayoutId'], Table::FIELDLAYOUTS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, CharacteristicTable::GROUPS, ['structureId'], Table::STRUCTURES, ['id'], 'CASCADE', null);
 
-        $this->addForeignKey(null, '{{%characteristic_characteristics}}', ['id'], Table::ELEMENTS, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, '{{%characteristic_characteristics}}', ['groupId'], '{{%characteristic_groups}}', ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, CharacteristicTable::CHARACTERISTICS, ['id'], Table::ELEMENTS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, CharacteristicTable::CHARACTERISTICS, ['groupId'], CharacteristicTable::GROUPS, ['id'], 'CASCADE', null);
 
 
-        $this->addForeignKey(null, '{{%characteristic_values}}', ['id'], Table::ELEMENTS, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, '{{%characteristic_values}}', ['characteristicId'], '{{%characteristic_characteristics}}', ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, CharacteristicTable::VALUES, ['id'], Table::ELEMENTS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, CharacteristicTable::VALUES, ['characteristicId'], CharacteristicTable::CHARACTERISTICS, ['id'], 'CASCADE', null);
 
-        $this->addForeignKey(null, '{{%characteristic_linkblocks}}', ['id'], Table::ELEMENTS, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, '{{%characteristic_linkblocks}}', ['ownerId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, '{{%characteristic_linkblocks}}', ['fieldId'], Table::FIELDS, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, '{{%characteristic_linkblocks}}', ['characteristicId'], '{{%characteristic_characteristics}}', ['id'], 'CASCADE', null);
+//        $this->addForeignKey(null, CharacteristicTable::VALUESBOOL, ['id'], CharacteristicTable::VALUES, ['id'], 'CASCADE', null);
+//        $this->addForeignKey(null, CharacteristicTable::VALUESTEXT, ['id'], CharacteristicTable::VALUES, ['id'], 'CASCADE', null);
+
+        $this->addForeignKey(null, CharacteristicTable::LINKBLOCKS, ['id'], Table::ELEMENTS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, CharacteristicTable::LINKBLOCKS, ['ownerId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, CharacteristicTable::LINKBLOCKS, ['fieldId'], Table::FIELDS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, CharacteristicTable::LINKBLOCKS, ['characteristicId'], CharacteristicTable::CHARACTERISTICS, ['id'], 'CASCADE', null);
     }
 
     /**
@@ -152,20 +177,10 @@ class Install extends Migration
      */
     public function safeDown()
     {
-        $this->driver = Craft::$app->getConfig()->getDb()->driver;
-        $this->removeTables();
-
+        $this->dropTableIfExists(CharacteristicTable::LINKBLOCKS);
+        $this->dropTableIfExists(CharacteristicTable::VALUES);
+        $this->dropTableIfExists(CharacteristicTable::CHARACTERISTICS);
+        $this->dropTableIfExists(CharacteristicTable::GROUPS);
         return true;
-    }
-
-    /**
-     * @return void
-     */
-    protected function removeTables()
-    {
-        $this->dropTableIfExists('{{%characteristic_linkblocks}}');
-        $this->dropTableIfExists('{{%characteristic_values}}');
-        $this->dropTableIfExists('{{%characteristic_characteristics}}');
-        $this->dropTableIfExists('{{%characteristic_groups}}');
     }
 }
