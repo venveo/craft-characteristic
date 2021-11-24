@@ -23,6 +23,8 @@ use craft\services\UserPermissions;
 use craft\web\twig\variables\Cp;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
+use nystudio107\pluginvite\services\VitePluginService;
+use venveo\characteristic\assetbundles\characteristicasset\CharacteristicAsset;
 use venveo\characteristic\elements\Characteristic as CharacteristicElement;
 use venveo\characteristic\elements\CharacteristicLinkBlock as CharacteristicLinkBlockElement;
 use venveo\characteristic\elements\CharacteristicValue as CharacteristicValueElement;
@@ -48,8 +50,6 @@ use yii\base\Event;
  */
 class Characteristic extends Plugin
 {
-    // Static Properties
-    // =========================================================================
     const PERMISSION_EDIT_GROUP = 'editCharacteristicGroup';
 
     /**
@@ -69,8 +69,26 @@ class Characteristic extends Plugin
     // 1.0.0.2 = 1.0.0-beta.11
     public $schemaVersion = '1.0.0.2';
 
-    // Public Methods
-    // =========================================================================
+    public function __construct($id, $parent = null, array $config = [])
+    {
+        $config['components'] = [
+            'characteristicGroups' => CharacteristicGroups::class,
+            'characteristics' => Characteristics::class,
+            'characteristicValues' => CharacteristicValues::class,
+            'characteristicLinkBlocks' => CharacteristicLinkBlocks::class,
+            'vite' => [
+                'class' => VitePluginService::class,
+                'assetClass' => CharacteristicAsset::class,
+                'useDevServer' => true,
+                'devServerPublic' => 'http://localhost:3001',
+                'serverPublic' => 'http://localhost:8000',
+                'errorEntry' => '/src/js/app.ts',
+                'devServerInternal' => 'http://craft-characteristic-buildchain:3001',
+                'checkDevServer' => true,
+            ],
+        ];
+        parent::__construct($id, $parent, $config);
+    }
 
     /**
      * @inheritdoc
@@ -79,12 +97,6 @@ class Characteristic extends Plugin
     {
         parent::init();
         self::$plugin = $this;
-        $this->setComponents([
-            'characteristicGroups' => CharacteristicGroups::class,
-            'characteristics' => Characteristics::class,
-            'characteristicValues' => CharacteristicValues::class,
-            'characteristicLinkBlocks' => CharacteristicLinkBlocks::class,
-        ]);
 
         $this->_registerCpRoutes();
         $this->_registerProjectConfig();

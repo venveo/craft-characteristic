@@ -12,6 +12,8 @@ namespace venveo\characteristic\variables;
 
 use Craft;
 use craft\elements\db\ElementQueryInterface;
+use nystudio107\pluginvite\variables\ViteVariableInterface;
+use nystudio107\pluginvite\variables\ViteVariableTrait;
 use venveo\characteristic\elements\Characteristic;
 use venveo\characteristic\elements\CharacteristicLinkBlock;
 use venveo\characteristic\elements\db\CharacteristicLinkBlockQuery;
@@ -23,10 +25,9 @@ use venveo\characteristic\helpers\Drilldown;
  * @package   Characteristic
  * @since     1.0.0
  */
-class CharacteristicVariable
+class CharacteristicVariable implements ViteVariableInterface
 {
-    // Public Methods
-    // =========================================================================
+    use ViteVariableTrait;
 
     /**
      * @param array $criteria

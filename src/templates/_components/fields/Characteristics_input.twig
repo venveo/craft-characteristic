@@ -19,15 +19,13 @@
 
 {# @var characteristic \venveo\characteristic\elements\Characteristic #}
 {% for characteristic in characteristics %}
-    {% set valueData = [] %}
-    {# @var value \venveo\characteristic\elements\CharacteristicValue #}
-    {% for value in characteristic.values %}
-        {% set valueData = valueData|merge([{
-            id: value.id,
-            idempotent: value.idempotent ? true : false,
-            value: value.value
-        }]) %}
-    {% endfor %}
+{#    {% dd characteristic.values[0] %}#}
+    {% set valueData = characteristic.values|map(value => {
+        id: value.id,
+        idempotent: value.idempotent ? true : false,
+        value: value.value
+    }) %}
+
     {% set characteristicData = characteristicData|merge([{
         id: characteristic.id,
         title: characteristic.title,
