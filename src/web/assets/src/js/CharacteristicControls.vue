@@ -16,9 +16,11 @@
   </div>
 </template>
 <script lang="ts">
-import CharacteristicLinkBlock from './CharacteristicLinkBlock.vue';
 import {defineComponent, PropType, ref} from 'vue';
 import Characteristic = characteristic.Characteristic;
+import CharacteristicLinkBlock = characteristic.CharacteristicLinkBlock;
+import {useMainStore} from "./store/main";
+import {computed} from "vue"
 
 export default defineComponent({
   components: {},
@@ -30,8 +32,10 @@ export default defineComponent({
     }
   },
   setup(props, {emit}) {
+    // const store = useMainStore()
+    const characteristics = props.characteristics
     const selectedCharacteristicIndex = ref<number>(0)
-    const {characteristics} = props
+    // const {characteristics} = props
     const handleAddBlock = function (characteristic: Characteristic) {
       let linkBlock: CharacteristicLinkBlock = {
         id: null,
@@ -45,31 +49,6 @@ export default defineComponent({
       characteristics,
       handleAddBlock
     }
-  },
-  // methods: {
-  //   handleAdd(e) {
-  //     e.preventDefault();
-  //     this.$root.addBlock(this.selectedCharacteristic);
-  //     this.selectedCharacteristicIndex = 0;
-  //   }
-  // },
-  // beforeMount() {
-  // if (this.characteristics.length && this.selectedCharacteristicIndex === null) {
-  //   this.selectedCharacteristicIndex = 0;
-  // }
-  // },
-  // computed: {
-  // availableCharacteristics() {
-  //   return this.characteristics.filter((c) => {
-  //     return this.$root.usedCharacteristics[c.id] === "undefined" || !this.$root.usedCharacteristics[c.id];
-  //   })
-  // },
-  // selectedCharacteristic() {
-  //   return this.availableCharacteristics[this.selectedCharacteristicIndex];
-  // }
-  // },
-  /**
-   * Load in our characteristics and their value options
-   */
+  }
 });
 </script>

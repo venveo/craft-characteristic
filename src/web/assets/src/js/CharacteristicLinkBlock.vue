@@ -6,20 +6,20 @@
       </a>
       <div class="input-wrapper">
         <div class="multiselect-wrapper">
-                <Multiselect
-                    :modelValue="block.values"
-                    @change="handleChange"
-                    :options="characteristic.values"
-                    :createTag="!!characteristic.allowCustomOptions"
-                    :mode="'tags'"
-                    :max="parseInt(characteristic.maxValues)"
-                    trackBy="id"
-                    label="value"
-                    valueProp="id"
-                    :searchable="true"
-                    :object="false"
-                />
-          </div>
+          <Multiselect
+              :modelValue="block.values"
+              @change="handleChange"
+              :options="characteristic.values"
+              :createTag="!!characteristic.allowCustomOptions"
+              :mode="'tags'"
+              :max="parseInt(characteristic.maxValues)"
+              trackBy="id"
+              label="value"
+              valueProp="id"
+              :searchable="true"
+              :object="false"
+          />
+        </div>
       </div>
       <div>
         <a @click="$emit('deleteLinkBlock')" class="error icon delete" data-icon="remove"
@@ -31,8 +31,7 @@
 </template>
 <script lang="ts">
 import {computed, defineComponent, ref, toRef, PropType, watch} from "vue";
-// import {useStore} from "./store";
-import {characteristicStore} from "./store/CharacteristicStore";
+import { useMainStore } from './store/main'
 import CharacteristicLinkBlock = characteristic.CharacteristicLinkBlock;
 import Multiselect from '@vueform/multiselect'
 
@@ -50,10 +49,10 @@ export default defineComponent({
     },
   },
   setup(props, {emit}) {
+    const store = useMainStore()
     const {block} = props
     watch(block, (v) => {console.log('Updated', v)})
 
-    const characteristic = computed(() => characteristicStore.getCharacteristicById(block.characteristicId))
     const values = computed(() => characteristic.value.values)
     // const characteristicValues = computed(() => characteristic.values)
     const handleChange = (value: any) => {
@@ -62,7 +61,7 @@ export default defineComponent({
 
     return {
       block,
-      characteristic,
+      characteristic: computed(() => store.getCharacteristicById(block.characteristicId)),
       handleChange,
       values
     }

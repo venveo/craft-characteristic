@@ -21,6 +21,7 @@ namespace characteristic {
     }
 
     export interface Characteristic extends Element {
+        id: Id, // Characteristics will always have an ID
         allowCustomOptions: boolean,
         cpEditUrl: string | null,
         handle: string,
@@ -36,11 +37,18 @@ namespace characteristic {
     }
 
     export interface CharacteristicLinkBlock extends Element {
+        id: Id|TemporaryId, // Link blocks will always have a real ID or temporary ID
         characteristicId: Id,
         valueIds: Id[]
     }
 
     export interface HydratedCharacteristicLinkBlock extends CharacteristicLinkBlock {
         values: CharacteristicValue[]
+    }
+
+    export type RootState = {
+        characteristics: Characteristic[];
+        blocks: CharacteristicLinkBlock[];
+        fieldName: string;
     }
 }

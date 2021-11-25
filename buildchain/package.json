@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@vueform/multiselect": "^2.2.1",
+    "pinia": "^2.0.4",
     "vue": "^3.2.22"
   },
   "devDependencies": {

@@ -17,7 +17,11 @@
         "./src/*"
       ]
     },
-    "lib": ["es2016", "dom"],
+    "lib": [
+      "es2017",
+      "dom",
+      "es6"
+    ],
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "sourceMap": true,

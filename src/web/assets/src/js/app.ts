@@ -4,8 +4,10 @@ import {createApp} from 'vue'
 
 import App from './App.vue'
 import '@/css/app.pcss';
-import {characteristicStore} from "./store/CharacteristicStore";
+import {useMainStore} from "./store/main";
 import FieldSettings = characteristic.FieldSettings;
+import { createPinia } from 'pinia'
+
 
 // @ts-ignore
 Craft.CharacteristicsField = Garnish.Base.extend({
@@ -13,11 +15,16 @@ Craft.CharacteristicsField = Garnish.Base.extend({
             // @ts-ignore
             this.setSettings(settings, Craft.CharacteristicsField.defaults);
             const props = this.settings;
-
-            characteristicStore.setCharacteristics(props.characteristics)
-            characteristicStore.setBlocks(props.blocks)
-            characteristicStore.setFieldName(props.name)
             const app = createApp(App)
+            app.use(createPinia())
+
+            const store = useMainStore();
+            store.$state = {
+                characteristics: props.characteristics,
+                blocks: props.blocks,
+                fieldName: props.name
+            }
+
             app.mount(this.settings.mountPoint)
             document.querySelector(this.settings.defaultsContainer).remove();
         }
