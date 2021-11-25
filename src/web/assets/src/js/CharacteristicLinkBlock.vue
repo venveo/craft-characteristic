@@ -4,8 +4,22 @@
       <a class="input ltr characteristic__title" :href="characteristic.cpEditUrl" target="_blank">
         <strong>{{ characteristic.title }}</strong>
       </a>
-      <div class="w-full">
-
+      <div class="input-wrapper">
+        <div class="multiselect-wrapper">
+                <Multiselect
+                    :modelValue="block.values"
+                    @change="handleChange"
+                    :options="characteristic.values"
+                    :createTag="!!characteristic.allowCustomOptions"
+                    :mode="'tags'"
+                    :max="parseInt(characteristic.maxValues)"
+                    trackBy="id"
+                    label="value"
+                    valueProp="id"
+                    :searchable="true"
+                    :object="false"
+                />
+          </div>
       </div>
       <div>
         <a @click="$emit('deleteLinkBlock')" class="error icon delete" data-icon="remove"
@@ -20,11 +34,13 @@ import {computed, defineComponent, ref, toRef, PropType, watch} from "vue";
 // import {useStore} from "./store";
 import {characteristicStore} from "./store/CharacteristicStore";
 import CharacteristicLinkBlock = characteristic.CharacteristicLinkBlock;
+import Multiselect from '@vueform/multiselect'
 
 /* eslint-disable */
 /* global Craft */
 export default defineComponent({
   components: {
+    Multiselect
   },
   emits: ['deleteLinkBlock', 'selectValue'],
   props: {
@@ -54,315 +70,29 @@ export default defineComponent({
 })
 </script>
 
-<style>
-.multiselect {
-  position: relative;
-  margin: 0 auto;
-  font-size: 0
-}
+<style lang="css">
+.multiselect-wrapper {
+  --ms-bg: transparent;
+  --ms-border-width: 0;
+  --ms-tag-bg: rgba(96,125,159,.25);
+  --ms-tag-color: #3f4d5a;
+  --ms-line-height: 20px;
+  --ms-font-size: 14px;
+  --ms-tag-font-weight: 'normal';
 
-.multiselect > * {
-  font-size: medium
-}
+  --ms-option-bg-pointed: transparent;
 
-.multiselect.is-searchable {
-  cursor: auto
+  --ms-tag-py: 7px;
+  --ms-tag-px: 10px;
 }
-
-.multiselect-input {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  min-height: 40px;
-  border: 1px solid #e7e7e7;
-  border-radius: 3px;
-  box-sizing: border-box;
-  cursor: pointer;
-  position: relative;
-  outline: none
-}
-
-.multiselect-input:before {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  color: #999;
-  border-color: #999 transparent transparent;
-  border-style: solid;
-  border-width: 5px 5px 0;
-  content: "";
-  transform: translateY(-50%);
-  transition: transform .3s
-}
-
-.is-disabled .multiselect-input {
-  background: #f9f9f9
-}
-
-.is-open .multiselect-input {
-  border-radius: 3px 3px 0 0
-}
-
-.is-open .multiselect-input:before {
-  transform: translateY(-50%) rotate(180deg)
-}
-
-.no-caret .multiselect-input:before {
-  display: none
-}
-
-.multiselect-multiple-label, .multiselect-placeholder, .multiselect-single-label {
-  display: flex;
-  align-items: center;
-  height: 100%;
-  padding-left: 14px;
-  position: absolute;
-  left: 0;
-  top: 0;
-  pointer-events: none;
-  background: transparent
-}
-
-.multiselect-placeholder {
-  color: #777
-}
-
-.is-multiple .multiselect-search, .is-single .multiselect-search {
-  display: flex;
-  height: 100%;
-  width: 100%;
-  background: transparent
-}
-
-.is-multiple .multiselect-search input, .is-single .multiselect-search input {
-  width: 100%;
-  border: 0;
-  padding: 8px 35px 8px 14px;
-  outline: none;
-  background: transparent;
-  font-size: 16px;
-  font-family: inherit
-}
-
-.is-multiple.no-caret .multiselect-search input, .is-single.no-caret .multiselect-search input {
-  padding: 8px 14px
-}
-
-.is-tags .multiselect-search {
-  flex-grow: 1
-}
-
-.is-tags .multiselect-search input {
-  outline: none;
-  border: 0;
-  margin: 0 0 5px 3px;
-  flex-grow: 1;
-  min-width: 100%;
-  font-size: 16px;
-  font-family: inherit
-}
-
-.multiselect-tags {
-  display: flex;
-  height: 100%;
-  width: 100%;
-  align-items: center;
-  justify-content: flex-start;
-  padding-left: 9px;
-  margin-top: 5px;
-  flex-wrap: wrap;
-  padding-right: 36px
-}
-
-.no-caret .multiselect-tags {
-  padding-right: 9px
-}
-
-.multiselect-tag {
-  background: #cdd8e4;
-  color: #3f4d5a;
-  font-size: 14px;
-  font-weight: 400;
-  padding: 0 0 0 8px;
-  border-radius: 3px;
-  margin-right: 5px;
-  margin-bottom: 5px;
-  display: flex;
-  align-items: center;
-  cursor: text;
-  white-space: nowrap
-}
-
-.multiselect-tag i {
-  cursor: pointer
-}
-
-.multiselect-tag i:before {
-  content: "\D7";
-  color: rgba(123, 135, 147, 0.5);
-  font-size: 14px;
-  font-weight: 700;
-  padding: 1px 5px;
-  margin-left: 3px;
-  display: flex;
-  font-style: normal
-}
-
-.multiselect-tag i:hover:before {
-  color: #CF1124;
-  background: transparent;
-}
-
-.is-disabled .multiselect-tag {
-  background: #a0a0a0;
-  padding: 1px 8px
-}
-
 .multiselect-options {
-  position: absolute;
-  left: 0;
-  right: 0;
-  border: 1px solid #e8e8e8;
-  margin-top: -1px;
-  max-height: 160px;
-  overflow: auto;
-  -webkit-overflow-scrolling: touch;
-  z-index: 100;
-  background: #fff
+  box-shadow: 0 0 0 1px rgb(31 41 51 / 10%), 0 5px 20px rgb(31 41 51 / 25%);
 }
-
-.multiselect-option {
-  display: flex;
-  min-height: 40px;
-  padding: 9px 12px;
-  box-sizing: border-box;
-  color: #222;
-  text-decoration: none;
-  align-items: center;
-  justify-content: flex-start;
-  text-align: left
+.input-wrapper {
 }
-
-.multiselect-option.is-pointed {
-  background: #e6e6e6
-}
-
-.multiselect-option.is-disabled {
-  background: #f3f7fc;
-  color: #3f4d5a;
-  opacity: .25;
-  cursor: not-allowed
-}
-
-.multiselect-option.is-selected {
-  background: #f3f7fc;
-  opacity: .25;
-  color: #3f4d5a
-}
-
-.multiselect-option.is-selected.is-pointed {
-  background: #f3f7fc;
-  color: #3f4d5a
-}
-
-.is-multiple .multiselect-option.is-selected, .is-tags .multiselect-option.is-selected {
-  color: #999;
-  background: transparent
-}
-
-.is-multiple .multiselect-option.is-selected.is-pointed, .is-tags .multiselect-option.is-selected.is-pointed {
-  background: #f1f1f1
-}
-
-.multiselect-no-options, .multiselect-no-results {
-  display: flex;
-  padding: 10px 12px;
-  color: #777
-}
-
-.multiselect-spinner {
-  position: absolute;
-  right: 12px;
-  top: 0;
-  width: 16px;
-  height: 16px;
-  background: #fff;
-  display: block;
-  transform: translateY(50%)
-}
-
-.multiselect-spinner:after, .multiselect-spinner:before {
-  position: absolute;
-  content: "";
-  top: 50%;
-  left: 50%;
-  margin: -8px 0 0 -8px;
-  width: 16px;
-  height: 16px;
-  border-radius: 100%;
-  border: 2px solid transparent;
-  border-top-color: #41b883;
-  box-shadow: 0 0 0 1px transparent
-}
-
-.is-disabled .multiselect-spinner {
-  background: #f9f9f9
-}
-
-.is-disabled .multiselect-spinner:after, .is-disabled .multiselect-spinner:before {
-  border-color: #999 transparent transparent
-}
-
-.multiselect-spinner:before {
-  -webkit-animation: spinning 2.4s cubic-bezier(.41, .26, .2, .62);
-  animation: spinning 2.4s cubic-bezier(.41, .26, .2, .62);
-  -webkit-animation-iteration-count: infinite;
-  animation-iteration-count: infinite
-}
-
-.multiselect-spinner:after {
-  -webkit-animation: spinning 2.4s cubic-bezier(.51, .09, .21, .8);
-  animation: spinning 2.4s cubic-bezier(.51, .09, .21, .8);
-  -webkit-animation-iteration-count: infinite;
-  animation-iteration-count: infinite
-}
-
-.multiselect-enter-active {
-  transition: all .15s ease
-}
-
-.multiselect-leave-active {
-  transition: all 0s
-}
-
-.multiselect-enter, .multiselect-leave-active {
-  opacity: 0
-}
-
-.multiselect-loading-enter-active, .multiselect-loading-leave-active {
-  transition: opacity .4s ease-in-out;
-  opacity: 1
-}
-
-.multiselect-loading-enter, .multiselect-loading-leave-active {
-  opacity: 0
-}
-
-@-webkit-keyframes spinning {
-  0% {
-    transform: rotate(0)
-  }
-  to {
-    transform: rotate(2turn)
-  }
-}
-
-@keyframes spinning {
-  0% {
-    transform: rotate(0)
-  }
-  to {
-    transform: rotate(2turn)
-  }
+.characteristic__title {
+  flex: none;
 }
 </style>
+
+<style src="@vueform/multiselect/themes/default.css"></style>

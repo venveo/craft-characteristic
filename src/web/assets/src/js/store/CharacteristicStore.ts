@@ -3,7 +3,7 @@
  *  @copyright Copyright (c) 2021 Venveo
  */
 
-import {InjectionKey, provide, inject, reactive} from 'vue'
+import {InjectionKey, provide, inject, reactive, computed} from 'vue'
 import Characteristic = characteristic.Characteristic;
 import CharacteristicLinkBlock = characteristic.CharacteristicLinkBlock;
 import Id = characteristic.Id;
@@ -46,7 +46,7 @@ class CharacteristicStore extends Store<State> {
         if (block.id === null) {
             block.id = 'new' + block.characteristicId
         }
-        this.state.blocks.push(block)
+        this.state.blocks = [...this.state.blocks, block]
     }
 
     public deleteBlock(blockToDelete: CharacteristicLinkBlock) {
@@ -63,6 +63,15 @@ class CharacteristicStore extends Store<State> {
     public getCharacteristicById(id: Id): Characteristic|null {
         console.log(this.getState().characteristics)
         return this.getState().characteristics.find(o => o.id === id) ?? null;
+    }
+
+    public getUnusedCharacteristics() {
+        return computed(() => {
+            const activeCharacteristicIds = this.getState().blocks.map((linkBlock) => linkBlock.characteristicId);
+            return this.getState().characteristics.filter(characteristic => {
+                return !activeCharacteristicIds.includes(characteristic.id)
+            })
+        });
     }
 }
 
