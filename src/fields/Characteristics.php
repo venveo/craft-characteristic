@@ -30,7 +30,6 @@ use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
 use venveo\characteristic\assetbundles\characteristicasset\CharacteristicAsset;
-use venveo\characteristic\assetbundles\characteristicsfield\CharacteristicsFieldAsset;
 use venveo\characteristic\Characteristic;
 use venveo\characteristic\elements\Characteristic as CharacteristicElement;
 use venveo\characteristic\elements\CharacteristicLinkBlock;
@@ -313,12 +312,6 @@ class Characteristics extends Field implements EagerLoadingFieldInterface
         /** @var ElementQuery|array $value */
         $variables = $this->inputTemplateVariables($value, $element);
 
-        Characteristic::getInstance()->vite->register('/src/js/app.ts', false, [
-            'depends' => [
-                CharacteristicAsset::class
-            ]
-        ]);
-
         return Craft::$app->getView()->renderTemplate('characteristic/_components/fields/Characteristics_input', $variables);
     }
 
@@ -332,9 +325,6 @@ class Characteristics extends Field implements EagerLoadingFieldInterface
     protected function inputTemplateVariables($value = null, ElementInterface $element = null): array
     {
         $id = Html::id($this->handle);
-
-        // Register our asset bundle
-        Craft::$app->getView()->registerAssetBundle(CharacteristicsFieldAsset::class);
 
         $source = ElementHelper::findSource(CharacteristicElement::class, $this->source, 'index');
         $groupId = $source['criteria']['groupId'];

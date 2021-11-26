@@ -2,11 +2,11 @@
 /* global Garnish */
 import {createApp} from 'vue'
 
-import App from './App.vue'
+import App from '@/vue/App.vue'
 import '@/css/app.pcss';
-import {useMainStore} from "./store/main";
-import FieldSettings = characteristic.FieldSettings;
+import {useMainStore} from "@/js/store/main";
 import { createPinia } from 'pinia'
+import { FieldSettings } from '@/js/types/characteristics';
 
 
 // @ts-ignore

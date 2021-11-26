@@ -17,9 +17,8 @@
 </template>
 <script lang="ts">
 import {defineComponent, PropType, ref} from 'vue';
-import Characteristic = characteristic.Characteristic;
-import CharacteristicLinkBlock = characteristic.CharacteristicLinkBlock;
-import {useMainStore} from "./store/main";
+import { TemporaryId, Id, RootState, Characteristic, CharacteristicLinkBlock as CharacteristicLinkBlockInterface, CharacteristicValueValue } from '@/js/types/characteristics';
+import {useMainStore} from '@/js/store/main'
 import {computed} from "vue"
 
 export default defineComponent({

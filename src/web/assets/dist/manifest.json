@@ -1,0 +1,16 @@
+{
+  "src/js/app.ts": {
+    "file": "assets/app.883a0156.js",
+    "src": "src/js/app.ts",
+    "isEntry": true,
+    "imports": [
+      "_vendor.b1a61d0c.js"
+    ],
+    "css": [
+      "assets/app.3c803c71.css"
+    ]
+  },
+  "_vendor.b1a61d0c.js": {
+    "file": "assets/vendor.b1a61d0c.js"
+  }
+}

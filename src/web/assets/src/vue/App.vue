@@ -11,21 +11,26 @@
                                @delete-link-block="handleDeleteBlock(block.id)"
                                @select-value="(value) => handleUpdateValue(block.id, value)"
     />
-    <characteristic-controls :characteristics="unusedCharacteristics" @add-link-block="handleAddBlock" />
+    <characteristic-controls :characteristics="unusedCharacteristics" @add-link-block="handleAddBlock" v-if="unusedCharacteristics.value.length"/>
   </div>
 </template>
 
 <script lang="ts">
 import {defineComponent, computed} from 'vue'
-import CharacteristicControls from "./CharacteristicControls.vue";
-import CharacteristicLinkBlock from "./CharacteristicLinkBlock.vue";
-import { useMainStore } from './store/main'
+import CharacteristicControls from "@/vue/CharacteristicControls.vue";
+import CharacteristicLinkBlock from "@/vue/CharacteristicLinkBlock.vue";
+import {useMainStore} from '@/js/store/main'
 import {storeToRefs} from "pinia";
 
-import Id = characteristic.Id;
-import TemporaryId = characteristic.TemporaryId;
-import CharacteristicLinkBlockInterface = characteristic.CharacteristicLinkBlock;
-import CharacteristicValueValue = characteristic.CharacteristicValueValue;
+import {
+  TemporaryId,
+  Id,
+  RootState,
+  Characteristic,
+  CharacteristicLinkBlock as CharacteristicLinkBlockInterface,
+  CharacteristicValueValue
+} from '@/js/types/characteristics';
+
 
 export default defineComponent({
   name: 'App',
@@ -35,12 +40,12 @@ export default defineComponent({
   },
   setup() {
     const store = useMainStore()
-    const { fieldName, blocks, characteristics, unusedCharacteristics } = storeToRefs(store);
+    const {fieldName, blocks, characteristics, unusedCharacteristics} = storeToRefs(store);
 
-    const getCharacteristicFieldName = (blockId: Id|TemporaryId): string => {
+    const getCharacteristicFieldName = (blockId: Id | TemporaryId): string => {
       return fieldName.value + '[' + blockId + '][characteristic]'
     }
-    const getValuesFieldName = (blockId: Id|TemporaryId): string => {
+    const getValuesFieldName = (blockId: Id | TemporaryId): string => {
       return fieldName.value + '[' + blockId + '][values][]'
     }
     return {
@@ -50,11 +55,10 @@ export default defineComponent({
       characteristics,
       unusedCharacteristics: computed(() => unusedCharacteristics),
       handleAddBlock: (block: CharacteristicLinkBlockInterface) => store.addBlock(block),
-      handleDeleteBlock: (blockId: Id|TemporaryId) => store.deleteBlockById(blockId),
-      handleUpdateValue: (blockId: Id|TemporaryId, value: CharacteristicValueValue) => store.updateBlockValue(blockId, value)
+      handleDeleteBlock: (blockId: Id | TemporaryId) => store.deleteBlockById(blockId),
+      handleUpdateValue: (blockId: Id | TemporaryId, value: CharacteristicValueValue) => store.updateBlockValue(blockId, value)
     }
   },
-  props: {
-  }
+  props: {}
 })
 </script>

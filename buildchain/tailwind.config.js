@@ -20,6 +20,8 @@ module.exports = {
   },
   theme: {
   },
-  corePlugins: {},
+  corePlugins: {
+    preflight: false
+  },
   plugins: [],
 };

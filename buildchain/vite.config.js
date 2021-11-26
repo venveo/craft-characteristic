@@ -7,11 +7,12 @@ import path from 'path';
 export default ({ command }) => ({
   base: command === 'serve' ? '' : '/dist/',
   build: {
+    emptyOutDir: true,
     manifest: true,
     outDir: '../src/web/assets/dist',
     rollupOptions: {
       input: {
-        app: '/src/js/app.ts'
+        app: './src/js/app.ts'
       },
       output: {
         sourcemap: true
@@ -26,18 +27,20 @@ export default ({ command }) => ({
     }),
     ViteRestart({
       reload: [
-        '../src/templates/**/*',
+        './src/templates/**/*',
       ],
     }),
     vue(),
   ],
   publicDir: '../src/web/assets/public',
   resolve: {
+    preserveSymlinks: true,
     alias: {
-      '@': '/src',
+      '@': path.resolve(__dirname, './src')
     },
   },
   server: {
+    origin: 'http://localhost:3001/src/',
     host: '0.0.0.0',
     port: 3001,
     strictPort: true,

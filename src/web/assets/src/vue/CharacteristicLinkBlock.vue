@@ -1,25 +1,28 @@
 <template>
-  <div class="matrixblock">
-    <div class="fields flex flex-nowrap" ref="addValueTrigger">
-      <a class="input ltr characteristic__title" :href="characteristic.cpEditUrl" target="_blank">
-        <strong>{{ characteristic.title }}</strong>
-      </a>
-      <div class="input-wrapper">
-        <div class="multiselect-wrapper">
-          <Multiselect
-              :modelValue="block.values"
-              @change="handleChange"
-              :options="characteristic.values"
-              :createTag="!!characteristic.allowCustomOptions"
-              :mode="'tags'"
-              :max="parseInt(characteristic.maxValues)"
-              trackBy="id"
-              label="value"
-              valueProp="id"
-              :searchable="true"
-              :object="false"
-          />
+  <div class="matrixblock py-4">
+    <div class="flex flex-nowrap">
+      <div class="fields flex-grow space-y-2" ref="addValueTrigger">
+        <a class="input ltr characteristic__title" :href="characteristic.cpEditUrl" target="_blank">
+          <strong>{{ characteristic.title }}</strong>
+        </a>
+        <div class="input-wrapper flex">
+          <div class="multiselect-wrapper">
+            <Multiselect
+                :modelValue="block.values"
+                @change="handleChange"
+                :options="characteristic.values"
+                :createTag="!!characteristic.allowCustomOptions"
+                :mode="'tags'"
+                :max="parseInt(characteristic.maxValues)"
+                trackBy="id"
+                label="value"
+                valueProp="id"
+                :searchable="true"
+                :object="false"
+            />
+          </div>
         </div>
+
       </div>
       <div>
         <a @click="$emit('deleteLinkBlock')" class="error icon delete" data-icon="remove"
@@ -31,8 +34,11 @@
 </template>
 <script lang="ts">
 import {computed, defineComponent, ref, toRef, PropType, watch} from "vue";
-import { useMainStore } from './store/main'
-import CharacteristicLinkBlock = characteristic.CharacteristicLinkBlock;
+import {useMainStore} from '@/js/store/main'
+
+import { TemporaryId, Id, RootState, Characteristic, CharacteristicLinkBlock as CharacteristicLinkBlockInterface, CharacteristicValueValue } from '@/js/types/characteristics';
+
+
 import Multiselect from '@vueform/multiselect'
 
 /* eslint-disable */
@@ -44,14 +50,16 @@ export default defineComponent({
   emits: ['deleteLinkBlock', 'selectValue'],
   props: {
     block: {
-      type: Object as PropType<CharacteristicLinkBlock>,
+      type: Object as PropType<CharacteristicLinkBlockInterface>,
       required: true
     },
   },
   setup(props, {emit}) {
     const store = useMainStore()
     const {block} = props
-    watch(block, (v) => {console.log('Updated', v)})
+    watch(block, (v) => {
+      console.log('Updated', v)
+    })
 
     const values = computed(() => characteristic.value.values)
     // const characteristicValues = computed(() => characteristic.values)
@@ -73,7 +81,7 @@ export default defineComponent({
 .multiselect-wrapper {
   --ms-bg: transparent;
   --ms-border-width: 0;
-  --ms-tag-bg: rgba(96,125,159,.25);
+  --ms-tag-bg: rgba(96, 125, 159, .25);
   --ms-tag-color: #3f4d5a;
   --ms-line-height: 20px;
   --ms-font-size: 14px;
@@ -83,12 +91,18 @@ export default defineComponent({
 
   --ms-tag-py: 7px;
   --ms-tag-px: 10px;
+  --ms-tag-my: 0;
+  --ms-py: 0;
+  margin-bottom: 0 !important;
 }
+
 .multiselect-options {
   box-shadow: 0 0 0 1px rgb(31 41 51 / 10%), 0 5px 20px rgb(31 41 51 / 25%);
 }
+
 .input-wrapper {
 }
+
 .characteristic__title {
   flex: none;
 }

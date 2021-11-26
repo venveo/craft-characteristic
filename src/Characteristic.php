@@ -191,7 +191,10 @@ class Characteristic extends Plugin
             function (Event $event) {
                 /** @var CraftVariable $variable */
                 $variable = $event->sender;
-                $variable->set('characteristic', CharacteristicVariable::class);
+                $variable->set('characteristic', [
+                    'class' => CharacteristicVariable::class,
+                    'viteService' => $this->vite,
+                ]);
             }
         );
     }

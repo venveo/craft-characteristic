@@ -12,6 +12,13 @@
  * @since     1.0.0
  */
 #}
+{% set scriptTagOptions = {
+    'depends': [
+        'venveo\\characteristic\\assetbundles\\characteristicasset\\CharacteristicAsset'
+    ],
+} %}
+{{ craft.characteristic.register('src/js/app.ts', false, scriptTagOptions) }}
+
 {{ hiddenInput(name, '') }}
 {% set characteristicData = [] %}
 

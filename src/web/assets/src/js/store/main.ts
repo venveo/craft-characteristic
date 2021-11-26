@@ -1,11 +1,5 @@
 import { defineStore } from 'pinia'
-
-import CharacteristicLinkBlock = characteristic.CharacteristicLinkBlock;
-import CharacteristicValueValue = characteristic.CharacteristicValueValue;
-import Characteristic = characteristic.Characteristic;
-import RootState = characteristic.RootState;
-import Id = characteristic.Id;
-import TemporaryId = characteristic.TemporaryId;
+import { TemporaryId, Id, RootState, Characteristic, CharacteristicLinkBlock, CharacteristicValueValue } from '@/js/types/characteristics';
 
 export const useMainStore = defineStore('main', {
     state: () => ({
