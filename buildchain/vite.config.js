@@ -44,5 +44,8 @@ export default ({ command }) => ({
     host: '0.0.0.0',
     port: 3001,
     strictPort: true,
+    fs: {
+      strict: false
+    }
   }
 });
