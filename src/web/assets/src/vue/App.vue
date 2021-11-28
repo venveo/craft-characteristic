@@ -4,13 +4,16 @@
       <input type="hidden" :name="getCharacteristicFieldName(block.id)" :value="block.characteristicId"/>
       <input type="hidden" v-for="value in block.values" :name="getValuesFieldName(block.id)" :value="value"/>
     </div>
-
+    <table class="w-full">
+      <tbody class="divide-y divide-gray-200">
     <characteristic-link-block v-for="block in blocks"
                                :block="block"
                                :key="block.id"
                                @delete-link-block="handleDeleteBlock(block.id)"
                                @select-value="(value) => handleUpdateValue(block.id, value)"
     />
+      </tbody>
+    </table>
     <characteristic-controls :characteristics="unusedCharacteristics" @add-link-block="handleAddBlock" v-if="unusedCharacteristics.value.length"/>
   </div>
 </template>
