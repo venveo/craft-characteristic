@@ -7,9 +7,9 @@
     "url": "https://nystudio107.com"
   },
   "dependencies": {
-    "@vueform/multiselect": "^2.2.1",
     "pinia": "^2.0.4",
-    "vue": "^3.2.23"
+    "vue": "^3.2.23",
+    "vue-multiselect": "^3.0.0-alpha.2"
   },
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^13.0.0",

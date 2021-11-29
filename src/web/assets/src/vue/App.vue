@@ -43,7 +43,7 @@ export default defineComponent({
   },
   setup() {
     const store = useMainStore()
-    const {fieldName, blocks, characteristics, unusedCharacteristics} = storeToRefs(store);
+    const {fieldName, characteristics, unusedCharacteristics} = storeToRefs(store);
 
     const getCharacteristicFieldName = (blockId: Id | TemporaryId): string => {
       return fieldName.value + '[' + blockId + '][characteristic]'
@@ -54,7 +54,7 @@ export default defineComponent({
     return {
       getValuesFieldName,
       getCharacteristicFieldName,
-      blocks,
+      blocks: computed(() => store.blocks),
       characteristics,
       unusedCharacteristics: computed(() => unusedCharacteristics),
       handleAddBlock: (block: CharacteristicLinkBlockInterface) => store.addBlock(block),
