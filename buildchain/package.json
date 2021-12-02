@@ -7,7 +7,7 @@
     "url": "https://nystudio107.com"
   },
   "dependencies": {
-    "pinia": "^2.0.4",
+    "pinia": "^2.0.5",
     "vue": "^3.2.23",
     "vue-multiselect": "^3.0.0-alpha.2"
   },
@@ -16,9 +16,9 @@
     "@vitejs/plugin-vue": "^1.10.1",
     "@vue/compiler-sfc": "^3.2.23",
     "autoprefixer": "^10.4.0",
-    "postcss": "^8.4.3",
+    "postcss": "^8.4.4",
     "tailwindcss": "^2.2.19",
-    "vite": "^2.7.0-beta.8",
+    "vite": "^2.7.0-beta.9",
     "vite-plugin-restart": "0.0.2"
   },
   "scripts": {
