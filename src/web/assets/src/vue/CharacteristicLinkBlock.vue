@@ -23,7 +23,15 @@
         :searchable="true"
         @tag="handleCreateTag"
         :options="characteristic.values"
-        ></VueMultiselect>
+        >
+          <template v-slot:tag="{option, remove}">
+            <div class="multiselect__tag" @mousedown.prevent @click.exact="handleTagClicked(option)">
+              <span>{{ option.value }}</span>
+              <button type="button" v-on:click.stop="remove(option)" class="ml-2 delete icon"
+                      title="Remove" :aria-label="'Remove' + option.value"></button>
+            </div>
+          </template>
+        </VueMultiselect>
       </div>
     </td>
   </tr>
@@ -85,6 +93,24 @@ export default defineComponent({
       // emit('selectValue', internalValue.value)
     }
 
+    function handleValueSaveResponse(tag, response) {
+      // TODO
+      console.log({tag, response})
+    }
+
+    const handleTagClicked = (tag) => {
+      console.log('Click!', {tag})
+      const elementInfo = {
+        elementId: tag.id,
+        onHideHud: () => {
+          isLoading.value = false
+        },
+        onSaveElement: response => {
+          handleValueSaveResponse(tag, response)
+        },
+      }
+      Craft.createElementEditor('venveo\\characteristic\\elements\\CharacteristicValue', elementInfo)
+    }
 
     const handleCreateTag = (tag) => {
       console.log('Create tag!', {tag})
@@ -98,8 +124,7 @@ export default defineComponent({
           isLoading.value = false
         },
         onSaveElement: response => {
-          // this.selectElementAfterUpdate(response.id);
-          // this.updateElements();
+          handleValueSaveResponse(tag, response)
         },
       }
       console.log({elementInfo})
@@ -111,6 +136,7 @@ export default defineComponent({
       characteristic,
       handleChange,
       handleCreateTag,
+      handleTagClicked,
       internalValue,
       values,
       isLoading
@@ -179,23 +205,18 @@ export default defineComponent({
   .multiselect__tags {
     padding-top: 4px;
   }
-  .multiselect__tag-icon:after {
-    color: var(--ui-control-color);
-    font-family: 'Craft';
-    content: "remove";
-    line-height: 1;
-  }
-  .multiselect__tag-icon:hover:after {
-    color: #cf1124;
-  }
   .multiselect__tag {
+    cursor: pointer;
     line-height: initial;
     color: var(--ms-tag-color);
     display: flex;
     align-items: center;
-    .multiselect__tag-icon {
-      position: initial;
+    &:hover {
+      background-color: rgba(96,125,159,.35);
     }
+  }
+  .multiselect__tags-wrap {
+    display: flex;
   }
   .multiselect__input.focus-visible {
     box-shadow: none;
@@ -203,6 +224,9 @@ export default defineComponent({
   }
   .multiselect__select {
     top: 6px;
+  }
+  .multiselect__option--selected.multiselect__option--highlight:after {
+    background-color: #cf1124;
   }
 }
 </style>

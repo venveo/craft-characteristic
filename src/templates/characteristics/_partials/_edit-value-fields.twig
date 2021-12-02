@@ -7,10 +7,6 @@
 
 {{ hiddenInput('characteristicId', characteristic.id) }}
 
-    {% if value.id %}
-        {{ hiddenInput('valueId', value.id) }}
-    {% endif %}
-
 <div id="fields">
     {% set tabs = value.getFieldLayout().getTabs() %}
     {{ forms.textField({
