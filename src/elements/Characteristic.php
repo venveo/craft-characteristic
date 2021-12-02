@@ -316,23 +316,9 @@ class Characteristic extends Element
      */
     public function getEditorHtml(): string
     {
-        $html = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
-            [
-                'label' => Craft::t('app', 'Title'),
-                'siteId' => $this->siteId,
-                'id' => 'title',
-                'name' => 'title',
-                'value' => $this->title,
-                'errors' => $this->getErrors('title'),
-                'first' => true,
-                'autofocus' => true,
-                'required' => true
-            ]
+        return Craft::$app->view->renderTemplate('characteristic/characteristics/_partials/_edit-characteristic-fields', [
+            'characteristic' => $this
         ]);
-
-        $html .= parent::getEditorHtml();
-
-        return $html;
     }
 
     /**

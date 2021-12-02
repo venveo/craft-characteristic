@@ -1,0 +1,52 @@
+{% import "_includes/forms" as forms %}
+
+
+<div id="fields">
+    {% if characteristic.id %}
+        {{ forms.textField({
+            label: "Title"|t('app'),
+            id: 'title',
+            name: 'title',
+            value: characteristic.title,
+            errors: characteristic.getErrors('title'),
+            first: true,
+            autofocus: true,
+            required: true,
+            maxlength: 255
+        }) }}
+    {% endif %}
+    {{ forms.textField({
+        label: "Handle"|t('app'),
+        id: 'handle',
+        name: 'handle',
+        autocorrect: false,
+        autocapitalize: false,
+        value: characteristic.handle,
+        placeholder: "Enter handle"|t('app'),
+        errors: (characteristic.getErrors('handle'))
+    }) }}
+
+    {{ forms.lightswitchField({
+        name: 'allowCustomOptions',
+        label: 'Allow custom options'|t('characteristic'),
+        on: characteristic.allowCustomOptions,
+    }) }}
+
+    {{ forms.lightswitchField({
+        name: 'required',
+        label: 'Required'|t('characteristic'),
+        on: characteristic.required,
+    }) }}
+
+    {{ forms.textField({
+        label: "Maximum Values"|t('characteristic'),
+        id: 'maxValues',
+        name: 'maxValues',
+        autocorrect: false,
+        autocapitalize: false,
+        value: characteristic.maxValues,
+        placeholder: "Unlimited"|t('app'),
+        type: 'number',
+        errors: (characteristic.getErrors('maxValues')|merge(characteristic.getErrors('maxValues')))
+    }) }}
+</div>
