@@ -6,7 +6,7 @@
          v-if="!characteristic.required"></a>
     </td>
     <td class="w-[1px] whitespace-nowrap">
-        <a :href="characteristic.cpEditUrl" target="_blank">
+        <a @click.prevent="handleCharacteristicClicked(characteristic)" :href="characteristic.cpEditUrl" target="_blank">
           <strong>{{ characteristic.title }}</strong>
         </a>
     </td>
@@ -98,8 +98,20 @@ export default defineComponent({
       console.log({tag, response})
     }
 
+    const handleCharacteristicClicked = (characteristic) => {
+      const elementInfo = {
+        elementId: characteristic.id,
+        onHideHud: () => {
+          isLoading.value = false
+        },
+        onSaveElement: response => {
+          // handleValueSaveResponse(tag, response)
+        },
+      }
+      Craft.createElementEditor('venveo\\characteristic\\elements\\Characteristic', elementInfo)
+    }
+
     const handleTagClicked = (tag) => {
-      console.log('Click!', {tag})
       const elementInfo = {
         elementId: tag.id,
         onHideHud: () => {
@@ -137,6 +149,7 @@ export default defineComponent({
       handleChange,
       handleCreateTag,
       handleTagClicked,
+      handleCharacteristicClicked,
       internalValue,
       values,
       isLoading
