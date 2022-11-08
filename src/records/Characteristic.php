@@ -12,6 +12,7 @@ namespace venveo\characteristic\records;
 
 use craft\db\ActiveRecord;
 use craft\db\SoftDeleteTrait;
+use venveo\characteristic\db\Table;
 
 /**
  * @author    Venveo
@@ -40,6 +41,6 @@ class Characteristic extends ActiveRecord
      */
     public static function tableName()
     {
-        return '{{%characteristic_characteristics}}';
+        return Table::CHARACTERISTICS;
     }
 }

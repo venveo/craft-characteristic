@@ -247,7 +247,7 @@ class CharacteristicLinkBlockQuery extends ElementQuery
         } else if ($value !== null) {
             $this->characteristicId = (new Query())
                 ->select(['id'])
-                ->from(['{{%characteristic_characteristics}}'])
+                ->from([\venveo\characteristic\db\Table::CHARACTERISTICS])
                 ->where(Db::parseParam('handle', $value))
                 ->column();
         }
@@ -326,7 +326,7 @@ class CharacteristicLinkBlockQuery extends ElementQuery
             $fieldIds = (new Query())
                 ->select(['fieldId'])
                 ->distinct()
-                ->from('{{%characteristic_linkblocks}}')
+                ->from(\venveo\characteristic\db\Table::LINKBLOCKS)
                 ->where(Db::parseParam('id', $this->id))
                 ->column();
 

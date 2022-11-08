@@ -1,0 +1,29 @@
+{% import "_includes/forms" as forms %}
+
+{% set characteristic = value.characteristic %}
+{% set group = characteristic.group %}
+{% set groupHandle = characteristic.group.handle %}
+{% set isNewValue = value.id ? false : true %}
+
+{{ hiddenInput('characteristicId', characteristic.id) }}
+
+<div id="fields">
+    {% set tabs = value.getFieldLayout().getTabs() %}
+    {{ forms.textField({
+        label: "Value"|t('app'),
+        id: 'value',
+        name: 'value',
+        value: value.value,
+        errors: value.getErrors('value'),
+        first: true,
+        autofocus: true,
+        required: true,
+        maxlength: 255
+    }) }}
+    {% if tabs|length %}
+        {% include "_includes/fields" with {
+            fields: tabs[0].getFields(),
+            element: value,
+        } only %}
+    {% endif %}
+</div>

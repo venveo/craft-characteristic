@@ -20,6 +20,7 @@ use craft\elements\actions\Restore;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\UrlHelper;
 use venveo\characteristic\Characteristic as Plugin;
+use venveo\characteristic\db\Table;
 use venveo\characteristic\elements\db\CharacteristicQuery;
 use venveo\characteristic\records\Characteristic as CharacteristicRecord;
 use yii\base\Exception;
@@ -56,6 +57,9 @@ class Characteristic extends Element
      */
     public $required = false;
 
+    /**
+     * @var int
+     */
     public $maxValues = 1;
 
     /**
@@ -145,7 +149,7 @@ class Characteristic extends Element
 
             $map = (new Query())
                 ->select('id as target, characteristicId as source')
-                ->from('{{%characteristic_values}}')
+                ->from(Table::VALUES)
                 ->where(['in', 'characteristicId', $sourceElementIds])
                 ->orderBy('sortOrder')
                 ->all();
@@ -312,23 +316,9 @@ class Characteristic extends Element
      */
     public function getEditorHtml(): string
     {
-        $html = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
-            [
-                'label' => Craft::t('app', 'Title'),
-                'siteId' => $this->siteId,
-                'id' => 'title',
-                'name' => 'title',
-                'value' => $this->title,
-                'errors' => $this->getErrors('title'),
-                'first' => true,
-                'autofocus' => true,
-                'required' => true
-            ]
+        return Craft::$app->view->renderTemplate('characteristic/characteristics/_partials/_edit-characteristic-fields', [
+            'characteristic' => $this
         ]);
-
-        $html .= parent::getEditorHtml();
-
-        return $html;
     }
 
     /**

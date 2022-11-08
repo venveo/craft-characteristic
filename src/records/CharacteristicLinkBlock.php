@@ -13,6 +13,7 @@ namespace venveo\characteristic\records;
 use craft\db\ActiveRecord;
 use craft\records\Element;
 use craft\records\Field;
+use venveo\characteristic\db\Table;
 use yii\db\ActiveQueryInterface;
 
 /**
@@ -41,7 +42,7 @@ class CharacteristicLinkBlock extends ActiveRecord
      */
     public static function tableName()
     {
-        return '{{%characteristic_linkblocks}}';
+        return Table::LINKBLOCKS;
     }
 
     /**

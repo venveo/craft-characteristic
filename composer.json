@@ -8,7 +8,9 @@
     "cms",
     "craftcms",
     "craft-plugin",
-    "characteristic"
+    "characteristic",
+    "facets",
+    "attributes"
   ],
   "support": {
     "docs": "https://github.com/venveo/craft-characteristic/blob/master/README.md",
@@ -22,7 +24,8 @@
     }
   ],
   "require": {
-    "craftcms/cms": "^3.4.0"
+    "craftcms/cms": "^3.5.0",
+    "nystudio107/craft-plugin-vite": "^1.0"
   },
   "autoload": {
     "psr-4": {

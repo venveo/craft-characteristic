@@ -6,6 +6,7 @@ use craft\db\Query;
 use craft\elements\db\ElementQuery;
 use craft\helpers\Db;
 use craft\models\TagGroup;
+use venveo\characteristic\db\Table;
 use venveo\characteristic\models\CharacteristicGroup;
 use venveo\characteristic\records\CharacteristicGroup as CharacteristicGroupRecord;
 
@@ -146,7 +147,7 @@ class CharacteristicQuery extends ElementQuery
             if ($this->structureId === null && (!is_array($this->groupId) || count($this->groupId) === 1)) {
                 $structureId = (new Query())
                     ->select(['structureId'])
-                    ->from('{{%characteristic_groups}}')
+                    ->from(Table::GROUPS)
                     ->where(Db::parseParam('id', $this->groupId))
                     ->scalar();
                 $this->structureId = (int)$structureId ?: false;

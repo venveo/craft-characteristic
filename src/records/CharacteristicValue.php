@@ -11,6 +11,7 @@
 namespace venveo\characteristic\records;
 
 use craft\db\ActiveRecord;
+use venveo\characteristic\db\Table;
 
 /**
  * @author    Venveo
@@ -34,6 +35,6 @@ class CharacteristicValue extends ActiveRecord
      */
     public static function tableName()
     {
-        return '{{%characteristic_values}}';
+        return Table::VALUES;
     }
 }

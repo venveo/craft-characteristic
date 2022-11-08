@@ -12,6 +12,13 @@
  * @since     1.0.0
  */
 #}
+{% set scriptTagOptions = {
+    'depends': [
+        'venveo\\characteristic\\assetbundles\\characteristicasset\\CharacteristicAsset'
+    ],
+} %}
+{{ craft.characteristic.register('src/js/app.ts', false, scriptTagOptions) }}
+
 {{ hiddenInput(name, '') }}
 {% set characteristicData = [] %}
 
@@ -19,15 +26,13 @@
 
 {# @var characteristic \venveo\characteristic\elements\Characteristic #}
 {% for characteristic in characteristics %}
-    {% set valueData = [] %}
-    {# @var value \venveo\characteristic\elements\CharacteristicValue #}
-    {% for value in characteristic.values %}
-        {% set valueData = valueData|merge([{
-            id: value.id,
-            idempotent: value.idempotent ? true : false,
-            value: value.value
-        }]) %}
-    {% endfor %}
+{#    {% dd characteristic.values[0] %}#}
+    {% set valueData = characteristic.values|map(value => {
+        id: value.id,
+        idempotent: value.idempotent ? true : false,
+        value: value.value
+    }) %}
+
     {% set characteristicData = characteristicData|merge([{
         id: characteristic.id,
         title: characteristic.title,
@@ -41,48 +46,36 @@
 {% endfor %}
 
 {% set serializedBlockData = [] %}
+<div class="{{ id }}-defaults">
+{% for block in blocks %}
+    {% set characteristicInputName = name ~ '['~block.id~'][characteristic]' %}
+    {{ hiddenInput(characteristicInputName, block.characteristic.id) }}
+    {% set valueData = [] %}
+    {% for value in block.values.all() %}
+        {% set valueData = valueData|merge([value.id]) %}
+        {% set valueInputName = name|namespaceInputName ~ '['~block.id~'][values][]' %}
+        {{ hiddenInput(valueInputName, value.id) }}
+    {% endfor %}
 
-<div class="vue-characteristics-input">
-    <div class="defaults">
-        {% for block in blocks %}
-            {% set characteristicInputName = name|namespaceInputName ~ '['~block.id~'][characteristic]' %}
-            {{ hiddenInput(characteristicInputName, block.characteristic.id) }}
-            {% set valueData = [] %}
-            {% for value in block.values.all() %}
-                {% set valueData = valueData|merge([value.id]) %}
-                {% set valueInputName = name|namespaceInputName ~ '['~block.id~'][values][]' %}
-                {{ hiddenInput(valueInputName, value.id) }}
-            {% endfor %}
-
-            {% set blockData = {
-                id: block.id,
-                isNew: false,
-                characteristic: block.characteristic.id,
-                values: valueData
-            } %}
-            {% set serializedBlockData = serializedBlockData|merge([blockData]) %}
-        {% endfor %}
-    </div>
-    <characteristic-input>
-        <template v-slot:blocks>
-            <characteristic-link-block v-for="block in blocks"
-                                       :key="block.id"
-                                       :characteristic-id="block.characteristic"
-                                       :block-id="block.id"
-                                       :value-ids="block.values"
-                                       :is-new="block.isNew"
-            />
-        </template>
-        <template v-slot:controls>
-            <characteristic-controls :characteristics="characteristics"/>
-        </template>
-    </characteristic-input>
+    {% set blockData = {
+        id: block.id,
+        isNew: false,
+        characteristicId: block.characteristic.id,
+        values: valueData
+    } %}
+    {% set serializedBlockData = serializedBlockData|merge([blockData]) %}
+{% endfor %}
 </div>
-{% js %}
-var field = new Craft.CharacteristicsField({
-    container: '.vue-characteristics-input',
-    name: {{ name|namespaceInputName|json_encode|raw }},
-    characteristics: {{ characteristicData|json_encode|raw }},
-    blocks: {{ serializedBlockData|json_encode|raw }}
-    });
+
+<div class="vue-characteristics-input" id="{{ id }}"></div>
+{% set fieldSettings = {
+    mountPoint: '#' ~ id|namespaceInputId,
+    defaultsContainer: '.'~id ~'-defaults',
+    name: name|namespaceInputName,
+    characteristics: characteristicData,
+    blocks: serializedBlockData
+} %}
+{% do craft.app.view.registerJsVar('fieldSettings', fieldSettings) %}
+{% js on load %}
+var field = new Craft.CharacteristicsField({{ fieldSettings|json_encode|raw }});
 {% endjs %}

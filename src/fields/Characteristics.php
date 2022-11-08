@@ -29,7 +29,7 @@ use Throwable;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
-use venveo\characteristic\assetbundles\characteristicsfield\CharacteristicsFieldAsset;
+use venveo\characteristic\assetbundles\characteristicasset\CharacteristicAsset;
 use venveo\characteristic\Characteristic;
 use venveo\characteristic\elements\Characteristic as CharacteristicElement;
 use venveo\characteristic\elements\CharacteristicLinkBlock;
@@ -41,6 +41,10 @@ use yii\base\InvalidConfigException;
  * @package   Characteristic
  * @since     1.0.0
  *
+ *
+ * @property-read array $elementValidationRules
+ * @property-read mixed $settingsHtml
+ * @property-read array $sourceOptions
  */
 class Characteristics extends Field implements EagerLoadingFieldInterface
 {
@@ -305,7 +309,6 @@ class Characteristics extends Field implements EagerLoadingFieldInterface
             $value = $value->getCachedResult() ?? $value->limit(null)->anyStatus()->all();
         }
 
-
         /** @var ElementQuery|array $value */
         $variables = $this->inputTemplateVariables($value, $element);
 
@@ -321,10 +324,7 @@ class Characteristics extends Field implements EagerLoadingFieldInterface
      */
     protected function inputTemplateVariables($value = null, ElementInterface $element = null): array
     {
-        $id = Craft::$app->getView()->formatInputId($this->handle);
-
-        // Register our asset bundle
-        Craft::$app->getView()->registerAssetBundle(CharacteristicsFieldAsset::class);
+        $id = Html::id($this->handle);
 
         $source = ElementHelper::findSource(CharacteristicElement::class, $this->source, 'index');
         $groupId = $source['criteria']['groupId'];

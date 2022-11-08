@@ -47,33 +47,7 @@
 {% block content %}
     {{ actionInput('characteristic/characteristic-values/save-value') }}
     {{ redirectInput('characteristics/'~groupHandle~'/'~characteristic.id) }}
-    {{ hiddenInput('characteristicId', characteristic.id) }}
-
-    {% if value.id %}
-        {{ hiddenInput('valueId', value.id) }}
-    {% endif %}
-
-    <div id="fields">
-        {% set tabs = value.getFieldLayout().getTabs() %}
-        {{ forms.textField({
-            label: "Value"|t('app'),
-            id: 'value',
-            name: 'value',
-            value: value.value,
-            errors: value.getErrors('value'),
-            first: true,
-            autofocus: true,
-            required: true,
-            maxlength: 255
-        }) }}
-        {% if tabs|length %}
-            {% include "_includes/fields" with {
-                fields: tabs[0].getFields(),
-                element: value,
-            } only %}
-        {% endif %}
-    </div>
-
+    {% include 'characteristic/characteristics/_partials/_edit-value-fields' %}
 {% endblock %}
 
 {% block details %}

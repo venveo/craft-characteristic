@@ -316,4 +316,11 @@ class CharacteristicValue extends Element
 
         return true;
     }
+
+    public function getEditorHtml(): string
+    {
+        return Craft::$app->view->renderTemplate('characteristic/characteristics/_partials/_edit-value-fields', [
+            'value' => $this
+        ]);
+    }
 }

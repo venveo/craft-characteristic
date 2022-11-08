@@ -13,6 +13,7 @@ namespace venveo\characteristic\records;
 use craft\db\ActiveRecord;
 use craft\records\FieldLayout;
 use craft\records\Structure;
+use venveo\characteristic\db\Table;
 use yii\db\ActiveQueryInterface;
 
 /**
@@ -40,7 +41,7 @@ class CharacteristicGroup extends ActiveRecord
      */
     public static function tableName()
     {
-        return '{{%characteristic_groups}}';
+        return Table::GROUPS;
     }
 
     /**
