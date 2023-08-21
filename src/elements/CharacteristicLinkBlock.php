@@ -454,7 +454,7 @@ class CharacteristicLinkBlock extends Element implements BlockElementInterface
     public function setEagerLoadedElements(string $handle, array $elements)
     {
         if ($handle === 'values') {
-            $this->_values = $elements;
+            $this->setValues($elements);
         } else {
             parent::setEagerLoadedElements($handle, $elements);
         }
