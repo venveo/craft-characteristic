@@ -267,6 +267,12 @@ class CharacteristicLinkBlock extends Element implements BlockElementInterface
             $record->ownerId = (int)$this->ownerId;
             $record->characteristicId = (int)$this->characteristicId;
 
+            if (!!$this->duplicateOf) {
+                // copy the values of duplicate block
+                $duplicateModel = self::findOne($this->duplicateOf->id);
+                $this->setValues($duplicateModel->getValues()->all());
+            }
+
             $valueElements = [];
             if (is_iterable($this->_values)) {
                 $valueService = \venveo\characteristic\Characteristic::getInstance()->characteristicValues;
