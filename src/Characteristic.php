@@ -20,6 +20,7 @@ use craft\helpers\UrlHelper;
 use craft\services\Elements;
 use craft\services\Fields;
 use craft\services\UserPermissions;
+use craft\web\Response;
 use craft\web\twig\variables\Cp;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
@@ -50,41 +51,41 @@ class Characteristic extends Plugin
 {
     // Static Properties
     // =========================================================================
-    const PERMISSION_EDIT_GROUP = 'editCharacteristicGroup';
+    public const PERMISSION_EDIT_GROUP = 'editCharacteristicGroup';
 
-    /**
-     * @var Characteristic
-     */
-    public static $plugin;
+    public static ?self $plugin = null;
 
     // Public Properties
     // =========================================================================
 
-    public $hasCpSettings = true;
-    public $hasCpSection = true;
+    public bool $hasCpSettings = true;
+    public bool $hasCpSection = true;
 
-    /**
-     * @var string
-     */
     // 1.0.0.2 = 1.0.0-beta.11
-    public $schemaVersion = '1.0.0.2';
+    public string $schemaVersion = '1.0.0.2';
 
     // Public Methods
     // =========================================================================
 
+    public static function config(): array
+    {
+        return [
+            'components' => [
+                'characteristicGroups' => ['class' => CharacteristicGroups::class],
+                'characteristics' => ['class' => Characteristics::class],
+                'characteristicValues' => ['class' => CharacteristicValues::class],
+                'characteristicLinkBlocks' => ['class' => CharacteristicLinkBlocks::class],
+            ],
+        ];
+    }
+
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
         self::$plugin = $this;
-        $this->setComponents([
-            'characteristicGroups' => CharacteristicGroups::class,
-            'characteristics' => Characteristics::class,
-            'characteristicValues' => CharacteristicValues::class,
-            'characteristicLinkBlocks' => CharacteristicLinkBlocks::class,
-        ]);
 
         $this->_registerCpRoutes();
         $this->_registerProjectConfig();
@@ -93,33 +94,36 @@ class Characteristic extends Plugin
         $this->_registerVariables();
         $this->_registerPermissions();
 
-        Event::on(Cp::class, Cp::EVENT_REGISTER_CP_SETTINGS,
-            function (RegisterCpSettingsEvent $e) {
-                $e->settings['Content']['characteristics'] = [
+        Event::on(
+            Cp::class,
+            Cp::EVENT_REGISTER_CP_SETTINGS,
+            function (RegisterCpSettingsEvent $event) {
+                $event->settings['Content']['characteristics'] = [
                     'icon' => $this->cpNavIconPath(),
                     'url' => 'settings/characteristics',
-                    'label' => 'Characteristics'
+                    'label' => Craft::t('characteristic', 'Characteristics'),
                 ];
-            });
+            }
+        );
     }
 
-    public function getSettingsResponse()
+    public function getSettingsResponse(): ?Response
     {
-        return Craft::$app->response->redirect(UrlHelper::cpUrl('settings/characteristics'));
+        return Craft::$app->getResponse()->redirect(UrlHelper::cpUrl('settings/characteristics'));
     }
 
-    public function getCpNavItem()
+    public function getCpNavItem(): ?array
     {
         if (count(static::$plugin->characteristicGroups->getAllGroups())) {
             $navItem = parent::getCpNavItem();
-            $navItem['label'] = 'Characteristics';
+            $navItem['label'] = Craft::t('characteristic', 'Characteristics');
             $navItem['url'] = UrlHelper::cpUrl('characteristics');
             return $navItem;
         }
         return null;
     }
 
-    private function _registerCpRoutes()
+    private function _registerCpRoutes(): void
     {
         Event::on(
             UrlManager::class,
@@ -141,7 +145,7 @@ class Characteristic extends Plugin
         );
     }
 
-    private function _registerProjectConfig()
+    private function _registerProjectConfig(): void
     {
         Craft::$app->projectConfig
             ->onAdd('characteristicGroups.{uid}', [$this->characteristicGroups, 'handleChangedGroup'])
@@ -149,7 +153,7 @@ class Characteristic extends Plugin
             ->onRemove('characteristicGroups.{uid}', [$this->characteristicGroups, 'handleDeletedGroup']);
     }
 
-    private function _registerElementTypes()
+    private function _registerElementTypes(): void
     {
         Event::on(
             Elements::class,
@@ -162,7 +166,7 @@ class Characteristic extends Plugin
         );
     }
 
-    private function _registerFieldTypes()
+    private function _registerFieldTypes(): void
     {
         Event::on(
             Fields::class,
@@ -173,7 +177,7 @@ class Characteristic extends Plugin
         );
     }
 
-    private function _registerVariables()
+    private function _registerVariables(): void
     {
         Event::on(CraftVariable::class, CraftVariable::EVENT_INIT,
             function (Event $event) {
@@ -184,17 +188,34 @@ class Characteristic extends Plugin
         );
     }
 
-    private function _registerPermissions()
+    private function _registerPermissions(): void
     {
-        Event::on(UserPermissions::class, UserPermissions::EVENT_REGISTER_PERMISSIONS, function (RegisterUserPermissionsEvent $event) {
-            $groups = self::getInstance()->characteristicGroups->getAllGroups();
-            foreach($groups as $group) {
-                $permissions = [];
-                $permissions[self::PERMISSION_EDIT_GROUP .':'. $group->uid] = [
-                    'label' => Craft::t('characteristic', 'Edit ' . $group->name)
-                ];
-                $event->permissions[Craft::t('characteristic', 'Characteristic Group - '. $group->name)] = $permissions;
+        Event::on(
+            UserPermissions::class,
+            UserPermissions::EVENT_REGISTER_PERMISSIONS,
+            function (RegisterUserPermissionsEvent $event) {
+                $plugin = self::$plugin;
+                if ($plugin === null) {
+                    return;
+                }
+
+                $groups = $plugin->characteristicGroups->getAllGroups();
+
+                foreach ($groups as $group) {
+                    $event->permissions[] = [
+                        'heading' => Craft::t('characteristic', 'Characteristic Group - {groupName}', [
+                            'groupName' => $group->name,
+                        ]),
+                        'permissions' => [
+                            self::PERMISSION_EDIT_GROUP . ':' . $group->uid => [
+                                'label' => Craft::t('characteristic', 'Edit {groupName}', [
+                                    'groupName' => $group->name,
+                                ]),
+                            ],
+                        ],
+                    ];
+                }
             }
-        });
+        );
     }
 }

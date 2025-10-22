@@ -41,9 +41,9 @@ class CharacteristicsController extends Controller
     /**
      * @return mixed
      */
-    public function actionIndex()
+    public function actionIndex(): Response
     {
-        Craft::$app->view->registerAssetBundle(CharacteristicElement::class);
+        Craft::$app->getView()->registerAssetBundle(CharacteristicElement::class);
         return $this->renderTemplate('characteristic/characteristics/_index', []);
     }
 
@@ -58,7 +58,7 @@ class CharacteristicsController extends Controller
      * @throws ForbiddenHttpException
      * @throws NotFoundHttpException if the requested site handle is invalid
      */
-    public function actionEditCharacteristic(string $groupHandle, int $characteristicId = null, Characteristic $characteristic = null): Response
+    public function actionEditCharacteristic(string $groupHandle, ?int $characteristicId = null, ?Characteristic $characteristic = null): Response
     {
         $variables = [
             'groupHandle' => $groupHandle,
@@ -129,7 +129,7 @@ class CharacteristicsController extends Controller
      * @throws NotFoundHttpException if the requested group or characteristic cannot be found
      * @throws ForbiddenHttpException if the user is not permitted to edit content in the requested site
      */
-    private function _prepEditCharacteristicVariables(array &$variables)
+    private function _prepEditCharacteristicVariables(array &$variables): ?Response
     {
         // Get the characteristic
         // ---------------------------------------------------------------------
@@ -190,7 +190,7 @@ class CharacteristicsController extends Controller
      * @throws ElementNotFoundException
      * @throws Exception
      */
-    public function actionSaveCharacteristic(bool $duplicate = false)
+    public function actionSaveCharacteristic(bool $duplicate = false): ?Response
     {
         $this->requirePostRequest();
 
@@ -199,44 +199,34 @@ class CharacteristicsController extends Controller
 
         $this->_populateCharacteristicModel($characteristic);
 
-
         if (!Craft::$app->getElements()->saveElement($characteristic)) {
-            if ($request->getAcceptsJson()) {
-                return $this->asJson([
-                    'errors' => $characteristic->getErrors(),
-                ]);
-            }
-
-            Craft::$app->getSession()->setError(Craft::t('characteristic', 'Couldn’t save characteristic.'));
-
-            Craft::$app->getUrlManager()->setRouteParams([
-                'characteristic' => $characteristic
-            ]);
-
-            return null;
+            return $this->asModelFailure(
+                $characteristic,
+                Craft::t('characteristic', 'Couldn’t save characteristic.'),
+                'characteristic'
+            );
         }
 
-        if ($request->getAcceptsJson()) {
-            $return = [];
+        $data = [
+            'id' => $characteristic->id,
+            'title' => $characteristic->title,
+            'handle' => $characteristic->handle,
+            'dateCreated' => DateTimeHelper::toIso8601($characteristic->dateCreated),
+            'dateUpdated' => DateTimeHelper::toIso8601($characteristic->dateUpdated),
+        ];
 
-            $return['success'] = true;
-            $return['id'] = $characteristic->id;
-            $return['title'] = $characteristic->title;
-            $return['handle'] = $characteristic->handle;
-
-            if ($request->getIsCpRequest()) {
-                $return['cpEditUrl'] = $characteristic->getCpEditUrl();
-            }
-
-            $return['dateCreated'] = DateTimeHelper::toIso8601($characteristic->dateCreated);
-            $return['dateUpdated'] = DateTimeHelper::toIso8601($characteristic->dateUpdated);
-
-            return $this->asJson($return);
+        if ($request->getIsCpRequest()) {
+            $data['cpEditUrl'] = $characteristic->getCpEditUrl();
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Characteristic saved.'));
-
-        return $this->redirectToPostedUrl($characteristic);
+        return $this->asModelSuccess(
+            $characteristic,
+            Craft::t('characteristic', 'Characteristic saved.'),
+            routeParams: [
+                'characteristic' => $characteristic,
+            ],
+            data: $data
+        );
     }
 
     /**
@@ -271,7 +261,7 @@ class CharacteristicsController extends Controller
      *
      * @param Characteristic $characteristic
      */
-    private function _populateCharacteristicModel(Characteristic $characteristic)
+    private function _populateCharacteristicModel(Characteristic $characteristic): void
     {
         $request = Craft::$app->getRequest();
 
@@ -290,7 +280,7 @@ class CharacteristicsController extends Controller
      * @throws ServerErrorHttpException if reasons
      * @since 3.2.3
      */
-    public function actionDuplicateCharacteristic()
+    public function actionDuplicateCharacteristic(): ?Response
     {
         return $this->runAction('save-characteristic', ['duplicate' => true]);
     }
@@ -304,40 +294,28 @@ class CharacteristicsController extends Controller
      * @throws MissingComponentException
      * @throws BadRequestHttpException
      */
-    public function actionDeleteCharacteristic()
+    public function actionDeleteCharacteristic(): ?Response
     {
         $this->requirePostRequest();
 
-        $request = Craft::$app->getRequest();
-        $characteristicId = $request->getRequiredBodyParam('characteristicId');
+        $characteristicId = Craft::$app->getRequest()->getRequiredBodyParam('characteristicId');
         $characteristic = Plugin::$plugin->characteristics->getCharacteristicById($characteristicId);
 
         if (!$characteristic) {
             throw new NotFoundHttpException('Characteristic not found');
         }
 
-        $currentUser = Craft::$app->getUser()->getIdentity();
-
         if (!Craft::$app->getElements()->deleteElement($characteristic)) {
-            if ($request->getAcceptsJson()) {
-                return $this->asJson(['success' => false]);
-            }
-
-            Craft::$app->getSession()->setError(Craft::t('characteristic', 'Couldn’t delete characteristic.'));
-
-            Craft::$app->getUrlManager()->setRouteParams([
-                'characteristic' => $characteristic
-            ]);
-
-            return null;
+            return $this->asFailure(Craft::t('characteristic', 'Couldn’t delete characteristic.'));
         }
 
-        if ($request->getAcceptsJson()) {
-            return $this->asJson(['success' => true]);
-        }
-
-        Craft::$app->getSession()->setNotice(Craft::t('characteristic', 'Characteristic deleted.'));
-
-        return $this->redirectToPostedUrl($characteristic);
+        return $this->asSuccess(
+            Craft::t('characteristic', 'Characteristic deleted.'),
+            data: [
+                'id' => $characteristic->id,
+                'title' => $characteristic->title,
+                'handle' => $characteristic->handle,
+            ]
+        );
     }
 }

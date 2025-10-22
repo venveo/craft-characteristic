@@ -52,11 +52,11 @@ class Characteristics extends Field implements EagerLoadingFieldInterface
     /**
      * @var string|null The source key that this field can relate elements from (used if [[allowMultipleSources]] is set to false)
      */
-    public $source;
+    public ?string $source = null;
     /**
      * @var string Propagation method
      */
-    public $propagationMethod = self::PROPAGATION_METHOD_ALL;
+    public string $propagationMethod = self::PROPAGATION_METHOD_ALL;
 
     /**
      * @inheritdoc
@@ -104,7 +104,7 @@ class Characteristics extends Field implements EagerLoadingFieldInterface
     /**
      * @inheritDoc
      */
-    public function normalizeValue($value, ElementInterface $element = null)
+    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         if ($value instanceof CharacteristicLinkBlockQuery) {
             return $value;
@@ -130,7 +130,7 @@ class Characteristics extends Field implements EagerLoadingFieldInterface
      * @param ElementInterface|null $element
      * @since 3.4.0
      */
-    private function _populateQuery(CharacteristicLinkBlockQuery $query, ElementInterface $element = null)
+    private function _populateQuery(CharacteristicLinkBlockQuery $query, ?ElementInterface $element = null): void
     {
         // Existing element?
         /** @var Element|null $element */
@@ -216,9 +216,12 @@ class Characteristics extends Field implements EagerLoadingFieldInterface
     /**
      * @inheritdoc
      */
-    public function serializeValue($value, ElementInterface $element = null)
+    public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
-        /** @var CharacteristicLinkBlockQuery $value */
+        if (!$value instanceof CharacteristicLinkBlockQuery) {
+            return parent::serializeValue($value, $element);
+        }
+
         $serialized = [];
         $new = 0;
 
@@ -237,7 +240,7 @@ class Characteristics extends Field implements EagerLoadingFieldInterface
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         // Render the settings template
         return Craft::$app->getView()->renderTemplate(
@@ -282,7 +285,7 @@ class Characteristics extends Field implements EagerLoadingFieldInterface
      */
     protected function availableSources(): array
     {
-        return Craft::$app->getElementIndexes()->getSources(CharacteristicElement::class, 'modal');
+        return Craft::$app->getElementSources()->getSources(CharacteristicElement::class, 'modal');
     }
 
     /**
@@ -295,7 +298,7 @@ class Characteristics extends Field implements EagerLoadingFieldInterface
      * @throws \yii\base\Exception
      * @throws InvalidConfigException
      */
-    public function getInputHtml($value, ElementInterface $element = null): string
+    public function getInputHtml(mixed $value, ?ElementInterface $element = null): string
     {
         /** @var Element $element */
         if ($element !== null && $element->hasEagerLoadedElements($this->handle)) {
@@ -319,7 +322,7 @@ class Characteristics extends Field implements EagerLoadingFieldInterface
      * @param ElementInterface|null $element
      * @return array
      */
-    protected function inputTemplateVariables($value = null, ElementInterface $element = null): array
+    protected function inputTemplateVariables(mixed $value = null, ?ElementInterface $element = null): array
     {
         $id = Craft::$app->getView()->formatInputId($this->handle);
 
@@ -360,10 +363,13 @@ class Characteristics extends Field implements EagerLoadingFieldInterface
     /**
      * @inheritdoc
      */
-    public function isValueEmpty($value, ElementInterface $element): bool
+    public function isValueEmpty(mixed $value, ?ElementInterface $element): bool
     {
-        /** @var CharacteristicLinkBlockQuery $value */
-        return $value->count() === 0;
+        if ($value instanceof CharacteristicLinkBlockQuery) {
+            return $value->count() === 0;
+        }
+
+        return empty($value);
     }
 
     /**
@@ -371,7 +377,7 @@ class Characteristics extends Field implements EagerLoadingFieldInterface
      *
      * @param ElementInterface $element
      */
-    public function validateCharacteristicData(ElementInterface $element)
+    public function validateCharacteristicData(ElementInterface $element): void
     {
         /** @var Element $element */
         $value = $element->getFieldValue($this->handle);

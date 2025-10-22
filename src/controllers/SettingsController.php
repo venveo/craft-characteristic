@@ -31,7 +31,7 @@ class SettingsController extends Controller
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         // All section actions require an admin
         $this->requireAdmin();
@@ -53,7 +53,7 @@ class SettingsController extends Controller
     }
 
 
-    public function actionEditGroup(int $groupId = null, CharacteristicGroup $group = null): Response
+    public function actionEditGroup(int $groupId = null, ?CharacteristicGroup $group = null): Response
     {
         $variables = [
             'groupId' => $groupId,
@@ -124,7 +124,7 @@ class SettingsController extends Controller
      * @throws SectionNotFoundException
      * @throws ForbiddenHttpException
      */
-    public function actionSaveGroup()
+    public function actionSaveGroup(): ?Response
     {
         $this->requirePostRequest();
         $this->requireAdmin();
@@ -153,19 +153,25 @@ class SettingsController extends Controller
 
         // Save it
         if (!Characteristic::$plugin->characteristicGroups->saveGroup($group)) {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save group.'));
-
-            // Send the section back to the template
-            Craft::$app->getUrlManager()->setRouteParams([
-                'group' => $group
-            ]);
-
-            return null;
+            return $this->asModelFailure(
+                $group,
+                Craft::t('app', 'Couldn’t save group.'),
+                'group'
+            );
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('characteristic', 'Characteristic group saved.'));
-
-        return $this->redirectToPostedUrl($group);
+        return $this->asModelSuccess(
+            $group,
+            Craft::t('characteristic', 'Characteristic group saved.'),
+            routeParams: [
+                'group' => $group,
+            ],
+            data: [
+                'id' => $group->id,
+                'name' => $group->name,
+                'handle' => $group->handle,
+            ]
+        );
     }
 
     /**
@@ -182,6 +188,11 @@ class SettingsController extends Controller
 
         Characteristic::$plugin->characteristicGroups->deleteGroupById($groupId);
 
-        return $this->asJson(['success' => true]);
+        return $this->asSuccess(
+            Craft::t('characteristic', 'Characteristic group deleted.'),
+            data: [
+                'id' => (int)$groupId,
+            ]
+        );
     }
 }
