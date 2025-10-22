@@ -93,7 +93,7 @@ class Characteristic extends Element
     /**
      * @inheritdoc
      */
-    public static function refHandle()
+    public static function refHandle(): ?string
     {
         return 'characteristic';
     }
