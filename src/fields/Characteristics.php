@@ -421,7 +421,7 @@ class Characteristics extends Field implements EagerLoadingFieldInterface
      * @throws Exception
      * @throws Throwable
      */
-    public function afterElementPropagate(ElementInterface $element, bool $isNew)
+    public function afterElementPropagate(ElementInterface $element, bool $isNew): void
     {
         $characteristicLinkBlocksService = Characteristic::getInstance()->characteristicLinkBlocks;
 
@@ -489,7 +489,7 @@ class Characteristics extends Field implements EagerLoadingFieldInterface
     /**
      * @inheritdoc
      */
-    public function afterElementRestore(ElementInterface $element)
+    public function afterElementRestore(ElementInterface $element): void
     {
         /** @var Element $element */
         // Also restore any Matrix blocks for this element
@@ -513,7 +513,7 @@ class Characteristics extends Field implements EagerLoadingFieldInterface
     /**
      * @inheritdoc
      */
-    public function getEagerLoadingMap(array $sourceElements)
+    public function getEagerLoadingMap(array $sourceElements): array|false|null
     {
         // Get the source element IDs
         $sourceElementIds = [];
