@@ -15,6 +15,7 @@ use craft\base\Element;
 use craft\db\Query;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\UrlHelper;
+use craft\models\FieldLayout;
 use craft\validators\UniqueValidator;
 use venveo\characteristic\Characteristic as Plugin;
 use venveo\characteristic\elements\db\CharacteristicValueQuery;
@@ -75,7 +76,7 @@ class CharacteristicValue extends Element
     /**
      * @inheritdoc
      */
-    public static function refHandle()
+    public static function refHandle(): ?string
     {
         return 'characteristicValue';
     }
@@ -189,7 +190,7 @@ class CharacteristicValue extends Element
     /**
      * @inheritdoc
      */
-    public function getFieldLayout()
+    public function getFieldLayout(): ?FieldLayout
     {
         return parent::getFieldLayout() ?? $this->getCharacteristic()->getGroup()->getValueFieldLayout();
     }
@@ -198,7 +199,7 @@ class CharacteristicValue extends Element
      * @return Characteristic|null
      * @throws InvalidConfigException
      */
-    public function getCharacteristic()
+    public function getCharacteristic(): Characteristic
     {
         if ($this->_characteristic !== null) {
             return $this->_characteristic;
@@ -215,7 +216,7 @@ class CharacteristicValue extends Element
         return $this->_characteristic = $characteristic;
     }
 
-    public function setCharacteristic(Characteristic $characteristic)
+    public function setCharacteristic(Characteristic $characteristic): void
     {
 
         if ($characteristic->id) {
@@ -228,7 +229,7 @@ class CharacteristicValue extends Element
     /**
      * @inheritdoc
      */
-    public function setEagerLoadedElements(string $handle, array $elements)
+    public function setEagerLoadedElements(string $handle, array $elements): void
     {
         if ($handle == 'characteristic') {
             $characteristic = $elements[0] ?? null;
@@ -238,7 +239,7 @@ class CharacteristicValue extends Element
         }
     }
 
-    public function applyToDrilldownState(DrilldownState $state)
+    public function applyToDrilldownState(DrilldownState $state): DrilldownState
     {
         $newState = clone $state;
         if ($this->idempotent) {
@@ -252,7 +253,7 @@ class CharacteristicValue extends Element
     /**
      * @inheritdoc
      */
-    public function getCpEditUrl()
+    public function getCpEditUrl(): ?string
     {
         return UrlHelper::cpUrl('characteristics/' . $this->getCharacteristic()->getGroup()->handle . '/' . $this->getCharacteristic()->id . '/' . $this->id);
     }
@@ -261,7 +262,7 @@ class CharacteristicValue extends Element
      * @inheritdoc
      * @throws Exception if reasons
      */
-    public function afterSave(bool $isNew)
+    public function afterSave(bool $isNew): void
     {
         // Get the user record
         if (!$isNew) {
@@ -288,7 +289,7 @@ class CharacteristicValue extends Element
     /**
      * @inheritdoc
      */
-    public function beforeValidate()
+    public function beforeValidate(): bool
     {
         $group = $this->getCharacteristic()->getGroup();
 
