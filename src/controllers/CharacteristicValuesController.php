@@ -32,7 +32,7 @@ class CharacteristicValuesController extends Controller
     // Public Methods
     // =========================================================================
 
-    public function actionEditValue(string $groupHandle, int $characteristicId = null, int $valueId = null, CharacteristicValue $value = null): Response
+    public function actionEditValue(string $groupHandle, ?int $characteristicId = null, ?int $valueId = null, ?CharacteristicValue $value = null): Response
     {
         $variables = [
             'characteristicId' => $characteristicId,
@@ -94,7 +94,7 @@ class CharacteristicValuesController extends Controller
         return $this->renderTemplate('characteristic/characteristics/_edit-value', $variables);
     }
 
-    private function _prepEditCharacteristicValueVariables(array &$variables)
+    private function _prepEditCharacteristicValueVariables(array &$variables): ?Response
     {
         // Get the value
         // ---------------------------------------------------------------------
@@ -146,8 +146,15 @@ class CharacteristicValuesController extends Controller
         if (!is_array($valueIds)) {
             throw new Exception('Expected array of ids');
         }
+        $valueIds = array_map('intval', $valueIds);
         Plugin::$plugin->characteristicValues->reorderValues($valueIds);
-        return $this->asJson(['success' => true]);
+
+        return $this->asSuccess(
+            Craft::t('characteristic', 'Characteristic values reordered.'),
+            data: [
+                'ids' => $valueIds,
+            ]
+        );
     }
 
     /**
@@ -162,20 +169,24 @@ class CharacteristicValuesController extends Controller
 
         $valueId = Craft::$app->getRequest()->getRequiredBodyParam('id');
 
-        Plugin::$plugin->characteristicValues->deleteValueById($valueId);
+        Plugin::$plugin->characteristicValues->deleteValueById((int)$valueId);
 
-        return $this->asJson(['success' => true]);
+        return $this->asSuccess(
+            Craft::t('characteristic', 'Characteristic value deleted.'),
+            data: [
+                'id' => (int)$valueId,
+            ]
+        );
     }
 
     /**
      * Saves an entry.
      *
-     * @param bool $duplicate Whether the entry should be duplicated
      * @return Response|null
      * @throws ServerErrorHttpException if reasons
      * @throws NotFoundHttpException
      */
-    public function actionSaveValue()
+    public function actionSaveValue(): ?Response
     {
         $this->requirePostRequest();
 
@@ -187,45 +198,35 @@ class CharacteristicValuesController extends Controller
 
 
         if (!Craft::$app->getElements()->saveElement($characteristicValue)) {
-            if ($request->getAcceptsJson()) {
-                return $this->asJson([
-                    'errors' => $characteristicValue->getErrors(),
-                ]);
-            }
-
-            Craft::$app->getSession()->setError(Craft::t('characteristic', 'Couldn’t save characteristic value.'));
-
-            // Send the entry back to the template
-            Craft::$app->getUrlManager()->setRouteParams([
-                'value' => $characteristicValue
-            ]);
-
-            return null;
+            return $this->asModelFailure(
+                $characteristicValue,
+                Craft::t('characteristic', 'Couldn’t save characteristic value.'),
+                'value'
+            );
         }
 
-        if ($request->getAcceptsJson()) {
-            $return = [];
+        $data = [
+            'id' => $characteristicValue->id,
+            'value' => $characteristicValue->value,
+            'dateCreated' => DateTimeHelper::toIso8601($characteristicValue->dateCreated),
+            'dateUpdated' => DateTimeHelper::toIso8601($characteristicValue->dateUpdated),
+        ];
 
-            $return['success'] = true;
-            $return['id'] = $characteristicValue->id;
-            $return['value'] = $characteristicValue->value;
-
-            if ($request->getIsCpRequest()) {
-                $return['cpEditUrl'] = $characteristicValue->getCpEditUrl();
-            }
-
-            $return['dateCreated'] = DateTimeHelper::toIso8601($characteristicValue->dateCreated);
-            $return['dateUpdated'] = DateTimeHelper::toIso8601($characteristicValue->dateUpdated);
-
-            return $this->asJson($return);
+        if ($request->getIsCpRequest()) {
+            $data['cpEditUrl'] = $characteristicValue->getCpEditUrl();
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Characteristic value saved.'));
-
-        return $this->redirectToPostedUrl($characteristicValue);
+        return $this->asModelSuccess(
+            $characteristicValue,
+            Craft::t('characteristic', 'Characteristic value saved.'),
+            routeParams: [
+                'value' => $characteristicValue,
+            ],
+            data: $data
+        );
     }
 
-    private function _getValueModel()
+    private function _getValueModel(): CharacteristicValue
     {
         $request = Craft::$app->getRequest();
         $valueId = $request->getBodyParam('valueId');
@@ -256,7 +257,7 @@ class CharacteristicValuesController extends Controller
         return $value;
     }
 
-    private function _populateCharacteristicValueModel(CharacteristicValue $value)
+    private function _populateCharacteristicValueModel(CharacteristicValue $value): void
     {
         $request = Craft::$app->getRequest();
 
