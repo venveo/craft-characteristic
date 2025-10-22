@@ -17,6 +17,7 @@ use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use DateTime;
 use venveo\characteristic\elements\Characteristic;
 use venveo\characteristic\elements\CharacteristicValue;
 use venveo\characteristic\records\CharacteristicGroup as CharacteristicGroupRecord;
@@ -37,50 +38,27 @@ class CharacteristicGroup extends Model
     // =========================================================================
 
 
-    /**
-     * @var int|null ID
-     */
-    public $id;
+    public ?int $id = null;
 
-    /**
-     * @var string|null Name
-     */
-    public $name;
+    public ?string $name = null;
 
-    /**
-     * @var string|null Handle
-     */
-    public $handle;
+    public ?string $handle = null;
 
-    /** @var boolean */
-    public $allowCustomOptionsByDefault = true;
+    public bool $allowCustomOptionsByDefault = true;
 
-    /** @var boolean */
-    public $requiredByDefault = false;
+    public bool $requiredByDefault = false;
 
-    /**
-     * @var string|null Group's UID
-     */
-    public $uid;
+    public ?string $uid = null;
 
-    /**
-     * @var int|null ID
-     */
-    public $characteristicFieldLayoutId;
+    public ?int $characteristicFieldLayoutId = null;
 
-    /**
-     * @var int|null ID
-     */
-    public $valueFieldLayoutId;
+    public ?int $valueFieldLayoutId = null;
 
-    /**
-     * @var int|null Structure ID
-     */
-    public $structureId;
+    public ?int $structureId = null;
 
-    public $dateCreated;
+    public ?DateTime $dateCreated = null;
 
-    public $dateUpdated;
+    public ?DateTime $dateUpdated = null;
 
     // Public Methods
     // =========================================================================
@@ -119,7 +97,7 @@ class CharacteristicGroup extends Model
         return $rules;
     }
 
-    public function getDataForProjectConfig($structureUid = null)
+    public function getDataForProjectConfig(?string $structureUid = null): array
     {
 
         $generateLayoutConfig = function (FieldLayout $fieldLayout): array {
