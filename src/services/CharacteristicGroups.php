@@ -16,6 +16,7 @@ use craft\db\Table;
 use craft\errors\SectionNotFoundException;
 use craft\events\ConfigEvent;
 use craft\helpers\ArrayHelper;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
@@ -126,7 +127,7 @@ class CharacteristicGroups extends Component
         $this->_groups = [];
 
         foreach ($results as $result) {
-            $this->_groups[] = new CharacteristicGroup($result);
+            $this->_groups[] = $this->_createGroupFromRecord($result);
         }
 
         return $this->_groups;
@@ -142,6 +143,26 @@ class CharacteristicGroups extends Component
         $query = CharacteristicGroupRecord::find()->with(['structure']);
 
         return $query;
+    }
+
+    /**
+     * Hydrates a characteristic group model from a record.
+     */
+    private function _createGroupFromRecord(CharacteristicGroupRecord $record): CharacteristicGroup
+    {
+        return new CharacteristicGroup([
+            'id' => $record->id,
+            'name' => $record->name,
+            'handle' => $record->handle,
+            'allowCustomOptionsByDefault' => (bool)$record->allowCustomOptionsByDefault,
+            'requiredByDefault' => (bool)$record->requiredByDefault,
+            'uid' => $record->uid,
+            'characteristicFieldLayoutId' => $record->characteristicFieldLayoutId,
+            'valueFieldLayoutId' => $record->valueFieldLayoutId,
+            'structureId' => $record->structureId,
+            'dateCreated' => $record->dateCreated ? DateTimeHelper::toDateTime($record->dateCreated) : null,
+            'dateUpdated' => $record->dateUpdated ? DateTimeHelper::toDateTime($record->dateUpdated) : null,
+        ]);
     }
 
     /**
