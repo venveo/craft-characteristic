@@ -92,12 +92,16 @@
         {% if tabs|length %}
             {% for tab in tabs %}
                 {% set tabElements = (tab.elements ?? (tab.getElements() ?? [])) %}
-                {% if tabElements %}
-                    {% include "_includes/fields" with {
-                        fields: tabElements,
-                        element: characteristic,
-                    } only %}
-                {% endif %}
+                {% for layoutElement in tabElements %}
+                    {% if layoutElement is not null and layoutElement is callable('formHtml') %}
+                        {% set elementHtml = layoutElement.formHtml(characteristic) %}
+                    {% else %}
+                        {% set elementHtml = null %}
+                    {% endif %}
+                    {% if elementHtml %}
+                        {{ elementHtml|raw }}
+                    {% endif %}
+                {% endfor %}
             {% endfor %}
         {% endif %}
     </div>
