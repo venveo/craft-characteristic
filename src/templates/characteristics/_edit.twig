@@ -74,7 +74,8 @@
         </div>
     {% endif %}
     <div id="fields" class="{% if characteristic.id %}hidden{% endif %}">
-        {% set tabs = characteristic.getFieldLayout().getTabs() %}
+        {% set fieldLayout = characteristic.getFieldLayout() %}
+        {% set tabs = fieldLayout ? fieldLayout.getTabs() : [] %}
         {% if not characteristic.id %}
             {{ forms.textField({
                 label: "Title"|t('app'),
@@ -89,10 +90,15 @@
             }) }}
         {% endif %}
         {% if tabs|length %}
-            {% include "_includes/fields" with {
-                fields: tabs[0].getFields(),
-                element: characteristic,
-            } only %}
+            {% for tab in tabs %}
+                {% set tabElements = (tab.elements ?? (tab.getElements() ?? [])) %}
+                {% if tabElements %}
+                    {% include "_includes/fields" with {
+                        fields: tabElements,
+                        element: characteristic,
+                    } only %}
+                {% endif %}
+            {% endfor %}
         {% endif %}
     </div>
 {% endblock %}
