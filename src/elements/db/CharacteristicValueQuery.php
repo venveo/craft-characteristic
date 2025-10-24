@@ -20,13 +20,20 @@ class CharacteristicValueQuery extends ElementQuery
     public $idempotent;
     public $deletedWithCharacteristic;
 
+    // Public Methods
+    // =========================================================================
+
     /**
      * @inheritdoc
      */
-    protected array $defaultOrderBy = ['characteristic_values.sortOrder' => SORT_ASC];
+    public function init(): void
+    {
+        parent::init();
 
-    // Public Methods
-    // =========================================================================
+        if ($this->defaultOrderBy === []) {
+            $this->defaultOrderBy = ['characteristic_values.sortOrder' => SORT_ASC];
+        }
+    }
 
     public function characteristicId($value)
     {

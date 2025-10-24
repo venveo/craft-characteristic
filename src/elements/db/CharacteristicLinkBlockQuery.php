@@ -14,11 +14,6 @@ use venveo\characteristic\fields\Characteristics as CharacteristicsField;
 
 class CharacteristicLinkBlockQuery extends ElementQuery
 {
-    /**
-     * @inheritdoc
-     */
-    protected array $defaultOrderBy = ['dateCreated' => SORT_DESC];
-
     // General parameters
     // -------------------------------------------------------------------------
 
@@ -58,6 +53,18 @@ class CharacteristicLinkBlockQuery extends ElementQuery
     public $allowOwnerRevisions;
 
     public $deletedWithCharacteristic;
+
+    /**
+     * @inheritdoc
+     */
+    public function init(): void
+    {
+        parent::init();
+
+        if ($this->defaultOrderBy === []) {
+            $this->defaultOrderBy = ['dateCreated' => SORT_DESC];
+        }
+    }
 
 
     /**

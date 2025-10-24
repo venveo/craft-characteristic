@@ -6,6 +6,8 @@
 {% set groupHandle = group.handle %}
 {% set isNewCharacteristic = characteristic.id ? false : true %}
 
+{% block contextMenu %}{% endblock %}
+
 {% block header %}
     <div class="flex flex-nowrap">
         {{ block('pageTitle') }}

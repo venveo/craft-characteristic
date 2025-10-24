@@ -21,11 +21,6 @@ class CharacteristicQuery extends ElementQuery
 
     public $allowCustomOptions;
 
-    /**
-     * @inheritdoc
-     */
-    protected array $defaultOrderBy = ['lft' => SORT_ASC];
-
     // Public Methods
     // =========================================================================
 
@@ -74,6 +69,10 @@ class CharacteristicQuery extends ElementQuery
         }
 
         parent::init();
+
+        if ($this->defaultOrderBy === []) {
+            $this->defaultOrderBy = ['lft' => SORT_ASC];
+        }
     }
 
     /**
