@@ -67,7 +67,7 @@ class CharacteristicQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         if ($this->withStructure === null) {
             $this->withStructure = true;
