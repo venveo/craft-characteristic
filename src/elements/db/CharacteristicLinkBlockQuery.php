@@ -17,7 +17,7 @@ class CharacteristicLinkBlockQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected $defaultOrderBy = ['dateCreated' => SORT_DESC];
+    protected array $defaultOrderBy = ['dateCreated' => SORT_DESC];
 
     // General parameters
     // -------------------------------------------------------------------------

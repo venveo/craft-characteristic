@@ -24,7 +24,7 @@ class CharacteristicQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected $defaultOrderBy = ['lft' => SORT_ASC];
+    protected array $defaultOrderBy = ['lft' => SORT_ASC];
 
     // Public Methods
     // =========================================================================
