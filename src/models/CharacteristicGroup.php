@@ -10,11 +10,16 @@
 
 namespace venveo\characteristic\models;
 
+use Craft;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
+use craft\fieldlayoutelements\LightswitchField;
+use craft\fieldlayoutelements\TextField;
+use craft\fieldlayoutelements\TitleField;
 use craft\models\FieldLayout;
+use craft\models\FieldLayoutTab;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
 use DateTime;
@@ -142,7 +147,13 @@ class CharacteristicGroup extends Model
     {
         /** @var FieldLayoutBehavior $behavior */
         $behavior = $this->getBehavior('characteristicFieldLayout');
-        return $behavior->getFieldLayout();
+        $fieldLayout = $behavior->getFieldLayout();
+
+        if (!$fieldLayout->getTabs()) {
+            $fieldLayout = $this->_createDefaultCharacteristicFieldLayout();
+        }
+
+        return $fieldLayout;
     }
 
     /**
@@ -154,5 +165,58 @@ class CharacteristicGroup extends Model
         /** @var FieldLayoutBehavior $behavior */
         $behavior = $this->getBehavior('valueFieldLayout');
         return $behavior->getFieldLayout();
+    }
+
+    private function _createDefaultCharacteristicFieldLayout(): FieldLayout
+    {
+        $fieldLayout = new FieldLayout();
+        $fieldLayout->type = Characteristic::class;
+
+        $contentElements = [
+            new TitleField([
+                'mandatory' => true,
+                'label' => Craft::t('app', 'Title'),
+            ]),
+        ];
+
+        $settingsElements = [
+            new TextField([
+                'attribute' => 'handle',
+                'label' => Craft::t('app', 'Handle'),
+                'mandatory' => true,
+            ]),
+            new LightswitchField([
+                'attribute' => 'allowCustomOptions',
+                'label' => Craft::t('characteristic', 'Allow custom options'),
+            ]),
+            new LightswitchField([
+                'attribute' => 'required',
+                'label' => Craft::t('characteristic', 'Required'),
+            ]),
+            new TextField([
+                'attribute' => 'maxValues',
+                'label' => Craft::t('characteristic', 'Maximum values'),
+                'type' => 'number',
+            ]),
+        ];
+
+        $tabs = [];
+
+        $contentTab = new FieldLayoutTab();
+        $contentTab->name = Craft::t('app', 'Content');
+        $contentTab->setLayout($fieldLayout);
+        $contentTab->setElements($contentElements);
+        $tabs[] = $contentTab;
+
+        $settingsTab = new FieldLayoutTab();
+        $settingsTab->name = Craft::t('app', 'Settings');
+        $settingsTab->setLayout($fieldLayout);
+        $settingsTab->setElements($settingsElements);
+        $tabs[] = $settingsTab;
+
+        $fieldLayout->setTabs($tabs);
+        $fieldLayout->setElements(array_merge($contentElements, $settingsElements));
+
+        return $fieldLayout;
     }
 }
