@@ -54,7 +54,8 @@
     {% endif %}
 
     <div id="fields">
-        {% set tabs = value.getFieldLayout().getTabs() %}
+        {% set fieldLayout = value.getFieldLayout() %}
+        {% set tabs = fieldLayout ? fieldLayout.getTabs() : [] %}
         {{ forms.textField({
             label: "Value"|t('app'),
             id: 'value',
@@ -67,10 +68,19 @@
             maxlength: 255
         }) }}
         {% if tabs|length %}
-            {% include "_includes/fields" with {
-                fields: tabs[0].getFields(),
-                element: value,
-            } only %}
+            {% for tab in tabs %}
+                {% set tabElements = (tab.elements ?? (tab.getElements() ?? [])) %}
+                {% for layoutElement in tabElements %}
+                    {% if layoutElement is not null and layoutElement is callable('formHtml') %}
+                        {% set elementHtml = layoutElement.formHtml(value) %}
+                    {% else %}
+                        {% set elementHtml = null %}
+                    {% endif %}
+                    {% if elementHtml %}
+                        {{ elementHtml|raw }}
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
         {% endif %}
     </div>
 

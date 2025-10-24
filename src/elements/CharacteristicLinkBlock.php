@@ -72,7 +72,7 @@ class CharacteristicLinkBlock extends Element implements BlockElementInterface
     /**
      * @inheritdoc
      */
-    public static function refHandle()
+    public static function refHandle(): ?string
     {
         return 'characteristiclinkblock';
     }
@@ -136,7 +136,7 @@ class CharacteristicLinkBlock extends Element implements BlockElementInterface
     /**
      * @inheritdoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         $names = parent::attributes();
         $names[] = 'owner';
@@ -147,7 +147,7 @@ class CharacteristicLinkBlock extends Element implements BlockElementInterface
     /**
      * @inheritdoc
      */
-    public function extraFields()
+    public function extraFields(): array
     {
         $names = parent::extraFields();
         $names[] = 'owner';
@@ -226,7 +226,7 @@ class CharacteristicLinkBlock extends Element implements BlockElementInterface
      *
      * @param ElementInterface|null $owner
      */
-    public function setOwner(ElementInterface $owner = null)
+    public function setOwner(ElementInterface $owner = null): void
     {
         $this->_owner = $owner;
     }
@@ -236,7 +236,7 @@ class CharacteristicLinkBlock extends Element implements BlockElementInterface
      *
      * @param ElementInterface|null $characteristic
      */
-    public function setCharacteristic(ElementInterface $characteristic = null)
+    public function setCharacteristic(ElementInterface $characteristic = null): void
     {
         $this->_characteristic = $characteristic;
     }
@@ -249,7 +249,7 @@ class CharacteristicLinkBlock extends Element implements BlockElementInterface
      * @inheritdoc
      * @throws Exception if reasons
      */
-    public function afterSave(bool $isNew)
+    public function afterSave(bool $isNew): void
     {
         if (!$this->propagating) {
             if (!$isNew) {
@@ -395,12 +395,12 @@ class CharacteristicLinkBlock extends Element implements BlockElementInterface
         return true;
     }
 
-    public function setValues($values)
+    public function setValues($values): void
     {
         $this->_values = $values;
     }
 
-    public function getValues()
+    public function getValues(): array|ElementQueryInterface
     {
         if ($this->_values) {
             return $this->_values;
@@ -416,7 +416,7 @@ class CharacteristicLinkBlock extends Element implements BlockElementInterface
     /**
      * @inheritdoc
      */
-    public static function eagerLoadingMap(array $sourceElements, string $handle)
+    public static function eagerLoadingMap(array $sourceElements, string $handle): array
     {
         if ($handle === 'values') {
             // Get the source element IDs
@@ -457,7 +457,7 @@ class CharacteristicLinkBlock extends Element implements BlockElementInterface
         return parent::eagerLoadingMap($sourceElements, $handle);
     }
 
-    public function setEagerLoadedElements(string $handle, array $elements)
+    public function setEagerLoadedElements(string $handle, array $elements): void
     {
         if ($handle === 'values') {
             $this->setValues($elements);

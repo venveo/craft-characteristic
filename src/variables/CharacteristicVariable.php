@@ -46,7 +46,7 @@ class CharacteristicVariable
         return $query;
     }
 
-    public function drilldown($group, ElementQueryInterface $query, $options = [])
+    public function drilldown($group, ElementQueryInterface $query, $options = []): Drilldown
     {
         $drilldown = new Drilldown(array_merge([
             'group' => $group,

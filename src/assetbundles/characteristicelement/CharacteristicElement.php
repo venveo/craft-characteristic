@@ -30,7 +30,7 @@ class CharacteristicElement extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         $this->sourcePath = "@venveo/characteristic/assetbundles/characteristicelement/dist";
 

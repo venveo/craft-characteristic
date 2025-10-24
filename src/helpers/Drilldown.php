@@ -41,7 +41,7 @@ class Drilldown extends Component
     /**
      * @throws CharacteristicGroupNotFoundException
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 

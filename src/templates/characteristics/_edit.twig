@@ -6,6 +6,8 @@
 {% set groupHandle = group.handle %}
 {% set isNewCharacteristic = characteristic.id ? false : true %}
 
+{% block contextMenu %}{% endblock %}
+
 {% block header %}
     <div class="flex flex-nowrap">
         {{ block('pageTitle') }}
@@ -72,7 +74,8 @@
         </div>
     {% endif %}
     <div id="fields" class="{% if characteristic.id %}hidden{% endif %}">
-        {% set tabs = characteristic.getFieldLayout().getTabs() %}
+        {% set fieldLayout = characteristic.getFieldLayout() %}
+        {% set tabs = fieldLayout ? fieldLayout.getTabs() : [] %}
         {% if not characteristic.id %}
             {{ forms.textField({
                 label: "Title"|t('app'),
@@ -87,10 +90,19 @@
             }) }}
         {% endif %}
         {% if tabs|length %}
-            {% include "_includes/fields" with {
-                fields: tabs[0].getFields(),
-                element: characteristic,
-            } only %}
+            {% for tab in tabs %}
+                {% set tabElements = (tab.elements ?? (tab.getElements() ?? [])) %}
+                {% for layoutElement in tabElements %}
+                    {% if layoutElement is not null and layoutElement is callable('formHtml') %}
+                        {% set elementHtml = layoutElement.formHtml(characteristic) %}
+                    {% else %}
+                        {% set elementHtml = null %}
+                    {% endif %}
+                    {% if elementHtml %}
+                        {{ elementHtml|raw }}
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
         {% endif %}
     </div>
 {% endblock %}

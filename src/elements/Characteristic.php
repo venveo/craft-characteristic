@@ -19,9 +19,12 @@ use craft\elements\actions\Duplicate;
 use craft\elements\actions\Restore;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\UrlHelper;
+use craft\models\FieldLayout;
 use venveo\characteristic\Characteristic as Plugin;
+use venveo\characteristic\elements\CharacteristicLinkBlock;
 use venveo\characteristic\elements\db\CharacteristicQuery;
 use venveo\characteristic\records\Characteristic as CharacteristicRecord;
+use venveo\characteristic\models\CharacteristicGroup;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 
@@ -93,7 +96,7 @@ class Characteristic extends Element
     /**
      * @inheritdoc
      */
-    public static function refHandle()
+    public static function refHandle(): ?string
     {
         return 'characteristic';
     }
@@ -262,7 +265,7 @@ class Characteristic extends Element
     /**
      * @inheritdoc
      */
-    public function getFieldLayout()
+    public function getFieldLayout(): ?FieldLayout
     {
         return parent::getFieldLayout() ?? $this->getGroup()->getCharacteristicFieldLayout();
     }
@@ -270,7 +273,7 @@ class Characteristic extends Element
     /**
      * @inheritdoc
      */
-    public function getGroup()
+    public function getGroup(): CharacteristicGroup
     {
         if ($this->groupId === null) {
             throw new InvalidConfigException('Group is missing its group ID');
@@ -286,7 +289,7 @@ class Characteristic extends Element
     /**
      * @inheritdoc
      */
-    public function setEagerLoadedElements(string $handle, array $elements)
+    public function setEagerLoadedElements(string $handle, array $elements): void
     {
         if ($handle == 'values') {
             $this->setValues($elements);
@@ -298,7 +301,7 @@ class Characteristic extends Element
     /**
      * @inheritdoc
      */
-    public function getCpEditUrl()
+    public function getCpEditUrl(): ?string
     {
         $group = $this->getGroup();
 
@@ -335,7 +338,7 @@ class Characteristic extends Element
      * @inheritdoc
      * @throws Exception if reasons
      */
-    public function afterSave(bool $isNew)
+    public function afterSave(bool $isNew): void
     {
         // Get the user record
         if (!$isNew) {
@@ -473,13 +476,13 @@ class Characteristic extends Element
     /**
      * @inheritdoc
      */
-    public function afterDelete()
+    public function afterDelete(): void
     {
         parent::afterDelete();
     }
 
 
-    public function afterRestore()
+    public function afterRestore(): void
     {
         parent::afterRestore();
 
@@ -504,7 +507,7 @@ class Characteristic extends Element
      * @param ElementInterface|null $element
      * @return CharacteristicValue[]
      */
-    public function getValues(ElementInterface $element = null)
+    public function getValues(ElementInterface $element = null): array|ElementQueryInterface|null
     {
         if ($element) {
             if (!isset($this->_elementValues[$element->id])) {
@@ -525,7 +528,7 @@ class Characteristic extends Element
         return $this->_values;
     }
 
-    public function setValues($values, ElementInterface $element = null)
+    public function setValues($values, ElementInterface $element = null): void
     {
         if (!$element) {
             $this->_values = [];
@@ -551,7 +554,7 @@ class Characteristic extends Element
     /**
      * @inheritdoc
      */
-    public function beforeValidate()
+    public function beforeValidate(): bool
     {
         $group = $this->getGroup();
 
