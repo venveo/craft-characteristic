@@ -23,7 +23,6 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\services\Elements;
-use craft\validators\ArrayValidator;
 use Exception;
 use Throwable;
 use Twig\Error\LoaderError;
@@ -350,13 +349,16 @@ class Characteristics extends Field implements EagerLoadingFieldInterface
      */
     public function getElementValidationRules(): array
     {
+        // NOTE: This field's value normalizes to a CharacteristicLinkBlockQuery (an
+        // ElementQuery). In Craft 3, ElementQuery implemented Countable, so an
+        // ArrayValidator on SCENARIO_LIVE passed. In Craft 4, craft\db\Query no longer
+        // declares the Countable interface (it has count() but does not implement
+        // Countable), so craft\validators\ArrayValidator rejects the query with
+        // "{attribute} must be an array." on every live-entry save. The validator was
+        // only ever a vestigial "is array-like" guard with no min/max, so it is removed.
+        // Real validation (required characteristics) lives in validateCharacteristicData().
         return [
             'validateCharacteristicData',
-            [
-                ArrayValidator::class,
-                'skipOnEmpty' => false,
-                'on' => Element::SCENARIO_LIVE,
-            ],
         ];
     }
 
@@ -396,7 +398,14 @@ class Characteristics extends Field implements EagerLoadingFieldInterface
 
 
         $source = ElementHelper::findSource(CharacteristicElement::class, $this->source, 'index');
-        $groupId = $source['criteria']['groupId'];
+        $groupId = $source['criteria']['groupId'] ?? null;
+        if ($groupId === null) {
+            // The element source can't always be resolved (e.g. outside a control
+            // panel request, such as console validation). Without a group we can't
+            // determine which characteristics are required, so skip the check rather
+            // than dereferencing a null source.
+            return;
+        }
 
         $required = CharacteristicElement::find()->groupId($groupId)->required(true)->indexBy('id')->with(['values'])->all();
         if ($required) {
