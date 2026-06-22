@@ -119,17 +119,18 @@ class CharacteristicQuery extends ElementQuery
         $this->_applyGroupIdParam();
 
         if ($this->handle) {
-            if (is_array($this->handle)) {
-                $this->subQuery->andWhere('in', Db::parseParam('characteristic_characteristics.handle', $this->handle));
-            } else {
-                $this->subQuery->andWhere(Db::parseParam('characteristic_characteristics.handle', $this->handle));
-            }
+            // Db::parseParam() already returns a complete condition for both scalars
+            // and arrays, so a single andWhere() handles both. The previous
+            // andWhere('in', ...) form passed 'in' as the whole condition and produced
+            // invalid SQL when $handle was an array.
+            $this->subQuery->andWhere(Db::parseParam('characteristic_characteristics.handle', $this->handle));
         }
         if ($this->required !== null) {
             $this->subQuery->andWhere(Db::parseParam('characteristic_characteristics.required', $this->required));
         }
         if ($this->allowCustomOptions !== null) {
-            $this->subQuery->andWhere(Db::parseParam('characteristic_characteristics.allowCustomOptions', $this->required));
+            // Was filtering against $this->required (wrong column param).
+            $this->subQuery->andWhere(Db::parseParam('characteristic_characteristics.allowCustomOptions', $this->allowCustomOptions));
         }
 
         return parent::beforePrepare();

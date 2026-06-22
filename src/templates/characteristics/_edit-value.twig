@@ -7,6 +7,12 @@
 {% set groupHandle = characteristic.group.handle %}
 {% set isNewValue = value.id ? false : true %}
 
+{# Craft 4's _layouts/cp no longer defines a `contextMenu` block, so define an
+   empty one locally before referencing it below (mirrors _edit.twig). Without
+   this, `block('contextMenu')` falls through to the layout and throws
+   "Block contextMenu on template _layouts/base does not exist." #}
+{% block contextMenu %}{% endblock %}
+
 {% block header %}
     <div class="flex flex-nowrap">
         {{ block('pageTitle') }}
