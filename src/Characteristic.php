@@ -12,14 +12,19 @@ namespace venveo\characteristic;
 
 use Craft;
 use craft\base\Plugin;
+use craft\events\DefineFieldLayoutFieldsEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterCpSettingsEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
+use craft\fieldlayoutelements\LightswitchField;
+use craft\fieldlayoutelements\TextField;
+use craft\fieldlayoutelements\TitleField;
 use craft\helpers\UrlHelper;
 use craft\services\Elements;
 use craft\services\Fields;
 use craft\services\UserPermissions;
+use craft\models\FieldLayout;
 use craft\web\Response;
 use craft\web\twig\variables\Cp;
 use craft\web\twig\variables\CraftVariable;
@@ -93,6 +98,7 @@ class Characteristic extends Plugin
         $this->_registerFieldTypes();
         $this->_registerVariables();
         $this->_registerPermissions();
+        $this->_registerFieldLayoutElements();
 
         Event::on(
             Cp::class,
@@ -135,12 +141,64 @@ class Characteristic extends Plugin
 
                 $event->rules['characteristics'] = 'characteristic/characteristics/index';
                 $event->rules['characteristics/<groupHandle:{handle}>'] = 'characteristic/characteristics/index';
-                $event->rules['characteristics/save-characteristic'] = 'characteristic/characteristics/save-characteristic';
-                $event->rules['characteristics/<groupHandle:{handle}>/new'] = 'characteristic/characteristics/edit-characteristic';
+                $event->rules['characteristics/<groupHandle:{handle}>/new'] = [
+                    'route' => 'elements/edit',
+                    'defaults' => ['elementType' => CharacteristicElement::class],
+                ];
 
-                $event->rules['characteristics/<groupHandle:{handle}>/<characteristicId:\d+>'] = 'characteristic/characteristics/edit-characteristic';
+                $event->rules['characteristics/<groupHandle:{handle}>/<elementId:\d+>'] = [
+                    'route' => 'elements/edit',
+                    'defaults' => ['elementType' => CharacteristicElement::class],
+                ];
                 $event->rules['characteristics/<groupHandle:{handle}>/<characteristicId:\d+>/<valueId:\d+>'] = 'characteristic/characteristic-values/edit-value';
                 $event->rules['characteristics/<groupHandle:{handle}>/<characteristicId:\d+>/new'] = 'characteristic/characteristic-values/edit-value';
+            }
+        );
+    }
+
+    private function _registerFieldLayoutElements(): void
+    {
+        Event::on(
+            FieldLayout::class,
+            FieldLayout::EVENT_DEFINE_NATIVE_FIELDS,
+            function(DefineFieldLayoutFieldsEvent $event) {
+                $fieldLayout = $event->sender;
+
+                if ($fieldLayout->type !== CharacteristicElement::class) {
+                    return;
+                }
+
+                $event->fields[] = new TitleField([
+                    'mandatory' => true,
+                    'label' => Craft::t('app', 'Title'),
+                    'instructions' => Craft::t('characteristic', 'Enter a descriptive name for the characteristic.'),
+                ]);
+
+                $event->fields[] = new TextField([
+                    'attribute' => 'handle',
+                    'label' => Craft::t('app', 'Handle'),
+                    'mandatory' => true,
+                    'instructions' => Craft::t('characteristic', 'How you’ll reference this characteristic in your templates.'),
+                ]);
+
+                $event->fields[] = new LightswitchField([
+                    'attribute' => 'allowCustomOptions',
+                    'label' => Craft::t('characteristic', 'Allow custom options'),
+                    'instructions' => Craft::t('characteristic', 'Whether editors can provide custom values for this characteristic.'),
+                ]);
+
+                $event->fields[] = new LightswitchField([
+                    'attribute' => 'required',
+                    'label' => Craft::t('characteristic', 'Required'),
+                    'instructions' => Craft::t('characteristic', 'Whether elements must include a value for this characteristic.'),
+                ]);
+
+                $event->fields[] = new TextField([
+                    'attribute' => 'maxValues',
+                    'label' => Craft::t('characteristic', 'Maximum values'),
+                    'instructions' => Craft::t('characteristic', 'Limit the number of values that can be selected, or leave blank for unlimited.'),
+                    'type' => 'number',
+                ]);
             }
         );
     }

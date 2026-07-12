@@ -19,7 +19,12 @@ use craft\elements\actions\Duplicate;
 use craft\elements\actions\Restore;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\UrlHelper;
+use craft\elements\User;
+use craft\fieldlayoutelements\LightswitchField;
+use craft\fieldlayoutelements\TextField;
+use craft\fieldlayoutelements\TitleField;
 use craft\models\FieldLayout;
+use craft\models\FieldLayoutTab;
 use venveo\characteristic\Characteristic as Plugin;
 use venveo\characteristic\elements\CharacteristicLinkBlock;
 use venveo\characteristic\elements\db\CharacteristicQuery;
@@ -257,9 +262,33 @@ class Characteristic extends Element
     /**
      * @inheritdoc
      */
-    public function getIsEditable(): bool
+    public function canView(User $user): bool
     {
-        return true;
+        return $this->_canManage($user);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function canSave(User $user): bool
+    {
+        return $this->_canManage($user);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function canDuplicate(User $user): bool
+    {
+        return $this->_canManage($user);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function canDelete(User $user): bool
+    {
+        return $this->_canManage($user);
     }
 
     /**
@@ -267,7 +296,23 @@ class Characteristic extends Element
      */
     public function getFieldLayout(): ?FieldLayout
     {
-        return parent::getFieldLayout() ?? $this->getGroup()->getCharacteristicFieldLayout();
+        $fieldLayout = parent::getFieldLayout();
+
+        if ($fieldLayout !== null && $fieldLayout->getTabs()) {
+            return $fieldLayout;
+        }
+
+        try {
+            $groupLayout = $this->getGroup()->getCharacteristicFieldLayout();
+        } catch (InvalidConfigException $exception) {
+            return $this->_createDefaultFieldLayout();
+        }
+
+        if ($groupLayout->getTabs()) {
+            return $groupLayout;
+        }
+
+        return $this->_createDefaultFieldLayout();
     }
 
     /**
@@ -367,6 +412,74 @@ class Characteristic extends Element
         }
 
         return $this->_hasNewParent = $this->_checkForNewParent();
+    }
+
+    private function _canManage(User $user): bool
+    {
+        try {
+            $group = $this->getGroup();
+        } catch (InvalidConfigException $exception) {
+            return false;
+        }
+
+        if ($group->uid === null) {
+            return false;
+        }
+
+        return $user->can(Plugin::PERMISSION_EDIT_GROUP . ':' . $group->uid);
+    }
+
+    private function _createDefaultFieldLayout(): FieldLayout
+    {
+        $fieldLayout = new FieldLayout();
+        $fieldLayout->type = static::class;
+
+        $contentElements = [
+            new TitleField([
+                'mandatory' => true,
+                'label' => Craft::t('app', 'Title'),
+            ]),
+        ];
+
+        $settingsElements = [
+            new TextField([
+                'attribute' => 'handle',
+                'label' => Craft::t('app', 'Handle'),
+                'mandatory' => true,
+            ]),
+            new LightswitchField([
+                'attribute' => 'allowCustomOptions',
+                'label' => Craft::t('characteristic', 'Allow custom options'),
+            ]),
+            new LightswitchField([
+                'attribute' => 'required',
+                'label' => Craft::t('characteristic', 'Required'),
+            ]),
+            new TextField([
+                'attribute' => 'maxValues',
+                'label' => Craft::t('characteristic', 'Maximum values'),
+                'type' => 'number',
+            ]),
+        ];
+
+        $tabs = [];
+
+        $contentTab = new FieldLayoutTab();
+        $contentTab->name = Craft::t('app', 'Content');
+        $contentTab->setLayout($fieldLayout);
+        $contentTab->setElements($contentElements);
+        $tabs[] = $contentTab;
+
+        $settingsTab = new FieldLayoutTab();
+        $settingsTab->name = Craft::t('app', 'Settings');
+        $settingsTab->setLayout($fieldLayout);
+        $settingsTab->setElements($settingsElements);
+        $tabs[] = $settingsTab;
+
+        $fieldLayout->setTabs($tabs);
+        $fieldLayout->setElements(array_merge($contentElements, $settingsElements));
+
+        return $fieldLayout;
     }
 
     // Events
