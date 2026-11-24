@@ -11,6 +11,7 @@
 namespace venveo\characteristic;
 
 use Craft;
+use craft\base\Element;
 use craft\base\Plugin;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterCpSettingsEvent;
@@ -93,6 +94,19 @@ class Characteristic extends Plugin
         $this->_registerFieldTypes();
         $this->_registerVariables();
         $this->_registerPermissions();
+
+        // Craft 4.8+ calls Relations::deleteLeftoverRelations() at the end of
+        // Element::afterPropagate(). It removes every relation whose field is not a
+        // BaseRelationField, which wipes the owner -> value rows this plugin writes
+        // and the drilldown filters on. EVENT_AFTER_PROPAGATE fires right after that
+        // cleanup, so rebuild the owner rows from the link blocks there.
+        Event::on(
+            Element::class,
+            Element::EVENT_AFTER_PROPAGATE,
+            function(Event $event) {
+                $this->characteristicLinkBlocks->syncOwnerRelations($event->sender);
+            }
+        );
 
         Event::on(
             Cp::class,

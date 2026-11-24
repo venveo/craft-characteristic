@@ -14,6 +14,8 @@ use Craft;
 use craft\base\Component;
 use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\db\Query;
+use craft\db\Table;
 use craft\errors\ElementNotFoundException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
@@ -241,6 +243,109 @@ class CharacteristicLinkBlocks extends Component
                 }
             }
         }
+    }
+
+    /**
+     * Rebuilds the owner -> value and owner -> characteristic relations for every
+     * Characteristics field on a canonical element, from its live link blocks.
+     *
+     * Called from Element::EVENT_AFTER_PROPAGATE, which fires after Craft 4.8+'s
+     * deleteLeftoverRelations() has removed them. Drafts and revisions are skipped
+     * because Craft does not clean up their relations.
+     */
+    public function syncOwnerRelations(ElementInterface $owner): void
+    {
+        if (!$owner->id || ElementHelper::isDraftOrRevision($owner)) {
+            return;
+        }
+
+        $layout = $owner->getFieldLayout();
+        if (!$layout) {
+            return;
+        }
+
+        foreach ($layout->getCustomFields() as $field) {
+            if ($field instanceof CharacteristicsField) {
+                $this->rebuildOwnerRelations((int)$field->id, (int)$owner->id);
+            }
+        }
+    }
+
+    /**
+     * Makes an owner's relations for one Characteristics field match its live link blocks.
+     *
+     * Idempotent. Returns ['missing' => n, 'extra' => n]: rows that were (or would be)
+     * inserted, and existing rows that no live link block backs. Extra rows are only
+     * deleted when $prune is true.
+     */
+    public function rebuildOwnerRelations(int $fieldId, int $ownerId, bool $dryRun = false, bool $prune = true): array
+    {
+        $blocks = (new Query())
+            ->select(['lb.id', 'lb.characteristicId', 'es.siteId'])
+            ->from(['lb' => '{{%characteristic_linkblocks}}'])
+            ->innerJoin(['e' => Table::ELEMENTS], '[[e.id]] = [[lb.id]]')
+            ->innerJoin(['es' => Table::ELEMENTS_SITES], '[[es.elementId]] = [[lb.id]]')
+            ->where(['lb.ownerId' => $ownerId, 'lb.fieldId' => $fieldId, 'e.dateDeleted' => null])
+            ->all();
+
+        // Desired rows, keyed "siteId:targetId"
+        $desired = [];
+        $blockSites = [];
+        foreach ($blocks as $block) {
+            $siteId = (int)$block['siteId'];
+            $blockSites[$block['id']][] = $siteId;
+            $desired[$siteId . ':' . $block['characteristicId']] = [$siteId, (int)$block['characteristicId']];
+        }
+
+        if ($blockSites) {
+            $valueRows = (new Query())
+                ->select(['sourceId', 'sourceSiteId', 'targetId'])
+                ->from(Table::RELATIONS)
+                ->where(['fieldId' => $fieldId, 'sourceId' => array_keys($blockSites)])
+                ->all();
+            foreach ($valueRows as $row) {
+                $siteIds = $row['sourceSiteId'] !== null ? [(int)$row['sourceSiteId']] : $blockSites[$row['sourceId']];
+                foreach ($siteIds as $siteId) {
+                    $desired[$siteId . ':' . $row['targetId']] = [$siteId, (int)$row['targetId']];
+                }
+            }
+        }
+
+        $existing = (new Query())
+            ->select(['id', 'sourceSiteId', 'targetId'])
+            ->from(Table::RELATIONS)
+            ->where(['fieldId' => $fieldId, 'sourceId' => $ownerId])
+            ->all();
+        $existingKeys = [];
+        $extraIds = [];
+        foreach ($existing as $row) {
+            $key = $row['sourceSiteId'] . ':' . $row['targetId'];
+            if (isset($desired[$key]) && !isset($existingKeys[$key])) {
+                $existingKeys[$key] = true;
+            } else {
+                $extraIds[] = (int)$row['id'];
+            }
+        }
+
+        $missing = array_diff_key($desired, $existingKeys);
+
+        if (!$dryRun) {
+            $db = Craft::$app->getDb();
+            if ($prune && $extraIds) {
+                $db->createCommand()->delete(Table::RELATIONS, ['id' => $extraIds])->execute();
+            }
+            if ($missing) {
+                $rows = [];
+                foreach ($missing as [$siteId, $targetId]) {
+                    $rows[] = [$fieldId, $ownerId, $siteId, $targetId, null];
+                }
+                $db->createCommand()
+                    ->batchInsert(Table::RELATIONS, ['fieldId', 'sourceId', 'sourceSiteId', 'targetId', 'sortOrder'], $rows)
+                    ->execute();
+            }
+        }
+
+        return ['missing' => count($missing), 'extra' => count($extraIds)];
     }
 
     /**
